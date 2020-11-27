@@ -2,51 +2,46 @@ package configure
 
 import (
 	"fmt"
-	client "github.com/yametech/yamecloud/k8s/client"
-	types "github.com/yametech/yamecloud/k8s/types"
-	dynamicClient "k8s.io/client-go/dynamic"
+	"github.com/yametech/yamecloud/common"
+	"github.com/yametech/yamecloud/pkg/k8s/client"
+	"github.com/yametech/yamecloud/pkg/k8s/types"
+	dynclient "k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 )
 
-type RuntimeMode string
-
-var AppRuntimeMode RuntimeMode = Default
-
-func SetTheAppRuntimeMode(rm RuntimeMode) {
-	AppRuntimeMode = rm
-}
-
 const (
 	// InCluster when deploying in k8s, use this option
-	InCluster RuntimeMode = "InCluster"
+	InCluster = "InCluster"
 	// Default when deploying in non k8s, use this option and the is default option
-	Default RuntimeMode = "Default"
+	Default = "Default"
 )
+
+var RuntimeMode = Default
 
 // InstallConfigure ...
 type InstallConfigure struct {
 	// kubernetes reset config
-	RestConfig *rest.Config
+	*rest.Config
 	// k8s CacheInformerFactory
 	*client.CacheInformerFactory
 	// k8s client
-	dynamicClient.Interface
+	dynclient.Interface
 	// ResourceLister resource lister
 	types.ResourceLister
 }
 
-func NewInstallConfigure(k8sResLister k8s.ResourceLister) (*InstallConfigure, error) {
+func NewInstallConfigure(resLister types.ResourceLister) (*InstallConfigure, error) {
 	var (
-		cli         client.Interface
+		cli         dynclient.Interface
 		resetConfig *rest.Config
 		err         error
 	)
 
-	switch AppRuntimeMode {
+	switch RuntimeMode {
 	case Default:
-		cli, resetConfig, err = k8s.BuildClientSet(*common.KubeConfig)
+		cli, resetConfig, err = client.BuildClientSet(*common.KubeConfig)
 	case InCluster:
-		_, resetConfig, err = k8s.CreateInClusterConfig()
+		_, resetConfig, err = client.CreateInClusterConfig()
 		if err != nil {
 			return nil, err
 		}
@@ -54,7 +49,7 @@ func NewInstallConfigure(k8sResLister k8s.ResourceLister) (*InstallConfigure, er
 		return nil, fmt.Errorf("not define the runtime mode")
 	}
 
-	cacheInformerFactory, err := k8s.NewCacheInformerFactory(k8sResLister, resetConfig)
+	cacheInformerFactory, err := client.NewCacheInformerFactory(resLister, resetConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +57,7 @@ func NewInstallConfigure(k8sResLister k8s.ResourceLister) (*InstallConfigure, er
 	return &InstallConfigure{
 		CacheInformerFactory: cacheInformerFactory,
 		Interface:            cli,
-		RestConfig:           resetConfig,
-		ResourceLister:       k8sResLister,
+		Config:               resetConfig,
+		ResourceLister:       resLister,
 	}, nil
 }

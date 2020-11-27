@@ -2,12 +2,14 @@ package client
 
 import (
 	"github.com/yametech/yamecloud/pkg/k8s/types"
+	"time"
+
 	"k8s.io/client-go/dynamic"
-	dynamicInformer "k8s.io/client-go/dynamic/dynamicinformer"
+	client "k8s.io/client-go/dynamic"
+	informers "k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"time"
 )
 
 const (
@@ -45,8 +47,8 @@ func buildDynamicClientFromRest(clientCfg *rest.Config) (client.Interface, error
 }
 
 type CacheInformerFactory struct {
-	Interface dynamic.Interface
-	Informer  dynamicInformer.DynamicSharedInformerFactory
+	Interface client.Interface
+	Informer  informers.DynamicSharedInformerFactory
 	stopChan  chan struct{}
 }
 
@@ -56,13 +58,13 @@ func NewCacheInformerFactory(resLister types.ResourceLister, restConf *rest.Conf
 		return SharedCacheInformerFactory, nil
 	}
 
-	client, err := buildDynamicClientFromRest(restConf)
+	_client, err := buildDynamicClientFromRest(restConf)
 	if err != nil {
 		return nil, err
 	}
 
 	stop := make(chan struct{})
-	sharedInformerFactory := dynamicInformer.NewDynamicSharedInformerFactory(client, period)
+	sharedInformerFactory := informers.NewDynamicSharedInformerFactory(_client, period)
 
 	resLister.Ranges(sharedInformerFactory, stop)
 
@@ -70,7 +72,7 @@ func NewCacheInformerFactory(resLister types.ResourceLister, restConf *rest.Conf
 
 	SharedCacheInformerFactory =
 		&CacheInformerFactory{
-			client,
+			_client,
 			sharedInformerFactory,
 			stop,
 		}

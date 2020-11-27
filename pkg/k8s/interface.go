@@ -1,276 +1,34 @@
 package k8s
 
 import (
-	"context"
-	"fmt"
-	"github.com/yametech/yamecloud/pkg/configure"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/watch"
-	"k8s.io/client-go/util/retry"
-	"reflect"
-	"time"
 )
 
-var _ IDataSource = &IDataSourceImpl{}
-
-type IDataSource interface {
-	List(namespace, resource, flag string, pos, size int64, selector interface{}) (*unstructured.UnstructuredList, error)
-	Get(namespace, resource, name string, subResources ...string) (*unstructured.Unstructured, error)
-	Apply(namespace, resource, name string, obj *unstructured.Unstructured, forceUpdate bool) (*unstructured.Unstructured, bool, error)
-	Delete(namespace, resource, name string) error
-	Watch(namespace string, resource, resourceVersion string, timeoutSeconds int64, selector interface{}) (<-chan watch.Event, error)
+type ICache interface {
+	XGet(namespace string, resourceType ResourceType, name string) (*unstructured.Unstructured, error)
 }
 
-func NewIDataSource(cfg *configure.InstallConfigure) IDataSource {
-	return &IDataSourceImpl{cfg}
+type Lister interface {
+	List(namespace string, resourceType ResourceType, selector interface{}) (*unstructured.UnstructuredList, error)
+	Get(namespace string, resourceType ResourceType, name string) (*unstructured.Unstructured, error)
+	Cache() ICache
 }
 
-type IDataSourceImpl struct {
-	*configure.InstallConfigure
+type Watcher interface {
+	Watch(namespace string, resourceType ResourceType, resourceVersion string, selector interface{}) (<-chan watch.Event, error)
 }
 
-func (i *IDataSourceImpl) List(namespace, resource, flag string, pos, size int64, selector interface{}) (*unstructured.UnstructuredList, error) {
-	var err error
-	var items *unstructured.UnstructuredList
-	opts := metaV1.ListOptions{}
-
-	if selector == nil || selector == "" {
-		selector = labels.Everything()
-	}
-	switch selector.(type) {
-	case labels.Selector:
-		opts.LabelSelector = selector.(labels.Selector).String()
-	case string:
-		if selector != "" {
-			opts.LabelSelector = selector.(string)
-		}
-	}
-
-	if flag != "" {
-		opts.Continue = flag
-	}
-	if size > 0 {
-		opts.Limit = size + pos
-	}
-	gvr, err := i.GetGvr(resource)
-	if err != nil {
-		return nil, err
-	}
-	items, err = i.CacheInformerFactory.
-		Interface.
-		Resource(gvr).
-		Namespace(namespace).
-		List(context.Background(), opts)
-	if err != nil {
-		return nil, err
-	}
-
-	return items, nil
+type IDataOperator interface {
+	Apply(namespace string, resourceType ResourceType, name string, unstructured *unstructured.Unstructured, forceUpdate bool) (newUnstructured *unstructured.Unstructured, isUpdate bool, err error)
+	Delete(namespace string, resourceType ResourceType, name string) error
+	Patch(namespace string, resourceType ResourceType, name string, path string, data interface{}) error
 }
 
-func (i *IDataSourceImpl) Get(namespace, resource, name string, subresources ...string) (*unstructured.Unstructured, error) {
-	gvr, err := i.GetGvr(resource)
-	if err != nil {
-		return nil, err
-	}
-	object, err := i.CacheInformerFactory.
-		Interface.
-		Resource(gvr).
-		Namespace(namespace).
-		Get(context.Background(), name, metaV1.GetOptions{}, subresources...)
-	if err != nil {
-		return nil, err
-	}
-	return object, nil
-}
+type Interface interface {
+	Lister
+	Watcher
 
-func (i *IDataSourceImpl) Apply(namespace, resource, name string, obj *unstructured.Unstructured, forceUpdate bool) (result *unstructured.Unstructured, isUpdate bool, err error) {
-	retryErr := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-		gvr, err := i.GetGvr(resource)
-		if err != nil {
-			return err
-		}
-		ctx := context.Background()
-		getObj, getErr := i.CacheInformerFactory.
-			Interface.
-			Resource(gvr).
-			Namespace(namespace).
-			Get(ctx, name, metaV1.GetOptions{})
-
-		if errors.IsNotFound(getErr) {
-			newObj, createErr := i.CacheInformerFactory.
-				Interface.
-				Resource(gvr).
-				Namespace(namespace).
-				Create(ctx, obj, metaV1.CreateOptions{})
-			result = newObj
-			return createErr
-		}
-
-		if getErr != nil {
-			return getErr
-		}
-
-		compareObject(getObj, obj, forceUpdate)
-
-		newObj, updateErr := i.CacheInformerFactory.
-			Interface.
-			Resource(gvr).
-			Namespace(namespace).
-			Update(ctx, getObj, metaV1.UpdateOptions{})
-
-		result = newObj
-		isUpdate = true
-		return updateErr
-	})
-	err = retryErr
-
-	return
-}
-
-func (i *IDataSourceImpl) Delete(namespace, resource, name string) error {
-	gvr, err := i.GetGvr(resource)
-	if err != nil {
-		return err
-	}
-	retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		return i.
-			CacheInformerFactory.
-			Interface.
-			Resource(gvr).
-			Namespace(namespace).
-			Delete(context.Background(), name, metaV1.DeleteOptions{})
-	})
-	return retryErr
-}
-
-func (i *IDataSourceImpl) Watch(namespace string, resource, resourceVersion string, timeoutSeconds int64, selector interface{}) (<-chan watch.Event, error) {
-	opts := metaV1.ListOptions{}
-	var err error
-
-	if selector == nil || selector == "" {
-		selector = labels.Everything()
-	}
-	switch selector.(type) {
-	case labels.Selector:
-		opts.LabelSelector = selector.(labels.Selector).String()
-	case string:
-		if selector != "" {
-			opts.LabelSelector = selector.(string)
-		}
-	}
-
-	if timeoutSeconds > 0 {
-		opts.TimeoutSeconds = &timeoutSeconds
-	}
-
-	if resourceVersion != "" {
-		opts.ResourceVersion = resourceVersion
-	}
-	gvr, err := i.GetGvr(resource)
-	if err != nil {
-		return nil, err
-	}
-	recv, err := i.CacheInformerFactory.
-		Interface.
-		Resource(gvr).
-		Namespace(namespace).
-		Watch(context.Background(), opts)
-	if err != nil {
-		return nil, err
-	}
-
-	return recv.ResultChan(), nil
-}
-
-func compareObject(getObj, obj *unstructured.Unstructured, forceUpdate bool) {
-	if !reflect.DeepEqual(getObj.Object["metadata"], obj.Object["metadata"]) {
-		getObj.Object["metadata"] = compareMetadataLabelsOrAnnotation(
-			getObj.Object["metadata"].(map[string]interface{}),
-			obj.Object["metadata"].(map[string]interface{}),
-		)
-	}
-
-	if forceUpdate {
-		metadata := getObj.Object["metadata"].(map[string]interface{})
-		if metadata == nil {
-			goto NEXT0
-		}
-
-		annotations, exist := metadata["annotations"]
-		if !exist {
-			annotations = make(map[string]interface{})
-		}
-
-		annotationsMap := annotations.(map[string]interface{})
-		annotationsMap["forceUpdate"] = fmt.Sprintf("%d", time.Now().Unix())
-		metadata["annotations"] = annotationsMap
-		getObj.Object["metadata"] = metadata
-	}
-
-NEXT0:
-	if !reflect.DeepEqual(getObj.Object["spec"], obj.Object["spec"]) {
-		getObj.Object["spec"] = obj.Object["spec"]
-	}
-
-	// configMap
-	if !reflect.DeepEqual(getObj.Object["data"], obj.Object["data"]) {
-		getObj.Object["data"] = obj.Object["data"]
-	}
-
-	if !reflect.DeepEqual(getObj.Object["binaryData"], obj.Object["binaryData"]) {
-		getObj.Object["binaryData"] = obj.Object["binaryData"]
-	}
-
-	if !reflect.DeepEqual(getObj.Object["stringData"], obj.Object["stringData"]) {
-		getObj.Object["stringData"] = obj.Object["stringData"]
-	}
-
-	if !reflect.DeepEqual(getObj.Object["type"], obj.Object["type"]) {
-		getObj.Object["type"] = obj.Object["type"]
-	}
-
-	if !reflect.DeepEqual(getObj.Object["secrets"], obj.Object["secrets"]) {
-		getObj.Object["secrets"] = obj.Object["secrets"]
-	}
-
-	if !reflect.DeepEqual(getObj.Object["imagePullSecrets"], obj.Object["imagePullSecrets"]) {
-		getObj.Object["imagePullSecrets"] = obj.Object["imagePullSecrets"]
-	}
-	// storageClass field
-	if !reflect.DeepEqual(getObj.Object["provisioner"], obj.Object["provisioner"]) {
-		getObj.Object["provisioner"] = obj.Object["provisioner"]
-	}
-
-	if !reflect.DeepEqual(getObj.Object["parameters"], obj.Object["parameters"]) {
-		getObj.Object["parameters"] = obj.Object["parameters"]
-	}
-
-	if !reflect.DeepEqual(getObj.Object["reclaimPolicy"], obj.Object["reclaimPolicy"]) {
-		getObj.Object["reclaimPolicy"] = obj.Object["reclaimPolicy"]
-	}
-
-	if !reflect.DeepEqual(getObj.Object["volumeBindingMode"], obj.Object["volumeBindingMode"]) {
-		getObj.Object["volumeBindingMode"] = obj.Object["volumeBindingMode"]
-	}
-}
-
-func compareMetadataLabelsOrAnnotation(old, new map[string]interface{}) map[string]interface{} {
-	newLabels, exist := new["labels"]
-	if exist {
-		old["labels"] = newLabels
-	}
-	newAnnotations, exist := new["annotations"]
-	if exist {
-		old["annotations"] = newAnnotations
-	}
-
-	newOwnerReferences, exist := new["ownerReferences"]
-	if exist {
-		old["ownerReferences"] = newOwnerReferences
-	}
-	return old
+	IDataOperator
+	ICache
 }
