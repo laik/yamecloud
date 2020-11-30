@@ -1,3 +1,3 @@
 package yamecloud
 
-const GroupName = "yamecloud.io"
+const GroupName = "workload.io"

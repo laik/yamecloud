@@ -53,7 +53,6 @@ type CacheInformerFactory struct {
 }
 
 func NewCacheInformerFactory(resLister types.ResourceLister, restConf *rest.Config) (*CacheInformerFactory, error) {
-
 	if SharedCacheInformerFactory != nil {
 		return SharedCacheInformerFactory, nil
 	}

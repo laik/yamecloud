@@ -28,7 +28,6 @@ type IDataOperator interface {
 type Interface interface {
 	Lister
 	Watcher
-
-	IDataOperator
 	ICache
+	IDataOperator
 }

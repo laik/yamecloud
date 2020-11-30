@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	"github.com/yametech/yamecloud/pkg/configure"
 	"github.com/yametech/yamecloud/pkg/k8s"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/watch"
@@ -8,11 +9,12 @@ import (
 
 var _ k8s.Interface = &dataSource{}
 
-func NewInterface() k8s.Interface {
-	return &dataSource{}
+func NewInterface(configure *configure.InstallConfigure) k8s.Interface {
+	return &dataSource{configure: configure}
 }
 
 type dataSource struct {
+	configure *configure.InstallConfigure
 }
 
 func (d *dataSource) XGet(namespace string, resourceType k8s.ResourceType, name string) (*unstructured.Unstructured, error) {

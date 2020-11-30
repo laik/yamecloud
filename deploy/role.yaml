@@ -1,4 +1,4 @@
-apiVersion: rbac.authorization.k8s.io/v1
+apiVersion: dac.authorization.k8s.io/v1
 kind: Role
 metadata:
   creationTimestamp: null
@@ -8,8 +8,8 @@ rules:
   - ""
   resources:
   - pods
-  - services
-  - services/finalizers
+  - service
+  - service/finalizers
   - endpoints
   - persistentvolumeclaims
   - events

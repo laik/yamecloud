@@ -1,5 +1,5 @@
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
+apiVersion: dac.authorization.k8s.io/v1
 metadata:
   name: fuxi
 subjects:
@@ -8,4 +8,4 @@ subjects:
 roleRef:
   kind: Role
   name: fuxi
-  apiGroup: rbac.authorization.k8s.io
+  apiGroup: dac.authorization.k8s.io

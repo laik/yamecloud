@@ -18,7 +18,11 @@ const (
 
 var RuntimeMode = Default
 
-// InstallConfigure ...
+func init() {
+	//flag.StringVar(,"")
+}
+
+// InstallConfigure
 type InstallConfigure struct {
 	// kubernetes reset config
 	*rest.Config
@@ -32,14 +36,14 @@ type InstallConfigure struct {
 
 func NewInstallConfigure(resLister types.ResourceLister) (*InstallConfigure, error) {
 	var (
-		cli         dynclient.Interface
-		resetConfig *rest.Config
-		err         error
+		dynInterface dynclient.Interface
+		resetConfig  *rest.Config
+		err          error
 	)
 
 	switch RuntimeMode {
 	case Default:
-		cli, resetConfig, err = client.BuildClientSet(*common.KubeConfig)
+		dynInterface, resetConfig, err = client.BuildClientSet(*common.KubeConfig)
 	case InCluster:
 		_, resetConfig, err = client.CreateInClusterConfig()
 		if err != nil {
@@ -54,10 +58,14 @@ func NewInstallConfigure(resLister types.ResourceLister) (*InstallConfigure, err
 		return nil, err
 	}
 
-	return &InstallConfigure{
+	installConfigure := &InstallConfigure{
 		CacheInformerFactory: cacheInformerFactory,
-		Interface:            cli,
-		Config:               resetConfig,
-		ResourceLister:       resLister,
-	}, nil
+
+		ResourceLister: resLister,
+
+		Interface: dynInterface,
+		Config:    resetConfig,
+	}
+
+	return installConfigure, nil
 }
