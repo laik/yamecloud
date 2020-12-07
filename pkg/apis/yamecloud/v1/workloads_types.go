@@ -16,7 +16,7 @@ type WorkloadsSpec struct {
 	AppName      *string `json:"appName"`
 	ResourceType *string `json:"resourceType"`
 	Metadata     *string `json:"metadata"`
-	Service      *string `json:"service"`
+	Service      *string `json:"micro"`
 	VolumeClaims string  `json:"volumeClaims"`
 }
 

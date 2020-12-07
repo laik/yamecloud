@@ -1,7 +1,7 @@
 package client
 
 import (
-	"github.com/yametech/yamecloud/pkg/k8s/types"
+	"github.com/yametech/yamecloud/pkg/k8s"
 	"time"
 
 	"k8s.io/client-go/dynamic"
@@ -52,7 +52,7 @@ type CacheInformerFactory struct {
 	stopChan  chan struct{}
 }
 
-func NewCacheInformerFactory(resLister types.ResourceLister, restConf *rest.Config) (*CacheInformerFactory, error) {
+func NewCacheInformerFactory(resLister k8s.ResourceLister, restConf *rest.Config) (*CacheInformerFactory, error) {
 	if SharedCacheInformerFactory != nil {
 		return SharedCacheInformerFactory, nil
 	}

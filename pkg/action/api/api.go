@@ -12,14 +12,14 @@ type Interface interface {
 
 type HandleFunc = gin.HandlerFunc
 
-var _ Interface = NewAPIServer()
+var _ Interface = NewServer()
 
-type APIServer struct {
+type Server struct {
 	*gin.Engine
 }
 
-func NewAPIServer() *APIServer {
-	return &APIServer{
+func NewServer() *Server {
+	return &Server{
 		Engine: gin.New(),
 	}
 }

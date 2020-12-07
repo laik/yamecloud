@@ -1,29 +1,33 @@
-package microservice
+package service
 
 import (
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
 	"github.com/yametech/yamecloud/pkg/k8s"
-	"github.com/yametech/yamecloud/pkg/service"
+	self "github.com/yametech/yamecloud/pkg/micro"
 	"net/http"
 	"time"
 )
 
-var _ service.Interface = &Service{}
+var _ self.Interface = &Service{}
 
 type Service struct {
 	k8s.Interface
 	micro.Service
 }
 
-func NewService(service2 micro.Service, datasource k8s.Interface) service.Interface {
+func NewService(service2 micro.Service, datasource k8s.Interface) self.Interface {
 	return &Service{
 		datasource,
 		service2,
 	}
 }
 
-func (s *Service) HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) {
+func (s *Service) Run(string) error {
+	panic("implement me")
+}
+
+func (s *Service) HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) self.Interface {
 	panic("implement me")
 }
 
@@ -31,7 +35,7 @@ func (s *Service) DataSource() k8s.Interface {
 	return s.Interface
 }
 
-func (s *Service) Handle(pattern string, handler http.Handler) {
+func (s *Service) Handle(pattern string, handler http.Handler) self.Interface {
 	panic("implement me")
 }
 

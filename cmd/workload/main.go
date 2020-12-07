@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"github.com/yametech/yamecloud/pkg/action/api"
 	"github.com/yametech/yamecloud/pkg/action/api/workload"
 	"github.com/yametech/yamecloud/pkg/action/service"
@@ -12,15 +13,21 @@ import (
 )
 
 func main() {
+	flag.Parse()
 	config, err := configure.NewInstallConfigure(
-		types.NewResourceLister([]k8s.ResourceType{}...),
+		types.NewResourceITypes(
+			k8s.GVRMaps.List(
+				k8s.Deployment,
+				k8s.StatefulSet,
+				k8s.ClusterRole,
+			)),
 	)
 	if err != nil {
 		panic(err)
 	}
 	svc := service.NewService(datasource.NewInterface(config))
 	app := workload.NewWorkloadServer(
-		api.NewAPIServer(),
+		api.NewServer(),
 		dac.NewClusterRole(svc),
 	)
 	if err := app.Run(":8080"); err != nil {

@@ -6,13 +6,13 @@ import (
 )
 
 type Workload struct {
-	*api.APIServer
+	*api.Server
 	clusterRole *dac.ClusterRole
 }
 
-func NewWorkloadServer(server *api.APIServer, clusterRole *dac.ClusterRole) *Workload {
+func NewWorkloadServer(server *api.Server, clusterRole *dac.ClusterRole) *Workload {
 	return &Workload{
-		APIServer:   server,
+		Server:      server,
 		clusterRole: clusterRole,
 	}
 }

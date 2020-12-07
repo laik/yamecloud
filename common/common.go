@@ -6,6 +6,11 @@ import (
 	"path/filepath"
 )
 
+const (
+	HttpRequestUserHeaderKey = `x-auth-username`
+	MicroSaltUserHeader      = `go.micro.gateway.login`
+)
+
 var (
 	// InCluster Flag for the application runtime
 	InCluster bool

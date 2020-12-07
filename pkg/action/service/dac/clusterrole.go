@@ -10,9 +10,9 @@ type ClusterRole struct {
 }
 
 func NewClusterRole(svcInterface service.Interface) *ClusterRole {
-	cr := &ClusterRole{svcInterface}
-	svcInterface.Install(k8s.ClusterRole, cr)
-	return cr
+	clusterRole := &ClusterRole{svcInterface}
+	svcInterface.Install(k8s.ClusterRole, clusterRole)
+	return clusterRole
 }
 
 func (c *ClusterRole) Get(namespace, name string) (*service.UnstructuredExtend, error) {
