@@ -2,7 +2,7 @@ apiVersion: dac.authorization.k8s.io/v1
 kind: Role
 metadata:
   creationTimestamp: null
-  name: fuxi
+  name: yamecloud
 rules:
 - apiGroups:
   - ""
@@ -100,3 +100,15 @@ rules:
   - patch
   - update
   - watch
+- apiGroups:
+    - yamecloud.io
+  resources:
+    - '*'
+  verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch

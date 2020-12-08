@@ -5,6 +5,7 @@ import (
 	"github.com/yametech/yamecloud/pkg/k8s"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic/dynamicinformer"
+	"sort"
 )
 
 var _ k8s.ITypes = &types{}
@@ -23,9 +24,40 @@ func newTypes(include, exclude []k8s.Resource) *types {
 	return _types
 }
 
+var _ sort.Interface = Resources{}
+
+type Resources []k8s.Resource
+
+func (r Resources) Len() int {
+	return len(r)
+}
+
+func (r Resources) Less(i, j int) bool {
+	return r[i].Name < r[j].Name
+}
+
+func (r Resources) Swap(i, j int) {
+	r[i], r[j] = r[j], r[i]
+}
+
+func (r Resources) Strings() []string {
+	result := make([]string, 0)
+	for _, item := range r {
+		result = append(result, item.Name)
+	}
+	return result
+}
+
+func (r Resources) In(x string) bool {
+	if sort.SearchStrings(r.Strings(), x) > len(r.Strings())-1 {
+		return false
+	}
+	return true
+}
+
 type types struct {
-	exclude []k8s.Resource
-	include []k8s.Resource
+	exclude Resources
+	include Resources
 	data    map[k8s.ResourceType]schema.GroupVersionResource
 }
 
@@ -45,10 +77,13 @@ func (m *types) register(s k8s.ResourceType, resource schema.GroupVersionResourc
 func (m *types) Ranges(d dynamicinformer.DynamicSharedInformerFactory, stop <-chan struct{}) {
 	for _, v := range m.exclude {
 		value := v
-		delete(m.data, k8s.ResourceType(value.Name))
+		delete(m.data, value.Name)
 	}
-	for _, v := range m.data {
-		value := v
+
+	for _type, value := range m.data {
+		if m.include.In(_type) {
+			continue
+		}
 		go d.ForResource(value).Informer().Run(stop)
 	}
 }

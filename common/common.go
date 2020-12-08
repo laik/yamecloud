@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	HttpRequestUserHeaderKey = `x-auth-username`
+	HttpRequestUserHeaderKey = `x-wrapper-username`
 	MicroSaltUserHeader      = `go.micro.gateway.login`
+	AuthorizationHeader      = "Authorization"
 )
 
 var (

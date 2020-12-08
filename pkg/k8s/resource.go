@@ -81,7 +81,10 @@ type groupVersionCollection map[ResourceType]schema.GroupVersionResource
 func (c *groupVersionCollection) List(include ...string) []Resource {
 	result := make([]Resource, 0)
 	for key, value := range *c {
-		if len(include) > 0 && sort.SearchStrings(include, key) < 0 {
+		if len(include) == 0 {
+			continue
+		}
+		if sort.SearchStrings(include, key) > len(include)-1 {
 			continue
 		}
 		result = append(result, Resource{key, value})

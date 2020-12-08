@@ -1,20 +1,20 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: tektonwebhooks.fuxi.nip.io
+  name: workloads.yamecloud.io
 spec:
-  group: fuxi.nip.io
+  group: yamecloud.io
   names:
-    kind: TektonWebHook
-    listKind: TektonWebHookList
-    plural: tektonwebhooks
-    singular: tektonwebhook
+    kind: Workloads
+    listKind: WorkloadsList
+    plural: workloads
+    singular: workloads
   scope: Namespaced
   versions:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: TektonWebHook is the Schema for the tektonwebhooks API
+        description: Workloads is the Schema for the workloads API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -29,33 +29,32 @@ spec:
           metadata:
             type: object
           spec:
-            description: TektonWebHookSpec defines the desired state of TektonWebHook
+            description: WorkloadsSpec defines the desired state of Workloads
             properties:
-              git:
+              appName:
+                description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                  Important: Run "operator-sdk generate k8s" to regenerate code after
+                  modifying this file Add custom validation using kubebuilder tags:
+                  https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+                  Workloads ResourceType [Deployment,Statefulset...]'
                 type: string
-              jobs:
-                items:
-                  properties:
-                    branch:
-                      type: string
-                    params:
-                      items:
-                        properties:
-                          name:
-                            type: string
-                          value:
-                            type: string
-                        type: object
-                      type: array
-                    pipeline_run:
-                      type: string
-                  type: object
-                type: array
-              secret:
+              metadata:
                 type: string
+              resourceType:
+                type: string
+              service:
+                type: string
+              volumeClaims:
+                type: string
+            required:
+            - appName
+            - metadata
+            - resourceType
+            - micro
+            - volumeClaims
             type: object
           status:
-            description: TektonWebHookStatus defines the observed state of TektonWebHook
+            description: WorkloadsStatus defines the observed state of Workloads
             type: object
         type: object
     served: true

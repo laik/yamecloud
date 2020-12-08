@@ -6,7 +6,7 @@ import (
 )
 
 type Interface interface {
-	Run(string) error
+	Run() error
 	Name() string
 	DataSource() k8s.Interface
 	Handle(pattern string, handler http.Handler) Interface
@@ -21,7 +21,7 @@ func (d DefaultService) HandleFunc(pattern string, handler func(http.ResponseWri
 	panic("implement me")
 }
 
-func (d DefaultService) Run(string) error {
+func (d DefaultService) Run() error {
 	panic("implement me")
 }
 

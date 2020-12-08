@@ -19,7 +19,5 @@ type Server struct {
 }
 
 func NewServer() *Server {
-	return &Server{
-		Engine: gin.New(),
-	}
+	return &Server{Engine: gin.New()}
 }

@@ -1,20 +1,20 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: tektonstores.fuxi.nip.io
+  name: baseroles.yamecloud.io
 spec:
-  group: fuxi.nip.io
+  group: yamecloud.io
   names:
-    kind: TektonStore
-    listKind: TektonStoreList
-    plural: tektonstores
-    singular: tektonstore
+    kind: BaseRole
+    listKind: BaseRoleList
+    plural: baseroles
+    singular: baserole
   scope: Namespaced
   versions:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: TektonStore is the Schema for the tektonstores API
+        description: BaseRole is the Schema for the baseroles API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -29,28 +29,18 @@ spec:
           metadata:
             type: object
           spec:
-            description: TektonStoreSpec defines the desired state of TektonStore
+            description: BaseRoleSpec defines the desired state of BaseRole
             properties:
-              author:
+              comment:
                 type: string
-              data:
-                type: string
-              forks:
+              value:
                 format: int32
                 type: integer
-              paramsDescription:
-                type: string
-              tektonResourceType:
-                type: string
             required:
-            - author
-            - data
-            - forks
-            - paramsDescription
-            - tektonResourceType
+            - value
             type: object
           status:
-            description: TektonStoreStatus defines the observed state of TektonStore
+            description: BaseRoleStatus defines the observed state of BaseRole
             type: object
         type: object
     served: true

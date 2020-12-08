@@ -23,16 +23,18 @@ func NewService(service2 web.Service, datasource k8s.Interface) self.Interface {
 	}
 }
 
-func (s *Service) Run(s2 string) error {
+func (s *Service) Run() error {
 	panic("implement me")
 }
 
 func (s *Service) Handle(pattern string, handler http.Handler) self.Interface {
-	panic("implement me")
+	s.Service.Handle(pattern, handler)
+	return s
 }
 
 func (s *Service) HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) self.Interface {
-	panic("implement me")
+	s.Service.HandleFunc(pattern, handler)
+	return s
 }
 
 func (s *Service) DataSource() k8s.Interface {

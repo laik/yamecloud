@@ -7,6 +7,12 @@ import (
 	"net/http"
 )
 
+func Wrapper(handler http.Handler) plugin.Handler {
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(handler.ServeHTTP)
+	}
+}
+
 var _ self.Interface = &Gateway{}
 
 type Gateway struct {
@@ -23,27 +29,25 @@ func NewGateway(datasource k8s.Interface) self.Interface {
 	}
 }
 
-func (s *Gateway) Run(string) error {
-	return nil
-}
+func (s *Gateway) Run() error { return nil }
 
 func (s *Gateway) HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) self.Interface {
 	panic("don't not implement me")
 }
 
-func (s *Gateway) DataSource() k8s.Interface {
-	return s.Interface
-}
+func (s *Gateway) DataSource() k8s.Interface { return s.Interface }
 
 func (s *Gateway) Handle(pattern string, handler http.Handler) self.Interface {
 	panic("don't not implement me")
 }
 
-func NewMicroGateway(plugins ...plugin.Plugin) error {
-	for _, _plugin := range plugins {
-		if err := plugin.Register(_plugin); err != nil {
-			return err
-		}
+func NewMicroGateway(handlers ...http.Handler) error {
+	handlerWrappers := make([]plugin.Handler, 0)
+	for _, handler := range handlers {
+		handlerWrappers = append(handlerWrappers, Wrapper(handler))
+	}
+	if err := plugin.Register(plugin.NewPlugin(plugin.WithHandler(handlerWrappers...))); err != nil {
+		return err
 	}
 	return nil
 }

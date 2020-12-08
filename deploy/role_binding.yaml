@@ -1,11 +1,11 @@
 kind: RoleBinding
 apiVersion: dac.authorization.k8s.io/v1
 metadata:
-  name: fuxi
+  name: yamecloud
 subjects:
 - kind: ServiceAccount
-  name: fuxi
+  name: yamecloud
 roleRef:
   kind: Role
-  name: fuxi
+  name: yamecloud
   apiGroup: dac.authorization.k8s.io

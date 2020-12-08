@@ -23,7 +23,7 @@ func NewService(service2 micro.Service, datasource k8s.Interface) self.Interface
 	}
 }
 
-func (s *Service) Run(string) error {
+func (s *Service) Run() error {
 	panic("implement me")
 }
 
