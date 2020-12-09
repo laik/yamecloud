@@ -36,26 +36,34 @@ func (u *UnstructuredExtend) Get(path string) (interface{}, error) {
 	return nil, nil
 }
 
-type ResourceLister interface {
+type IResourceService interface {
 	Get(namespace, name string) (*UnstructuredExtend, error)
 	List(namespace string, selector string) (*UnstructuredListExtend, error)
+	Apply(namespace, name string, unstructuredExtend *UnstructuredExtend) (*UnstructuredExtend, error)
 }
 
 type Interface interface {
 	List(namespace string, resource k8s.ResourceType, selector string) (*UnstructuredListExtend, error)
 	Get(namespace string, resource k8s.ResourceType, name string) (*UnstructuredExtend, error)
-	Install(k8s.ResourceType, ResourceLister)
+	Apply(namespace string, resource k8s.ResourceType, name string, unstructuredExtend *UnstructuredExtend) (*UnstructuredExtend, error)
+	Delete(namespace string, resource k8s.ResourceType, name string) error
+	Install(k8s.ResourceType, IResourceService)
 }
 
 var _ Interface = &Service{}
 
 type Service struct {
 	k8s.Interface
-	services map[k8s.ResourceType]ResourceLister
+	services map[k8s.ResourceType]IResourceService
 }
 
-func (s *Service) Install(resourceType k8s.ResourceType, r ResourceLister) {
+func (s *Service) Install(resourceType k8s.ResourceType, r IResourceService) {
 	s.services[resourceType] = r
+}
+
+func (s *Service) Apply(namespace string, resource k8s.ResourceType, name string, unstructuredExtend *UnstructuredExtend) (*UnstructuredExtend, error) {
+	u, _, err := s.Interface.Apply(namespace, resource, name, unstructuredExtend.Unstructured, false)
+	return &UnstructuredExtend{Unstructured: u}, err
 }
 
 func (s *Service) List(namespace string, resource k8s.ResourceType, selector string) (*UnstructuredListExtend, error) {
@@ -80,7 +88,7 @@ func NewService(k8sInterface k8s.Interface) *Service {
 	}
 	return &Service{
 		Interface: k8sInterface,
-		services:  make(map[k8s.ResourceType]ResourceLister),
+		services:  make(map[k8s.ResourceType]IResourceService),
 	}
 }
 
@@ -90,7 +98,15 @@ type FakeService struct {
 	Data map[string]interface{}
 }
 
-func (f *FakeService) Install(resourceType k8s.ResourceType, i ResourceLister) {
+func (f *FakeService) Delete(namespace string, resource k8s.ResourceType, name string) error {
+	panic("implement me")
+}
+
+func (f *FakeService) Apply(namespace string, resource k8s.ResourceType, name string, unstructuredExtend *UnstructuredExtend) (*UnstructuredExtend, error) {
+	panic("implement me")
+}
+
+func (f *FakeService) Install(resourceType k8s.ResourceType, i IResourceService) {
 	panic("implement me")
 }
 

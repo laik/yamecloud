@@ -29,6 +29,10 @@ func ObjectToUnstructured(object runtime.Object) (*unstructured.Unstructured, er
 	}, nil
 }
 
+func UnmarshalBytesToUnstructured(data []byte, unstructured *unstructured.Unstructured) error {
+	return json.Unmarshal(data, unstructured)
+}
+
 func UnmarshalUnstructuredList(obj *unstructured.UnstructuredList, target interface{}) error {
 	bytesData, err := json.Marshal(obj)
 	if err != nil {
@@ -37,8 +41,8 @@ func UnmarshalUnstructuredList(obj *unstructured.UnstructuredList, target interf
 	return json.Unmarshal(bytesData, target)
 }
 
-func UnmarshalUnstructured(obj *unstructured.Unstructured, target interface{}) error {
-	bytesData, err := json.Marshal(obj)
+func UnmarshalUnstructured(unstructured *unstructured.Unstructured, target interface{}) error {
+	bytesData, err := json.Marshal(unstructured)
 	if err != nil {
 		return err
 	}

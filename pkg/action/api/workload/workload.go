@@ -1,18 +1,32 @@
 package workload
 
 import (
+	"fmt"
 	"github.com/yametech/yamecloud/pkg/action/api"
-	"github.com/yametech/yamecloud/pkg/action/service/dac"
 )
 
-type Workload struct {
+type ServerImpl struct {
+	name string
 	*api.Server
-	clusterRole *dac.ClusterRole
 }
 
-func NewWorkloadServer(server *api.Server, clusterRole *dac.ClusterRole) *Workload {
-	return &Workload{
-		Server:      server,
-		clusterRole: clusterRole,
+func NewWorkloadServer(serviceName string, server *api.Server) *ServerImpl {
+	serverImpl := &ServerImpl{
+		name:   serviceName,
+		Server: server,
 	}
+	group := serverImpl.Group(fmt.Sprintf("/%s", serviceName))
+
+	// clusterRole
+	{
+		group.GET("/apis/rbac.authorization.k8s.io/v1/clusterroles", serverImpl.ListClusterRole)
+		group.GET("/apis/rbac.authorization.k8s.io/v1/namespaces/:namespace/clusterroles/:name", serverImpl.GetClusterRole)
+		group.POST("/apis/rbac.authorization.k8s.io/v1/clusterroles", serverImpl.ApplyClusterRole)
+	}
+
+	return serverImpl
+}
+
+func (s *ServerImpl) Name() string {
+	return s.name
 }

@@ -5,12 +5,14 @@ import (
 	"github.com/yametech/yamecloud/pkg/k8s"
 )
 
+var _ service.IResourceService = &ClusterRole{}
+
 type ClusterRole struct {
 	service.Interface
 }
 
 func NewClusterRole(svcInterface service.Interface) *ClusterRole {
-	clusterRole := &ClusterRole{svcInterface}
+	clusterRole := &ClusterRole{Interface: svcInterface}
 	svcInterface.Install(k8s.ClusterRole, clusterRole)
 	return clusterRole
 }
@@ -29,4 +31,12 @@ func (c *ClusterRole) List(namespace string, selector string) (*service.Unstruct
 		return nil, err
 	}
 	return list, nil
+}
+
+func (c *ClusterRole) Apply(namespace, name string, unstructuredExtend *service.UnstructuredExtend) (*service.UnstructuredExtend, error) {
+	item, err := c.Interface.Apply(namespace, k8s.ClusterRole, name, unstructuredExtend)
+	if err != nil {
+		return nil, err
+	}
+	return item, nil
 }

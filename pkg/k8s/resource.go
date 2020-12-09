@@ -73,12 +73,12 @@ const (
 )
 
 type IGVRMaps interface {
-	List(include ...string) []Resource
+	Subscribe(include ...string) []Resource
 }
 
 type groupVersionCollection map[ResourceType]schema.GroupVersionResource
 
-func (c *groupVersionCollection) List(include ...string) []Resource {
+func (c *groupVersionCollection) Subscribe(include ...string) []Resource {
 	result := make([]Resource, 0)
 	for key, value := range *c {
 		if len(include) == 0 {
