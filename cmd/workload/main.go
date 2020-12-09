@@ -13,6 +13,10 @@ import (
 	"github.com/yametech/yamecloud/pkg/k8s/types"
 )
 
+/*
+export MICRO_SERVER_ADDRESS=0.0.0.0:8080
+*/
+
 const serviceName = "workload"
 const version = "latest"
 

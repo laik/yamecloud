@@ -1,29 +1,12 @@
 package configure
 
 import (
-	"flag"
-	"fmt"
 	"github.com/yametech/yamecloud/common"
 	"github.com/yametech/yamecloud/pkg/k8s"
 	"github.com/yametech/yamecloud/pkg/k8s/client"
 	dynclient "k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 )
-
-const (
-	// InCluster when deploying in k8s, use this option
-	InCluster = "InCluster"
-	// Default when deploying in non k8s, use this option and the is default option
-	Default = "Default"
-)
-
-var RuntimeMode = Default
-
-var inCluster bool = false
-
-func init() {
-	flag.BoolVar(&inCluster, "in_cluster", false, "-in_cluster true")
-}
 
 // InstallConfigure
 type InstallConfigure struct {
@@ -44,16 +27,15 @@ func NewInstallConfigure(resLister k8s.ResourceLister) (*InstallConfigure, error
 		err          error
 	)
 
-	switch RuntimeMode {
-	case Default:
-		dynInterface, resetConfig, err = client.BuildClientSet(*common.KubeConfig)
-	case InCluster:
+	if common.InCluster {
 		_, resetConfig, err = client.CreateInClusterConfig()
 		if err != nil {
 			return nil, err
 		}
-	default:
-		return nil, fmt.Errorf("not define the runtime mode")
+	}
+
+	if resetConfig == nil {
+		dynInterface, resetConfig, err = client.BuildClientSet(*common.KubeConfig)
 	}
 
 	cacheInformerFactory, err := client.NewCacheInformerFactory(resLister, resetConfig)

@@ -1,24 +1,24 @@
 #apiVersion: apps/v1
 #kind: Deployment
 #metadata:
-#  name: fuxi
+#  name: yamecloud
 #spec:
 #  replicas: 1
 #  selector:
 #    matchLabels:
-#      name: fuxi
+#      name: yamecloud
 #  template:
 #    metadata:
 #      labels:
-#        name: fuxi
+#        name: yamecloud
 #    spec:
-#      serviceAccountName: fuxi
+#      serviceAccountName: yamecloud
 #      containers:
-#        - name: fuxi
+#        - name: yamecloud
 #          # Replace this with the built image name
 #          image: REPLACE_IMAGE
 #          command:
-#          - fuxi
+#          - yamecloud
 #          imagePullPolicy: Always
 #          env:
 #            - name: WATCH_NAMESPACE
@@ -30,4 +30,4 @@
 #                fieldRef:
 #                  fieldPath: metadata.name
 #            - name: OPERATOR_NAME
-#              value: "fuxi"
+#              value: "yamecloud"

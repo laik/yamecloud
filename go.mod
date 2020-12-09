@@ -7,7 +7,8 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/gin-gonic/gin v1.6.3
 	github.com/micro/cli v0.2.0
-	github.com/micro/go-micro v1.16.0
+	github.com/micro/go-micro v1.18.0
+	github.com/micro/go-plugins/registry/kubernetes v0.0.0-20200119172437-4fe21aa238fd
 	github.com/micro/micro v1.16.0
 	github.com/tidwall/gjson v1.6.3
 	github.com/tidwall/sjson v1.1.2
