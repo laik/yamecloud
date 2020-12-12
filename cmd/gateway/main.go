@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/yametech/yamecloud/pkg/action/api"
-	"github.com/yametech/yamecloud/pkg/action/api/workload"
+	"github.com/yametech/yamecloud/pkg/action/api/gateway"
 	"github.com/yametech/yamecloud/pkg/action/service"
 	"github.com/yametech/yamecloud/pkg/configure"
 	"github.com/yametech/yamecloud/pkg/install"
@@ -21,7 +21,10 @@ const serviceName = "workload"
 const version = "latest"
 
 var subscribeList = k8s.GVRMaps.Subscribe(
-	k8s.ClusterRole,
+	k8s.BaseDepartment,
+	k8s.BaseRole,
+	k8s.Role,
+	k8s.BaseUser,
 )
 
 func main() {
@@ -34,13 +37,14 @@ func main() {
 
 	_datasource := datasource.NewInterface(config)
 	apiServer := api.NewServer(service.NewService(_datasource))
-	apiServer.SetExtends(workload.NewApiServer(serviceName, apiServer))
+	apiServer.SetExtends(gateway.NewGatewayServer(serviceName, apiServer))
 
-	microService, err := install.WebServiceInstall(serviceName, version, _datasource, apiServer)
+	gatewayService, err := install.GatewayInstall(_datasource, apiServer)
 	if err != nil {
 		panic(fmt.Sprintf("web service install error %s", err))
 	}
-	if err := microService.Run(); err != nil {
+
+	if err := gatewayService.Run(); err != nil {
 		panic(err)
 	}
 }

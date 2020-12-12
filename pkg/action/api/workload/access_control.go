@@ -10,7 +10,7 @@ import (
 )
 
 // Get ClusterRole
-func (s *ServerImpl) GetClusterRole(g *gin.Context) {
+func (s *ApiServer) GetClusterRole(g *gin.Context) {
 	name := g.Param("name")
 	if name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
@@ -25,7 +25,7 @@ func (s *ServerImpl) GetClusterRole(g *gin.Context) {
 }
 
 // Subscribe ClusterRole
-func (s *ServerImpl) ListClusterRole(g *gin.Context) {
+func (s *ApiServer) ListClusterRole(g *gin.Context) {
 	list, err := s.ClusterRole.List(g.Param("namespace"), g.Param("selector"))
 	if err != nil {
 		common.InternalServerError(g, "", err)
@@ -35,7 +35,7 @@ func (s *ServerImpl) ListClusterRole(g *gin.Context) {
 }
 
 // Update or Create ClusterRole
-func (s *ServerImpl) ApplyClusterRole(g *gin.Context) {
+func (s *ApiServer) ApplyClusterRole(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {

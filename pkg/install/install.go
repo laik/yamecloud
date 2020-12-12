@@ -13,8 +13,8 @@ import (
 
 const nameNormal = "go.micro.api.%s"
 
-func GatewayInstall(datasource k8s.Interface, handlers ...http.Handler) (microservice.Interface, error) {
-	if err := gateway.NewMicroGateway(handlers...); err != nil {
+func GatewayInstall(datasource k8s.Interface, handler http.Handler) (microservice.Interface, error) {
+	if err := gateway.NewMicroGateway(handler); err != nil {
 		return nil, err
 	}
 	return gateway.NewGateway(datasource), nil

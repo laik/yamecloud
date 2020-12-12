@@ -19,7 +19,8 @@ func (s *Server) SetExtends(e Extends) { s.Extends = e }
 
 func NewServer(p service.Interface) *Server {
 	engine := gin.New()
-	engine.Use()
+	engine.Use([]gin.HandlerFunc{gin.Logger(), gin.Recovery()}...)
+
 	return &Server{
 		Engine:    engine,
 		Interface: p,
