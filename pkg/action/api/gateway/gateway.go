@@ -24,7 +24,9 @@ func NewGatewayServer(serviceName string, server *api.Server) *gatewayServer {
 		// action service
 		BaseDepartment: tenant.NewBaseDepartment(server.Interface),
 	}
-	server.GET("/user-login", gatewayServer.login)
+	server.GET("/user-login", gatewayServer.userLogin)
+	server.GET("/config", gatewayServer.userConfig)
+
 	return gatewayServer
 }
 
@@ -33,11 +35,12 @@ type User struct {
 	Password string `json:"password"`
 }
 
-func (gw *gatewayServer) any(g *gin.Context) {
+func (gw *gatewayServer) userConfig(g *gin.Context) {
+
 	g.JSON(http.StatusOK, nil)
 }
 
-func (gw *gatewayServer) login(g *gin.Context) {
+func (gw *gatewayServer) userLogin(g *gin.Context) {
 	user := &User{}
 	if err := g.ShouldBindJSON(user); err != nil {
 		common.RequestParametersError(g, err)

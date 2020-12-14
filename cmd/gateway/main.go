@@ -20,10 +20,10 @@ export MICRO_SERVER_ADDRESS=0.0.0.0:8080
 const serviceName = "gateway"
 
 var subscribeList = k8s.GVRMaps.Subscribe(
-	k8s.BaseDepartment,
+	k8s.BaseTenant,
 	k8s.BaseRole,
-	k8s.Role,
 	k8s.BaseUser,
+	k8s.BaseRoleUser,
 )
 
 func main() {
@@ -40,7 +40,7 @@ func main() {
 
 	gatewayService, err := install.GatewayInstall(_datasource, apiServer)
 	if err != nil {
-		panic(fmt.Sprintf("web service install error %s", err))
+		panic(fmt.Sprintf("gateway service install error %s", err))
 	}
 
 	if err := gatewayService.Run(); err != nil {

@@ -21,19 +21,22 @@ const (
 	period = 30 * time.Second
 )
 
-var SharedCacheInformerFactory *CacheInformerFactory
+var sharedCacheInformerFactory *CacheInformerFactory
 
-func BuildClientSet(path string) (client.Interface, *rest.Config, error) {
-	config, err := clientcmd.BuildConfigFromFlags("", path)
+func BuildClientSet(path string) (*kubernetes.Clientset, client.Interface, *rest.Config, error) {
+	restConfig, err := clientcmd.BuildConfigFromFlags("", path)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
-	cli, err := dynamic.NewForConfig(config)
+	cli, err := dynamic.NewForConfig(restConfig)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
-
-	return cli, config, nil
+	clientSet, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	return clientSet, cli, restConfig, nil
 }
 
 func buildDynamicClientFromRest(clientCfg *rest.Config) (client.Interface, error) {
@@ -49,34 +52,32 @@ func buildDynamicClientFromRest(clientCfg *rest.Config) (client.Interface, error
 type CacheInformerFactory struct {
 	Interface client.Interface
 	Informer  informers.DynamicSharedInformerFactory
+	Clientset *kubernetes.Clientset
 	stopChan  chan struct{}
 }
 
-func NewCacheInformerFactory(resLister k8s.ResourceLister, restConf *rest.Config) (*CacheInformerFactory, error) {
-	if SharedCacheInformerFactory != nil {
-		return SharedCacheInformerFactory, nil
+func NewCacheInformerFactory(resLister k8s.ResourceLister, restConf *rest.Config, clientset *kubernetes.Clientset) (*CacheInformerFactory, error) {
+	if sharedCacheInformerFactory != nil {
+		return sharedCacheInformerFactory, nil
 	}
-
 	_client, err := buildDynamicClientFromRest(restConf)
 	if err != nil {
 		return nil, err
 	}
-
 	stop := make(chan struct{})
 	sharedInformerFactory := informers.NewDynamicSharedInformerFactory(_client, period)
-
 	resLister.Ranges(sharedInformerFactory, stop)
-
 	sharedInformerFactory.Start(stop)
 
-	SharedCacheInformerFactory =
+	sharedCacheInformerFactory =
 		&CacheInformerFactory{
-			_client,
-			sharedInformerFactory,
-			stop,
+			Interface: _client,
+			Informer:  sharedInformerFactory,
+			Clientset: clientset,
+			stopChan:  stop,
 		}
 
-	return SharedCacheInformerFactory, nil
+	return sharedCacheInformerFactory, nil
 }
 
 func CreateInClusterConfig() (*kubernetes.Clientset, *rest.Config, error) {

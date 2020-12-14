@@ -5,6 +5,7 @@ import (
 	"github.com/yametech/yamecloud/pkg/k8s"
 	"github.com/yametech/yamecloud/pkg/k8s/client"
 	dynclient "k8s.io/client-go/dynamic"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
 
@@ -14,8 +15,10 @@ type InstallConfigure struct {
 	*rest.Config
 	// k8s CacheInformerFactory
 	*client.CacheInformerFactory
-	// k8s client
+	// k8s dyc client
 	dynclient.Interface
+	// Clientset
+	*kubernetes.Clientset
 	// ResourceLister resource lister
 	k8s.ResourceLister
 }
@@ -24,6 +27,7 @@ func NewInstallConfigure(resLister k8s.ResourceLister) (*InstallConfigure, error
 	var (
 		dynInterface dynclient.Interface
 		resetConfig  *rest.Config
+		clientSet    *kubernetes.Clientset
 		err          error
 	)
 
@@ -35,21 +39,20 @@ func NewInstallConfigure(resLister k8s.ResourceLister) (*InstallConfigure, error
 	}
 
 	if resetConfig == nil {
-		dynInterface, resetConfig, err = client.BuildClientSet(*common.KubeConfig)
+		clientSet, dynInterface, resetConfig, err = client.BuildClientSet(*common.KubeConfig)
 	}
 
-	cacheInformerFactory, err := client.NewCacheInformerFactory(resLister, resetConfig)
+	cacheInformerFactory, err := client.NewCacheInformerFactory(resLister, resetConfig, clientSet)
 	if err != nil {
 		return nil, err
 	}
 
 	installConfigure := &InstallConfigure{
-		CacheInformerFactory: cacheInformerFactory,
-
-		ResourceLister: resLister,
-
 		Interface: dynInterface,
 		Config:    resetConfig,
+
+		ResourceLister:       resLister,
+		CacheInformerFactory: cacheInformerFactory,
 	}
 
 	return installConfigure, nil

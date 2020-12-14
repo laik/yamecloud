@@ -2,7 +2,7 @@ package gateway
 
 import "encoding/json"
 
-type UserConfig struct {
+type userConfig struct {
 	LensVersion       string   `json:"lensVersion"`
 	LensTheme         string   `json:"lensTheme"`
 	UserName          string   `json:"userName"`
@@ -15,23 +15,24 @@ type UserConfig struct {
 	DefaultNamespace  string   `json:"defaultNamespace"`
 }
 
-func (uc *UserConfig) String() string {
+func (uc *userConfig) String() string {
 	bytesData, _ := json.Marshal(uc)
 	return string(bytesData)
 }
 
-func NewUserConfig(user string, token string, allowedNamespaces []string, defaultNamespace string) *UserConfig {
+func NewUserConfig(user string, token string, allowedNamespaces []string, defaultNamespace string) *userConfig {
 	isClusterAdmin := false
 	if user == "admin" {
 		isClusterAdmin = true
 	}
-	return &UserConfig{
+	return &userConfig{
 		LensVersion:       "1.0",
 		LensTheme:         "",
 		UserName:          user,
 		Token:             token,
 		AllowedNamespaces: allowedNamespaces,
 		IsClusterAdmin:    isClusterAdmin,
+		IsTenantOwner:     true,
 		ChartEnable:       true,
 		KubectlAccess:     true,
 		DefaultNamespace:  defaultNamespace,
