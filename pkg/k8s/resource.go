@@ -35,22 +35,29 @@ const (
 	ClusterRole              ResourceType = "clusterroles"
 	RoleBinding              ResourceType = "rolebindings"
 	Namespace                ResourceType = "namesapces"
-	FormRender               ResourceType = "formrenders"
+	PodSecurityPolicie       ResourceType = "podsecuritypolicies"
 	ClusterRoleBinding       ResourceType = "clusterrolebindings"
-	WorkloadsTemplate        ResourceType = "workloads"
 	Endpoint                 ResourceType = "endpoints"
-	Page                     ResourceType = "pages"
-	Form                     ResourceType = "forms"
-	Field                    ResourceType = "fields"
-	BaseDepartment           ResourceType = "basedepartments"
-	//BasePermission           ResourceType = "basepermissions"
-	BaseRole           ResourceType = "baseroles"
-	BaseUser           ResourceType = "baseusers"
-	PodSecurityPolicie ResourceType = "podsecuritypolicies"
-	BaseRoleUser       ResourceType = "baseroleusers"
-	IP                 ResourceType = "ips"
-	SubNet             ResourceType = "subnets"
 
+	// deployment resource workload template for CaaS
+	WorkloadsTemplate ResourceType = "workloads"
+
+	// form render
+	FormRender ResourceType = "formrenders"
+	Page       ResourceType = "pages"
+	Form       ResourceType = "forms"
+	Field      ResourceType = "fields"
+
+	// tenant for PaaS
+	BaseDepartment ResourceType = "basedepartments"
+	BaseTenant     ResourceType = "basedtenants"
+	BaseRole       ResourceType = "baseroles"
+	BaseUser       ResourceType = "baseusers"
+	BaseRoleUser   ResourceType = "baseroleusers"
+
+	// network for container ovn/ovs control plant
+	IP                          ResourceType = "ips"
+	SubNet                      ResourceType = "subnets"
 	NetworkAttachmentDefinition ResourceType = "network-attachment-definitions"
 
 	//tekton

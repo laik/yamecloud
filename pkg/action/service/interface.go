@@ -46,6 +46,7 @@ type Interface interface {
 	List(namespace string, resource k8s.ResourceType, selector string) (*UnstructuredListExtend, error)
 	Get(namespace string, resource k8s.ResourceType, name string) (*UnstructuredExtend, error)
 	Apply(namespace string, resource k8s.ResourceType, name string, unstructuredExtend *UnstructuredExtend) (*UnstructuredExtend, error)
+	ForceUpdate(namespace string, resource k8s.ResourceType, name string, unstructuredExtend *UnstructuredExtend) (*UnstructuredExtend, error)
 	Delete(namespace string, resource k8s.ResourceType, name string) error
 	Install(k8s.ResourceType, IResourceService)
 }
@@ -63,6 +64,11 @@ func (s *Service) Install(resourceType k8s.ResourceType, r IResourceService) {
 
 func (s *Service) Apply(namespace string, resource k8s.ResourceType, name string, unstructuredExtend *UnstructuredExtend) (*UnstructuredExtend, error) {
 	u, _, err := s.Interface.Apply(namespace, resource, name, unstructuredExtend.Unstructured, false)
+	return &UnstructuredExtend{Unstructured: u}, err
+}
+
+func (s *Service) ForceUpdate(namespace string, resource k8s.ResourceType, name string, unstructuredExtend *UnstructuredExtend) (*UnstructuredExtend, error) {
+	u, _, err := s.Interface.Apply(namespace, resource, name, unstructuredExtend.Unstructured, true)
 	return &UnstructuredExtend{Unstructured: u}, err
 }
 
@@ -96,6 +102,10 @@ var _ Interface = &FakeService{}
 
 type FakeService struct {
 	Data map[string]interface{}
+}
+
+func (f *FakeService) ForceUpdate(namespace string, resource k8s.ResourceType, name string, unstructuredExtend *UnstructuredExtend) (*UnstructuredExtend, error) {
+	panic("implement me")
 }
 
 func (f *FakeService) Delete(namespace string, resource k8s.ResourceType, name string) error {

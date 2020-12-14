@@ -17,8 +17,7 @@ import (
 export MICRO_SERVER_ADDRESS=0.0.0.0:8080
 */
 
-const serviceName = "workload"
-const version = "latest"
+const serviceName = "gateway"
 
 var subscribeList = k8s.GVRMaps.Subscribe(
 	k8s.BaseDepartment,

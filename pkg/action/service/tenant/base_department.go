@@ -26,9 +26,25 @@ func (b *BaseDepartment) Get(namespace, name string) (*service.UnstructuredExten
 }
 
 func (b *BaseDepartment) List(namespace string, selector string) (*service.UnstructuredListExtend, error) {
-	panic("implement me")
+	list, err := b.Interface.List(namespace, k8s.BaseDepartment, selector)
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
 }
 
 func (b *BaseDepartment) Apply(namespace, name string, unstructuredExtend *service.UnstructuredExtend) (*service.UnstructuredExtend, error) {
-	panic("implement me")
+	item, err := b.Interface.Apply(namespace, k8s.BaseDepartment, name, unstructuredExtend)
+	if err != nil {
+		return nil, err
+	}
+	return item, nil
+}
+
+func (b *BaseDepartment) Delete(namespace, name string) error {
+	err := b.Interface.Delete(namespace, k8s.BaseDepartment, name)
+	if err != nil {
+		return err
+	}
+	return nil
 }

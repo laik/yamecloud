@@ -44,7 +44,8 @@ func (s *Gateway) Handle(pattern string, handler http.Handler) self.Interface {
 
 func NewMicroGateway(handler http.Handler) error {
 	handlerWrappers := []plugin.Handler{
-		Filter(handler),
+		filter(handler),
+		Wrapper(cors(handler)),
 	}
 	if err := plugin.Register(plugin.NewPlugin(plugin.WithHandler(handlerWrappers...))); err != nil {
 		return err
