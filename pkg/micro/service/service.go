@@ -16,10 +16,10 @@ type Service struct {
 	micro.Service
 }
 
-func NewService(service2 micro.Service, datasource k8s.Interface) self.Interface {
+func NewService(service micro.Service, datasource k8s.Interface) self.Interface {
 	return &Service{
 		datasource,
-		service2,
+		service,
 	}
 }
 

@@ -13,26 +13,26 @@ type Interface interface {
 	HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) Interface
 }
 
-var _ Interface = &DefaultService{}
+var _ Interface = &FakeService{}
 
-type DefaultService struct{}
+type FakeService struct{}
 
-func (d DefaultService) HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) Interface {
+func (d FakeService) HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) Interface {
 	panic("implement me")
 }
 
-func (d DefaultService) Run() error {
+func (d FakeService) Run() error {
 	panic("implement me")
 }
 
-func (d DefaultService) Name() string {
+func (d FakeService) Name() string {
 	panic("implement me")
 }
 
-func (d DefaultService) DataSource() k8s.Interface {
+func (d FakeService) DataSource() k8s.Interface {
 	panic("implement me")
 }
 
-func (d DefaultService) Handle(pattern string, handler http.Handler) Interface {
+func (d FakeService) Handle(pattern string, handler http.Handler) Interface {
 	panic("implement me")
 }

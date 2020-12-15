@@ -24,8 +24,20 @@ func NewGatewayServer(serviceName string, server *api.Server) *gatewayServer {
 		// action service
 		BaseDepartment: tenant.NewBaseDepartment(server.Interface),
 	}
-	server.GET("/user-login", gatewayServer.userLogin)
-	server.GET("/config", gatewayServer.userConfig)
+
+	server.Any("/*any", func(g *gin.Context) {
+		if g.Request.RequestURI == "/user-login" {
+			gatewayServer.userLogin(g)
+			return
+		}
+
+		if g.Request.RequestURI == "/config" {
+			gatewayServer.userConfig(g)
+			return
+		}
+
+		g.JSON(http.StatusOK, nil)
+	})
 
 	return gatewayServer
 }
