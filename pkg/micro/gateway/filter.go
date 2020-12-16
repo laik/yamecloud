@@ -40,6 +40,7 @@ func filter(self http.Handler) plugin.Handler {
 
 			// all uri access authorization certainty
 			self.ServeHTTP(w, r)
+
 			// other uri redirect to backend service
 			redirect.ServeHTTP(w, r)
 		})

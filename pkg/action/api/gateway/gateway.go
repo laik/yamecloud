@@ -35,8 +35,6 @@ func NewGatewayServer(serviceName string, server *api.Server) *gatewayServer {
 			gatewayServer.userConfig(g)
 			return
 		}
-
-		g.JSON(http.StatusOK, nil)
 	})
 
 	return gatewayServer
