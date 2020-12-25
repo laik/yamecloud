@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/yametech/yamecloud/pkg/action/api"
-	"github.com/yametech/yamecloud/pkg/action/api/network"
+	"github.com/yametech/yamecloud/pkg/action/api/accesscontrol"
 	"github.com/yametech/yamecloud/pkg/action/service"
 	"github.com/yametech/yamecloud/pkg/configure"
 	"github.com/yametech/yamecloud/pkg/install"
@@ -17,7 +17,7 @@ import (
 export MICRO_SERVER_ADDRESS=0.0.0.0:8080
 */
 
-const serviceName = "network"
+const serviceName = "accesscontrol"
 const version = "latest"
 
 var subscribeList = k8s.GVRMaps.Subscribe(
@@ -34,7 +34,7 @@ func main() {
 
 	_datasource := datasource.NewInterface(config)
 	apiServer := api.NewServer(service.NewService(_datasource))
-	apiServer.SetExtends(network.NewNetworkServer(serviceName, apiServer))
+	apiServer.SetExtends(accesscontrol.NewApiServer(serviceName, apiServer))
 
 	microService, err := install.WebServiceInstall(serviceName, version, _datasource, apiServer)
 	if err != nil {
