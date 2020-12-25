@@ -10,7 +10,7 @@ func Test_ClusterRoleList(t *testing.T) {
 	expected := &service.UnstructuredListExtend{}
 	fakeService := service.NewFakeService()
 	cr := &ClusterRole{fakeService}
-	ule, err := cr.List("", "app=123")
+	ule, err := cr.List("", "apps=123")
 	if err != nil {
 		t.Fatal(err)
 	}

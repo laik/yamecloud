@@ -119,7 +119,7 @@ func (d *dataSource) Delete(namespace string, resourceType k8s.ResourceType, nam
 }
 
 func (d *dataSource) Patch(namespace string, resourceType k8s.ResourceType, name string, data []byte) (result *unstructured.Unstructured, err error) {
-	err = retry.RetryOnConflict(retry.DefaultRetry, func() error {
+	err = retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 		gvr, err := d.ResourceLister.GroupVersionResource(resourceType)
 		if err != nil {
 			return err
