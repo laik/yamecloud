@@ -2,11 +2,9 @@ package utils
 
 import (
 	"encoding/json"
-	"github.com/tidwall/sjson"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"reflect"
-	"sort"
 )
 
 func UnmarshalObject(object runtime.Object, target interface{}) error {
@@ -45,45 +43,17 @@ func CompareSpecByUnstructured(source, target *unstructured.Unstructured) bool {
 	return true
 }
 
-func ContainStringItem(list []string, item string) bool {
-	if sort.SearchStrings(list, item) == len(list) {
-		return false
-	}
-	return true
-}
-
 func CloneNewObject(src *unstructured.Unstructured) (*unstructured.Unstructured, error) {
-	bytes, err := src.MarshalJSON()
-	if err != nil {
-		return nil, err
+	for _, key := range []string{
+		"metadata.creationTimestamp",
+		"metadata.generation",
+		"metadata.managedFields",
+		"metadata.resourceVersion",
+		"metadata.selfLink",
+		"metadata.uid",
+		"status",
+	} {
+		Delete(src.Object, key)
 	}
-
-	delete := func(res string, paths []string) (string, error) {
-		var err error
-		for _, path := range paths {
-			res, err = sjson.Delete(res, path)
-			if err != nil {
-				return "", err
-			}
-		}
-		return res, nil
-	}
-
-	dest, err := delete(string(bytes),
-		[]string{
-			"metadata.creationTimestamp",
-			"metadata.generation",
-			"metadata.managedFields",
-			"metadata.resourceVersion",
-			"metadata.selfLink",
-			"metadata.uid",
-			"status",
-		})
-
-	obj := make(map[string]interface{})
-	if err := json.Unmarshal([]byte(dest), &obj); err != nil {
-		return nil, err
-	}
-
-	return &unstructured.Unstructured{Object: obj}, nil
+	return src, nil
 }

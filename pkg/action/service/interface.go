@@ -2,9 +2,8 @@ package service
 
 import (
 	"fmt"
-	"github.com/tidwall/gjson"
-	"github.com/tidwall/sjson"
 	"github.com/yametech/yamecloud/pkg/k8s"
+	"github.com/yametech/yamecloud/pkg/utils"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"strconv"
 	"strings"
@@ -22,7 +21,7 @@ type UnstructuredListExtend struct {
 	*unstructured.UnstructuredList
 }
 
-// ul.Set("0.metadata.labels","abc","merge/replace")
+// ul.Set("0.metadata.labels","abc")
 func (ul *UnstructuredListExtend) Set(path string, value interface{}) error {
 	pathList := strings.Split(path, ".")
 	if len(pathList) < 1 {
@@ -35,14 +34,9 @@ func (ul *UnstructuredListExtend) Set(path string, value interface{}) error {
 	if uint64(len(ul.Items)-1) > index {
 		return fmt.Errorf("not found index %d item", index)
 	}
-	_bytes, err := ul.Items[index].MarshalJSON()
-	if err != nil {
-		return err
-	}
-	_, err = sjson.Set(string(_bytes), strings.TrimPrefix(path, fmt.Sprintf("%d.", index)), value)
-	if err != nil {
-		return err
-	}
+
+	utils.Set(ul.Items[index].Object, strings.TrimPrefix(path, fmt.Sprintf("%d.", index)), value)
+
 	return nil
 }
 
@@ -59,20 +53,8 @@ func (ul *UnstructuredListExtend) Get(path string) (interface{}, error) {
 	if uint64(len(ul.Items)-1) > index {
 		return nil, fmt.Errorf("not found index %d item", index)
 	}
-	_bytes, err := ul.Items[index].MarshalJSON()
-	if err != nil {
-		return nil, err
-	}
-	result := gjson.Get(string(_bytes), strings.TrimPrefix(path, fmt.Sprintf("%d.", index)))
-	switch result.Type {
-	case gjson.Null:
-		return nil, nil
-	case gjson.JSON:
-		return result.String(), nil
-	case gjson.True:
-		return true, nil
-	}
-	return nil, fmt.Errorf("not value on path")
+
+	return utils.Get(ul.Items[index].Object, strings.TrimPrefix(path, fmt.Sprintf("%d.", index))), nil
 }
 
 type UnstructuredExtend struct {
@@ -81,33 +63,13 @@ type UnstructuredExtend struct {
 
 // u.Set("metadata.labels","abc","merge/replace")
 func (u *UnstructuredExtend) Set(path string, value interface{}) error {
-	_bytes, err := u.MarshalJSON()
-	if err != nil {
-		return err
-	}
-	_, err = sjson.Set(string(_bytes), path, value)
-	if err != nil {
-		return err
-	}
+	utils.Set(u.Object, path, value)
 	return nil
 }
 
 // u.Get("metadata.name")
 func (u *UnstructuredExtend) Get(path string) (interface{}, error) {
-	_bytes, err := u.MarshalJSON()
-	if err != nil {
-		return nil, err
-	}
-	result := gjson.Get(string(_bytes), path)
-	switch result.Type {
-	case gjson.Null:
-		return nil, nil
-	case gjson.JSON:
-		return result.String(), nil
-	case gjson.True:
-		return true, nil
-	}
-	return nil, fmt.Errorf("not value on path")
+	return utils.Get(u.Object, path), nil
 }
 
 type IResourceService interface {

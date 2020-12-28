@@ -20,7 +20,7 @@ export MICRO_SERVER_ADDRESS=0.0.0.0:8080
 const serviceName = "gateway"
 
 var subscribeList = k8s.GVRMaps.Subscribe(
-	k8s.BaseTenant,
+	//k8s.BaseTenant,
 	k8s.BaseRole,
 	k8s.BaseUser,
 	k8s.BaseRoleUser,
