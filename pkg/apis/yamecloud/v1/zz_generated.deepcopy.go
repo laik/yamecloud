@@ -371,16 +371,16 @@ func (in *BaseTenantSpec) DeepCopyInto(out *BaseTenantSpec) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.Password != nil {
-		in, out := &in.Password, &out.Password
-		*out = new(string)
-		**out = **in
-	}
-	if in.Roles != nil {
-		in, out := &in.Roles, &out.Roles
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
+	//if in.Password != nil {
+	//	in, out := &in.Password, &out.Password
+	//	*out = new(string)
+	//	**out = **in
+	//}
+	//if in.Roles != nil {
+	//	in, out := &in.Roles, &out.Roles
+	//	*out = make([]string, len(*in))
+	//	copy(*out, *in)
+	//}
 	return
 }
 

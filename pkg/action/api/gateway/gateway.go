@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/yametech/yamecloud/pkg/action/api"
 	"github.com/yametech/yamecloud/pkg/action/api/common"
-	"github.com/yametech/yamecloud/pkg/action/service/tenant"
 	"net/http"
 )
 
@@ -12,7 +11,7 @@ type gatewayServer struct {
 	name string
 	*api.Server
 	// action services
-	*tenant.BaseDepartment
+	loginHandle *LoginHandle
 }
 
 func (gw *gatewayServer) Name() string { return gw.name }
@@ -22,8 +21,9 @@ func NewGatewayServer(serviceName string, server *api.Server) *gatewayServer {
 		name:   serviceName,
 		Server: server,
 		// action service
-		BaseDepartment: tenant.NewBaseDepartment(server.Interface),
+		loginHandle: NewLoginHandle(server.Interface),
 	}
+	server.Use(Authorize())
 
 	server.Any("/*any", func(g *gin.Context) {
 		if g.Request.RequestURI == "/user-login" {
@@ -56,5 +56,14 @@ func (gw *gatewayServer) userLogin(g *gin.Context) {
 		common.RequestParametersError(g, err)
 		return
 	}
-	g.JSON(http.StatusOK, nil)
+	bytes, err := gw.loginHandle.Auth(user)
+	if err != nil {
+		g.JSON(http.StatusOK, gin.H{"msg": "账号或密码错误"})
+		return
+	}
+	if bytes == nil {
+		g.JSON(http.StatusOK, gin.H{"msg": "账号或密码错误"})
+		return
+	}
+	g.JSON(http.StatusOK, bytes)
 }
