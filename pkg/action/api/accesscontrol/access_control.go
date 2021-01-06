@@ -6,19 +6,19 @@ import (
 	"github.com/yametech/yamecloud/pkg/action/service/dac"
 )
 
-type ApiServer struct {
+type accessControlServer struct {
 	name string
 	*api.Server
 	// action services
 	*dac.ClusterRole
 }
 
-func (s *ApiServer) Name() string {
+func (s *accessControlServer) Name() string {
 	return s.name
 }
 
-func NewApiServer(serviceName string, server *api.Server) *ApiServer {
-	apiServer := &ApiServer{
+func NewApiServer(serviceName string, server *api.Server) *accessControlServer {
+	apiServer := &accessControlServer{
 		name:   serviceName,
 		Server: server,
 		// action service

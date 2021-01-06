@@ -123,11 +123,6 @@ const stoneData = `{
             "host": "node4",
             "rack": "S-02",
             "zone": "B"
-          },
-          {
-            "host": "node3",
-            "rack": "W-01",
-            "zone": "B"
           }
         ]
       }
@@ -181,4 +176,77 @@ const stoneData = `{
     "replicas": 1,
     "statefulset": 1
   }
+}`
+
+const ipListData = `
+{
+    "apiVersion": "kubeovn.io/v1",
+    "kind": "IPList",
+    "metadata": {
+        "continue": "",
+        "resourceVersion": "148628130",
+        "selfLink": "/apis/kubeovn.io/v1/ips"
+    },
+    "items": [
+        {
+            "apiVersion": "kubeovn.io/v1",
+            "kind": "IP",
+            "metadata": {
+                "creationTimestamp": "2020-11-27T01:52:40Z",
+                "generation": 1,
+                "labels": {
+                    "ovn-default": "",
+                    "ovn.kubernetes.io/subnet": "ovn-default"
+                },
+                "managedFields": [
+                    {
+                        "apiVersion": "kubeovn.io/v1",
+                        "fieldsType": "FieldsV1",
+                        "fieldsV1": {
+                            "f:metadata": {
+                                "f:labels": {
+                                    ".": {},
+                                    "f:ovn-default": {},
+                                    "f:ovn.kubernetes.io/subnet": {}
+                                }
+                            },
+                            "f:spec": {
+                                ".": {},
+                                "f:attachIps": {},
+                                "f:attachMacs": {},
+                                "f:attachSubnets": {},
+                                "f:containerID": {},
+                                "f:ipAddress": {},
+                                "f:macAddress": {},
+                                "f:namespace": {},
+                                "f:nodeName": {},
+                                "f:podName": {},
+                                "f:subnet": {}
+                            }
+                        },
+                        "manager": "kube-ovn-daemon",
+                        "operation": "Update",
+                        "time": "2020-11-27T01:52:40Z"
+                    }
+                ],
+                "name": "apollo-portal-5bd55c697d-fqckg.apollo",
+                "resourceVersion": "125531996",
+                "selfLink": "/apis/kubeovn.io/v1/ips/apollo-portal-5bd55c697d-fqckg.apollo",
+                "uid": "755b9127-a0cf-4657-ae28-dd665dbb70c6"
+            },
+            "spec": {
+                "attachIps": [],
+                "attachMacs": [],
+                "attachSubnets": [],
+                "containerID": "4ae8dda3dcf4e2136a764122c81abbf2b885ba5e2edf2c2d163b2047092ff612",
+                "ipAddress": "10.16.15.151",
+                "macAddress": "00:00:00:3A:42:C2",
+                "namespace": "apollo",
+                "nodeName": "node2",
+                "podName": "apollo-portal-5bd55c697d-fqckg",
+                "subnet": "ovn-default"
+            }
+        }
+    ]
+
 }`

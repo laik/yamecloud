@@ -36,7 +36,7 @@ func Get(data map[string]interface{}, path string) (value interface{}) {
 }
 
 // data = {"a":{"b":{"c":123}}}
-// Delete(data,"a.b.c") = {"a":{"b":{c:""}}}
+// Delete(data,"a.b.c") = {"a":{"b":""}}
 func Delete(data map[string]interface{}, path string) {
 	head, remain := shift(path)
 	_, exist := data[head]

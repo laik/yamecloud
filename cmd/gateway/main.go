@@ -11,6 +11,8 @@ import (
 	"github.com/yametech/yamecloud/pkg/k8s"
 	"github.com/yametech/yamecloud/pkg/k8s/datasource"
 	"github.com/yametech/yamecloud/pkg/k8s/types"
+
+	_ "github.com/micro/go-plugins/registry/etcd"
 )
 
 /*

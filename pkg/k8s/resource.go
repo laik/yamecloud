@@ -58,6 +58,7 @@ const (
 	// network for container ovn/ovs control plant
 	IP                          ResourceType = "ips"
 	SubNet                      ResourceType = "subnets"
+	Vlan                        ResourceType = "vlans"
 	NetworkAttachmentDefinition ResourceType = "network-attachment-definitions"
 
 	//tekton
@@ -153,6 +154,7 @@ var GVRMaps IGVRMaps = &groupVersionCollection{
 
 	IP:     {Group: "kubeovn.io", Version: "v1", Resource: "ips"},
 	SubNet: {Group: "kubeovn.io", Version: "v1", Resource: "subnets"},
+	Vlan:   {Group: "kubeovn.io", Version: "v1", Resource: "vlans"},
 
 	NetworkAttachmentDefinition: {Group: "k8s.cni.cncf.io", Version: "v1", Resource: "network-attachment-definitions"},
 

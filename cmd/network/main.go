@@ -21,7 +21,10 @@ const serviceName = "network"
 const version = "latest"
 
 var subscribeList = k8s.GVRMaps.Subscribe(
-	k8s.ClusterRole,
+	k8s.IP,
+	k8s.SubNet,
+	k8s.NetworkAttachmentDefinition,
+	k8s.Vlan,
 )
 
 func main() {

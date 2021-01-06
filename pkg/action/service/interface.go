@@ -27,7 +27,7 @@ func (ul *UnstructuredListExtend) Set(path string, value interface{}) error {
 	if len(pathList) < 1 {
 		return nil
 	}
-	index, err := strconv.ParseUint(pathList[0], 64, 10)
+	index, err := strconv.ParseUint(pathList[0], 10, 64)
 	if err != nil {
 		return fmt.Errorf("not found index because parse index error %s", err)
 	}
@@ -46,7 +46,7 @@ func (ul *UnstructuredListExtend) Get(path string) (interface{}, error) {
 	if len(pathList) < 1 {
 		return nil, fmt.Errorf("not found index")
 	}
-	index, err := strconv.ParseUint(pathList[0], 64, 10)
+	index, err := strconv.ParseUint(pathList[0], 10, 64)
 	if err != nil {
 		return nil, fmt.Errorf("not found index because parse index error %s", err)
 	}
