@@ -38,11 +38,6 @@ func (s *serviceMeshServer) ListGateway(g *gin.Context) {
 // Update or Create Gateway
 func (s *serviceMeshServer) ApplyGateway(g *gin.Context) {
 	namespace := g.Param("namespace")
-	name := g.Param("name")
-	if namespace == "" || name == "" {
-		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
-		return
-	}
 	raw, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("get raw data error (%s)", err))
@@ -54,6 +49,7 @@ func (s *serviceMeshServer) ApplyGateway(g *gin.Context) {
 		common.RequestParametersError(g, fmt.Errorf("unmarshal from json data error (%s)", err))
 		return
 	}
+	name := _unstructured.GetName()
 	newUnstructuredExtend, err := s.Gateway.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
@@ -61,4 +57,20 @@ func (s *serviceMeshServer) ApplyGateway(g *gin.Context) {
 	}
 
 	g.JSON(http.StatusOK, newUnstructuredExtend)
+}
+
+// Delete Gateway
+func (s *serviceMeshServer) DeleteGateway(g *gin.Context) {
+	namespace := g.Param("namespace")
+	name := g.Param("name")
+	if namespace == "" || name == "" {
+		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
+		return
+	}
+	err := s.Gateway.Delete(namespace, name)
+	if err != nil {
+		common.InternalServerError(g, err, err)
+		return
+	}
+	g.JSON(http.StatusOK, nil)
 }

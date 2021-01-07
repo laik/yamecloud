@@ -37,11 +37,7 @@ func (s *serviceMeshServer) ListVirtualService(g *gin.Context) {
 // Update or Create VirtualService
 func (s *serviceMeshServer) ApplyVirtualService(g *gin.Context) {
 	namespace := g.Param("namespace")
-	name := g.Param("name")
-	if namespace == "" || name == "" {
-		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
-		return
-	}
+
 	raw, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("get raw data error (%s)", err))
@@ -53,6 +49,7 @@ func (s *serviceMeshServer) ApplyVirtualService(g *gin.Context) {
 		common.RequestParametersError(g, fmt.Errorf("unmarshal from json data error (%s)", err))
 		return
 	}
+	name := _unstructured.GetName()
 	newUnstructuredExtend, err := s.VirtualService.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
@@ -60,4 +57,20 @@ func (s *serviceMeshServer) ApplyVirtualService(g *gin.Context) {
 	}
 
 	g.JSON(http.StatusOK, newUnstructuredExtend)
+}
+
+// Delete VirtualService
+func (s *serviceMeshServer) DeleteVirtualService(g *gin.Context) {
+	namespace := g.Param("namespace")
+	name := g.Param("name")
+	if namespace == "" || name == "" {
+		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
+		return
+	}
+	err := s.VirtualService.Delete(namespace, name)
+	if err != nil {
+		common.InternalServerError(g, err, err)
+		return
+	}
+	g.JSON(http.StatusOK, nil)
 }
