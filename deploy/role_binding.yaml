@@ -3,8 +3,8 @@ apiVersion: dac.authorization.k8s.io/v1
 metadata:
   name: yamecloud
 subjects:
-- kind: ServiceAccount
-  name: yamecloud
+  - kind: ServiceAccount
+    name: yamecloud
 roleRef:
   kind: Role
   name: yamecloud

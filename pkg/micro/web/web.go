@@ -3,7 +3,6 @@ package web
 import (
 	"github.com/micro/cli"
 	"github.com/micro/go-micro/web"
-	"github.com/micro/go-plugins/registry/kubernetes"
 	"github.com/yametech/yamecloud/common"
 	"github.com/yametech/yamecloud/pkg/k8s"
 	self "github.com/yametech/yamecloud/pkg/micro"
@@ -44,7 +43,7 @@ func (s *Service) Name() string { return "micro-web-micro" }
 func NewMicroWebService(name, version string) (web.Service, error) {
 	options := make([]web.Option, 0)
 	if common.InCluster {
-		options = append(options, web.Registry(kubernetes.NewRegistry()))
+		//options = append(options, web.Registry(kubernetes.NewRegistry()))
 	}
 	_service := web.NewService(
 		web.Name(name),
