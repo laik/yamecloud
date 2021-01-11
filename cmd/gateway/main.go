@@ -1,8 +1,8 @@
 package main
 
 import (
-	"flag"
 	"fmt"
+
 	"github.com/yametech/yamecloud/pkg/action/api"
 	"github.com/yametech/yamecloud/pkg/action/api/gateway"
 	"github.com/yametech/yamecloud/pkg/action/service"
@@ -11,12 +11,11 @@ import (
 	"github.com/yametech/yamecloud/pkg/k8s"
 	"github.com/yametech/yamecloud/pkg/k8s/datasource"
 	"github.com/yametech/yamecloud/pkg/k8s/types"
-
-	_ "github.com/micro/go-plugins/registry/etcd"
 )
 
 /*
-export MICRO_SERVER_ADDRESS=0.0.0.0:8080
+env
+MICRO_REGISTRY=etcd;MICRO_REGISTRY_ADDRESS=127.0.0.1:2379
 */
 
 const serviceName = "gateway"
@@ -29,8 +28,6 @@ var subscribeList = k8s.GVRMaps.Subscribe(
 )
 
 func main() {
-	flag.Parse()
-
 	config, err := configure.NewInstallConfigure(types.NewResourceITypes(subscribeList))
 	if err != nil {
 		panic(fmt.Sprintf("new install configure error %s", err))

@@ -14,5 +14,5 @@ func Test_Wrapper(t *testing.T) {
 			t.Fatal("test value not equal expected")
 		}
 	})
-	cors(engine)
+	//cors(engine)
 }

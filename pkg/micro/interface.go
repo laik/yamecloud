@@ -1,9 +1,19 @@
 package micro
 
 import (
+	"fmt"
 	"github.com/yametech/yamecloud/pkg/k8s"
 	"net/http"
 )
+
+const (
+	Major        = "0"
+	Minor        = "0"
+)
+
+func Version(appVer string) string {
+	return fmt.Sprintf("%s-%s-%s", Major, Minor, appVer)
+}
 
 type Interface interface {
 	Run() error

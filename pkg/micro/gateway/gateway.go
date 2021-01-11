@@ -1,18 +1,12 @@
 package gateway
 
 import (
-	"github.com/micro/micro/cmd"
-	"github.com/micro/micro/plugin"
+	"github.com/micro/go-micro/v2/config/cmd"
+	"github.com/micro/micro/v2/plugin"
 	"github.com/yametech/yamecloud/pkg/k8s"
 	self "github.com/yametech/yamecloud/pkg/micro"
 	"net/http"
 )
-
-func Wrapper(handler http.Handler) plugin.Handler {
-	return func(h http.Handler) http.Handler {
-		return http.HandlerFunc(handler.ServeHTTP)
-	}
-}
 
 var _ self.Interface = &Gateway{}
 
@@ -45,7 +39,6 @@ func (s *Gateway) Handle(pattern string, handler http.Handler) self.Interface {
 func NewMicroGateway(handler http.Handler) error {
 	handlerWrappers := []plugin.Handler{
 		filter(handler),
-		//Wrapper(cors(handler)),
 	}
 	if err := plugin.Register(plugin.NewPlugin(plugin.WithHandler(handlerWrappers...))); err != nil {
 		return err

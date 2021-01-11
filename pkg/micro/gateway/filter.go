@@ -1,7 +1,7 @@
 package gateway
 
 import (
-	"github.com/micro/micro/plugin"
+	"github.com/micro/micro/v2/plugin"
 	"net/http"
 	"strings"
 )
@@ -45,17 +45,4 @@ func filter(self http.Handler) plugin.Handler {
 			redirect.ServeHTTP(w, r)
 		})
 	}
-}
-
-// cors provider gateway cors middleware
-func cors(self http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE")
-		w.Header().Add("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers,X-Access-Token,XKey,Authorization")
-		w.Header().Add("Access-Control-Allow-Origin", "*")
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-		}
-		self.ServeHTTP(w, r)
-	})
 }

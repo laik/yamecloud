@@ -7,10 +7,15 @@ code-gen:
       github.com/yametech/yamecloud/pkg/client github.com/yametech/yamecloud/pkg/apis \
       yamecloud:v1
 
+dep:
+	go mod vendor
 
-build: service_mesh
+build: dep
+	go build ./cmd/...
 
-service_mesh:
+build-image: servicemesh
+
+servicemesh:
 	docker build -t ${REPO}/service-mesh:${VERSION} -f images/Dockerfile.servicemesh .
 
 gateway:

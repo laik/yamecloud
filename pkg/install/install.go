@@ -2,7 +2,7 @@ package install
 
 import (
 	"fmt"
-	"github.com/micro/go-micro"
+	"github.com/micro/go-micro/v2"
 	"github.com/yametech/yamecloud/pkg/k8s"
 	microservice "github.com/yametech/yamecloud/pkg/micro"
 	"github.com/yametech/yamecloud/pkg/micro/gateway"
@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-const nameNormal = "go.micro.api.%s"
+const webNormalName = "go.micro.api.%s"
 
 func GatewayInstall(datasource k8s.Interface, handler http.Handler) (microservice.Interface, error) {
 	if err := gateway.NewMicroGateway(handler); err != nil {
@@ -21,8 +21,7 @@ func GatewayInstall(datasource k8s.Interface, handler http.Handler) (microservic
 }
 
 func WebServiceInstall(name, version string, datasource k8s.Interface, handler http.Handler) (microservice.Interface, error) {
-	name = fmt.Sprintf(nameNormal, name)
-	microWebService, err := web.NewMicroWebService(name, version)
+	microWebService, err := web.NewMicroWebService(fmt.Sprintf(webNormalName, name), version)
 	if err != nil {
 		return nil, err
 	}

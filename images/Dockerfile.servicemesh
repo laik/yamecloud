@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM golang:1.14 as builder
+FROM golang:1.14.13 as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
@@ -15,13 +15,13 @@ RUN go mod download
 # Add the go source
 ADD . .
 
-# Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o build/webhook cmd/webhook/*.go
+# Build if not via apline enable static compiled => CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o build/servicemesh cmd/servicemesh/*.go
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM alpine:latest
 WORKDIR /
-COPY --from=builder /workspace/build/webhook .
+COPY --from=builder /workspace/build/servicemesh .
 
-ENTRYPOINT ["/webhook"]
+ENTRYPOINT ["/servicemesh"]

@@ -2,7 +2,9 @@ package common
 
 import (
 	"flag"
+	"fmt"
 	"k8s.io/client-go/util/homedir"
+	"os"
 	"path/filepath"
 )
 
@@ -20,7 +22,13 @@ var (
 )
 
 func init() {
-	flag.BoolVar(&InCluster, "incluster", false, "-incluster true")
+	if v := os.Getenv("IN_CLUSTER"); v != "" {
+		InCluster = true
+		fmt.Println("App start in kubernetes")
+	}
+	if v := os.Getenv("KUBE_CONFIG"); v != "" && !InCluster {
+		*KubeConfig = v
+	}
 	if home := homedir.HomeDir(); home != "" {
 		KubeConfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
 	} else {

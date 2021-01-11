@@ -18,12 +18,10 @@ spec:
       serviceAccount: fuxi-app
       containers:
         - env:
-            - name: MICRO_REGISTRY
-              value: etcd
-            - name: MICRO_REGISTRY_ADDRESS
-              value: etcd.kube-system.svc.cluster.local:2379
+            - name: IN_CLUSTER
+              value: 1
         - name: servicemesh
           image: harbor.ym/devops/servicemesh:v0.0.1
-          args: [ "-incluster=true" ]
+          args: [ "--registry", "etcd", "--registry_address", "etcd.kube-system.svc.cluster.local:2379" ]
           imagePullPolicy: Always
       restartPolicy: Always
