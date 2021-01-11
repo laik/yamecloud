@@ -47,6 +47,10 @@ func NewInstallConfigure(resLister k8s.ResourceLister) (*InstallConfigure, error
 		return nil, err
 	}
 
+	if dynInterface == nil {
+		dynInterface = cacheInformerFactory.Interface
+	}
+
 	installConfigure := &InstallConfigure{
 		Interface: dynInterface,
 		Config:    resetConfig,

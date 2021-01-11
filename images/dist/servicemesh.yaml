@@ -17,11 +17,11 @@ spec:
     spec:
       serviceAccount: fuxi-app
       containers:
-        - env:
-            - name: IN_CLUSTER
-              value: 1
         - name: servicemesh
           image: harbor.ym/devops/servicemesh:v0.0.1
           args: [ "--registry", "etcd", "--registry_address", "etcd.kube-system.svc.cluster.local:2379" ]
           imagePullPolicy: Always
+          env:
+            - name: IN_CLUSTER
+              value: "true"
       restartPolicy: Always
