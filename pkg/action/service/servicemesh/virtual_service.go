@@ -33,12 +33,12 @@ func (v *VirtualService) List(namespace string, selector string) (*service.Unstr
 	return list, nil
 }
 
-func (v *VirtualService) Apply(namespace, name string, unstructuredExtend *service.UnstructuredExtend) (*service.UnstructuredExtend, error) {
-	item, err := v.Interface.Apply(namespace, k8s.VirtualService, name, unstructuredExtend)
+func (v *VirtualService) Apply(namespace, name string, unstructuredExtend *service.UnstructuredExtend) (*service.UnstructuredExtend, bool, error) {
+	item, isUpdate, err := v.Interface.Apply(namespace, k8s.VirtualService, name, unstructuredExtend)
 	if err != nil {
-		return nil, err
+		return nil, isUpdate, err
 	}
-	return item, nil
+	return item, isUpdate, nil
 }
 
 func (v *VirtualService) Delete(namespace, name string) error {

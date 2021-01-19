@@ -33,12 +33,12 @@ func (b *BaseUser) List(namespace string, selector string) (*service.Unstructure
 	return list, nil
 }
 
-func (b *BaseUser) Apply(namespace, name string, unstructuredExtend *service.UnstructuredExtend) (*service.UnstructuredExtend, error) {
-	item, err := b.Interface.Apply(namespace, k8s.BaseUser, name, unstructuredExtend)
+func (b *BaseUser) Apply(namespace, name string, unstructuredExtend *service.UnstructuredExtend) (*service.UnstructuredExtend, bool, error) {
+	item, isUpdate, err := b.Interface.Apply(namespace, k8s.BaseUser, name, unstructuredExtend)
 	if err != nil {
-		return nil, err
+		return nil, isUpdate, err
 	}
-	return item, nil
+	return item, isUpdate, nil
 }
 
 func (b *BaseUser) Delete(namespace, name string) error {

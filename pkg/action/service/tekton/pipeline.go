@@ -33,12 +33,12 @@ func (g *Pipeline) List(namespace string, selector string) (*service.Unstructure
 	return list, nil
 }
 
-func (g *Pipeline) Apply(namespace, name string, unstructuredExtend *service.UnstructuredExtend) (*service.UnstructuredExtend, error) {
-	item, err := g.Interface.Apply(namespace, k8s.Pipeline, name, unstructuredExtend)
+func (g *Pipeline) Apply(namespace, name string, unstructuredExtend *service.UnstructuredExtend) (*service.UnstructuredExtend, bool, error) {
+	item, isUpdate, err := g.Interface.Apply(namespace, k8s.Pipeline, name, unstructuredExtend)
 	if err != nil {
-		return nil, err
+		return nil, isUpdate, err
 	}
-	return item, nil
+	return item, isUpdate, nil
 }
 
 func (g *Pipeline) Delete(namespace, name string) error {

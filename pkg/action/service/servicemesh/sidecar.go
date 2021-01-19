@@ -33,12 +33,12 @@ func (s *Sidecar) List(namespace string, selector string) (*service.Unstructured
 	return list, nil
 }
 
-func (s *Sidecar) Apply(namespace, name string, unstructuredExtend *service.UnstructuredExtend) (*service.UnstructuredExtend, error) {
-	item, err := s.Interface.Apply(namespace, k8s.Sidecar, name, unstructuredExtend)
+func (s *Sidecar) Apply(namespace, name string, unstructuredExtend *service.UnstructuredExtend) (*service.UnstructuredExtend, bool, error) {
+	item, isUpdate, err := s.Interface.Apply(namespace, k8s.Sidecar, name, unstructuredExtend)
 	if err != nil {
-		return nil, err
+		return nil, isUpdate, err
 	}
-	return item, nil
+	return item, isUpdate, nil
 }
 
 func (s *Sidecar) Delete(namespace, name string) error {

@@ -33,12 +33,12 @@ func (w *WorkloadEntry) List(namespace string, selector string) (*service.Unstru
 	return list, nil
 }
 
-func (w *WorkloadEntry) Apply(namespace, name string, unstructuredExtend *service.UnstructuredExtend) (*service.UnstructuredExtend, error) {
-	item, err := w.Interface.Apply(namespace, k8s.WorkloadEntry, name, unstructuredExtend)
+func (w *WorkloadEntry) Apply(namespace, name string, unstructuredExtend *service.UnstructuredExtend) (*service.UnstructuredExtend, bool, error) {
+	item, isUpdate, err := w.Interface.Apply(namespace, k8s.WorkloadEntry, name, unstructuredExtend)
 	if err != nil {
-		return nil, err
+		return nil, isUpdate, err
 	}
-	return item, nil
+	return item, isUpdate, nil
 }
 
 func (w *WorkloadEntry) Delete(namespace, name string) error {

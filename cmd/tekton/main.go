@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/yametech/yamecloud/pkg/action/api/tekton"
 
 	"github.com/yametech/yamecloud/pkg/action/api"
-	"github.com/yametech/yamecloud/pkg/action/api/servicemesh"
 	"github.com/yametech/yamecloud/pkg/action/service"
 	"github.com/yametech/yamecloud/pkg/configure"
 	"github.com/yametech/yamecloud/pkg/install"
@@ -26,12 +26,13 @@ const serviceName = "tekton"
 const version = "latest"
 
 var subscribeList = k8s.GVRMaps.Subscribe(
-	k8s.Gateway,
-	k8s.DestinationRule,
-	k8s.ServiceEntry,
-	k8s.Sidecar,
-	k8s.VirtualService,
-	k8s.WorkloadEntry,
+	k8s.Pipeline,
+	k8s.PipelineRun,
+	k8s.PipelineResource,
+	k8s.Task,
+	k8s.TaskRun,
+	k8s.TektonStore,
+	k8s.TektonWebHook,
 )
 
 func main() {
@@ -42,7 +43,7 @@ func main() {
 
 	_datasource := datasource.NewInterface(config)
 	apiServer := api.NewServer(service.NewService(_datasource))
-	apiServer.SetExtends(servicemesh.NewServiceMeshServer(serviceName, apiServer))
+	apiServer.SetExtends(tekton.NewTektonServer(serviceName, apiServer))
 
 	microService, err := install.WebServiceInstall(serviceName, version, _datasource, apiServer)
 	if err != nil {

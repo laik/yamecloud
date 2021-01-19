@@ -53,11 +53,19 @@ func (s *accessControlServer) ApplyClusterRole(g *gin.Context) {
 		common.RequestParametersError(g, fmt.Errorf("unmarshal from json data error (%s)", err))
 		return
 	}
-	newUnstructuredExtend, err := s.ClusterRole.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := s.ClusterRole.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
 	}
 
-	g.JSON(http.StatusOK, newUnstructuredExtend)
+	if isUpdate {
+		g.JSON(
+			http.StatusOK,
+			[]service.UnstructuredExtend{
+				*newUnstructuredExtend,
+			})
+	} else {
+		g.JSON(http.StatusOK, newUnstructuredExtend)
+	}
 }

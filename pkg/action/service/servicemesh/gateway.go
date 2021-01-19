@@ -33,12 +33,12 @@ func (g *Gateway) List(namespace string, selector string) (*service.Unstructured
 	return list, nil
 }
 
-func (g *Gateway) Apply(namespace, name string, unstructuredExtend *service.UnstructuredExtend) (*service.UnstructuredExtend, error) {
-	item, err := g.Interface.Apply(namespace, k8s.Gateway, name, unstructuredExtend)
+func (g *Gateway) Apply(namespace, name string, unstructuredExtend *service.UnstructuredExtend) (*service.UnstructuredExtend, bool, error) {
+	item, isUpdate, err := g.Interface.Apply(namespace, k8s.Gateway, name, unstructuredExtend)
 	if err != nil {
-		return nil, err
+		return nil, isUpdate, err
 	}
-	return item, nil
+	return item, isUpdate, nil
 }
 
 func (g *Gateway) Delete(namespace, name string) error {

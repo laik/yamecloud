@@ -50,13 +50,21 @@ func (s *serviceMeshServer) ApplyDestinationRule(g *gin.Context) {
 		return
 	}
 	name := _unstructured.GetName()
-	newUnstructuredExtend, err := s.DestinationRule.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := s.DestinationRule.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
 	}
 
-	g.JSON(http.StatusOK, newUnstructuredExtend)
+	if isUpdate {
+		g.JSON(
+			http.StatusOK,
+			[]service.UnstructuredExtend{
+				*newUnstructuredExtend,
+			})
+	} else {
+		g.JSON(http.StatusOK, newUnstructuredExtend)
+	}
 }
 
 // Delete DestinationRule

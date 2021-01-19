@@ -1,4 +1,4 @@
-package servicemesh
+package tekton
 
 import (
 	"fmt"
@@ -9,14 +9,15 @@ import (
 	"net/http"
 )
 
-// Get ServiceEntry
-func (s *serviceMeshServer) GetServiceEntry(g *gin.Context) {
+// Get PipelineResource
+func (s *tektonServer) GetPipelineResource(g *gin.Context) {
+	namespace := g.Param("namespace")
 	name := g.Param("name")
-	if name == "" {
-		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
+	if namespace == "" || name == "" {
+		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-	item, err := s.ServiceEntry.Get("", name)
+	item, err := s.PipelineResource.Get(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -24,9 +25,9 @@ func (s *serviceMeshServer) GetServiceEntry(g *gin.Context) {
 	g.JSON(http.StatusOK, item)
 }
 
-// Subscribe ServiceEntry
-func (s *serviceMeshServer) ListServiceEntry(g *gin.Context) {
-	list, err := s.ServiceEntry.List(g.Param("namespace"), "")
+// Subscribe PipelineResource
+func (s *tektonServer) ListPipelineResource(g *gin.Context) {
+	list, err := s.PipelineResource.List(g.Param("namespace"), "")
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
@@ -34,10 +35,9 @@ func (s *serviceMeshServer) ListServiceEntry(g *gin.Context) {
 	g.JSON(http.StatusOK, list)
 }
 
-// Update or Create ServiceEntry
-func (s *serviceMeshServer) ApplyServiceEntry(g *gin.Context) {
+// Update or Create PipelineResource
+func (s *tektonServer) ApplyPipelineResource(g *gin.Context) {
 	namespace := g.Param("namespace")
-
 	raw, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("get raw data error (%s)", err))
@@ -50,7 +50,7 @@ func (s *serviceMeshServer) ApplyServiceEntry(g *gin.Context) {
 		return
 	}
 	name := _unstructured.GetName()
-	newUnstructuredExtend, isUpdate, err := s.ServiceEntry.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := s.PipelineResource.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
@@ -67,15 +67,15 @@ func (s *serviceMeshServer) ApplyServiceEntry(g *gin.Context) {
 	}
 }
 
-// Delete ServiceEntry
-func (s *serviceMeshServer) DeleteServiceEntry(g *gin.Context) {
+// Delete PipelineResource
+func (s *tektonServer) DeletePipelineResource(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-	err := s.ServiceEntry.Delete(namespace, name)
+	err := s.PipelineResource.Delete(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return

@@ -33,10 +33,10 @@ func (c *ClusterRole) List(namespace string, selector string) (*service.Unstruct
 	return list, nil
 }
 
-func (c *ClusterRole) Apply(namespace, name string, unstructuredExtend *service.UnstructuredExtend) (*service.UnstructuredExtend, error) {
-	item, err := c.Interface.Apply(namespace, k8s.ClusterRole, name, unstructuredExtend)
+func (c *ClusterRole) Apply(namespace, name string, unstructuredExtend *service.UnstructuredExtend) (*service.UnstructuredExtend, bool, error) {
+	item, isUpdate, err := c.Interface.Apply(namespace, k8s.ClusterRole, name, unstructuredExtend)
 	if err != nil {
-		return nil, err
+		return nil, isUpdate, err
 	}
-	return item, nil
+	return item, isUpdate, nil
 }
