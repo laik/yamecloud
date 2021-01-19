@@ -1,13 +1,14 @@
 package gateway
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/yametech/yamecloud/common"
 	"github.com/yametech/yamecloud/pkg/k8s"
 	"github.com/yametech/yamecloud/pkg/micro/gateway"
 	"github.com/yametech/yamecloud/pkg/permission"
 	"github.com/yametech/yamecloud/pkg/uri"
-	"net/http"
 )
 
 //func jwt() gin.HandlerFunc{
@@ -48,7 +49,7 @@ func Authorize(auth *Authorization) gin.HandlerFunc {
 		privilegeMap := map[k8s.ResourceType]permission.Type{k8s.Pod: 255}
 
 		//check permission
-		op, err := uri.NewUriParser().ParseOp(c.Request.URL.Path)
+		op, err := uri.NewURIParser().ParseOp(c.Request.URL.Path)
 		if err != nil || op == nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
 			return
