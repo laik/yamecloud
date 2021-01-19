@@ -31,6 +31,8 @@ spec:
           spec:
             description: BaseDepartmentSpec defines the desired state of BaseDepartment
             properties:
+              tenant_id:
+                type: string
               defaultNamespace:
                 type: string
               gits:

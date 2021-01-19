@@ -11,6 +11,7 @@ import (
 type BaseUserSpec struct {
 	Name     *string `json:"name,omitempty"`
 	Password *string `json:"password,omitempty"`
+	TenantId string  `json:"tenant_id,omitempty`
 	// +optional
 	DepartmentId string `json:"department_id,omitempty"`
 	// +optional
@@ -19,6 +20,8 @@ type BaseUserSpec struct {
 	Display string `json:"display,omitempty"`
 	// +optional
 	Roles []string `json:"roles,omitempty"`
+	// +optional
+	IsTenant bool `json:"is_tenant,omitempty"`
 }
 
 // BaseUserStatus defines the observed state of BaseUser

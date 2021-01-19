@@ -23,7 +23,7 @@ func NewGatewayServer(serviceName string, server *api.Server) *gatewayServer {
 		// action service
 		loginHandle: NewLoginHandle(server.Interface),
 	}
-	server.Use(Authorize())
+	server.Use(Authorize(NewAuthorization(server.Interface)))
 
 	server.Any("/*any", func(g *gin.Context) {
 		if g.Request.RequestURI == "/user-login" {
@@ -56,7 +56,7 @@ func (gw *gatewayServer) userLogin(g *gin.Context) {
 		common.RequestParametersError(g, err)
 		return
 	}
-	bytes, err := gw.loginHandle.Auth(user)
+	bytes, err := gw.loginHandle.auth.Auth(user)
 	if err != nil {
 		g.JSON(http.StatusOK, gin.H{"msg": "账号或密码错误"})
 		return

@@ -21,6 +21,8 @@ type Stack struct {
 
 // BaseDepartmentSpec defines the desired state of BaseDepartment
 type BaseDepartmentSpec struct {
+	TenantId  string   `json:"tenant_id,omitempty"`
+	Owner     string   `json:"owner,omitempty"`
 	Namespace []string `json:"namespace,omitempty"`
 	// +optional
 	DefaultNamespace string `json:"defaultNamespace,omitempty"`

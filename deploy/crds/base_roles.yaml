@@ -31,6 +31,12 @@ spec:
           spec:
             description: BaseRoleSpec defines the desired state of BaseRole
             properties:
+              tenant_id:
+                type: string
+              department_id:
+                type: string
+              privilege:
+                type: object
               comment:
                 type: string
               value:
