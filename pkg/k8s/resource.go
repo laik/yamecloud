@@ -2,7 +2,6 @@ package k8s
 
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"sort"
 )
 
 const (
@@ -22,7 +21,7 @@ const (
 	ConfigMaps               ResourceType = "configmaps"
 	Secrets                  ResourceType = "secrets"
 	ResourceQuota            ResourceType = "resourcequotas"
-	Service                  ResourceType = "micro"
+	Service                  ResourceType = "services"
 	Ingress                  ResourceType = "ingresses"
 	NetworkPolicy            ResourceType = "networkpolicies"
 	HorizontalPodAutoscaler  ResourceType = "horizontalpodautoscalers"
@@ -88,14 +87,15 @@ type groupVersionCollection map[ResourceType]schema.GroupVersionResource
 
 func (c *groupVersionCollection) Subscribe(include ...string) []Resource {
 	result := make([]Resource, 0)
+	if len(include) == 0 {
+		return result
+	}
 	for key, value := range *c {
-		if len(include) == 0 {
-			continue
+		for _, item := range include {
+			if item == key {
+				result = append(result, Resource{key, value})
+			}
 		}
-		if sort.SearchStrings(include, key) > len(include)-1 {
-			continue
-		}
-		result = append(result, Resource{key, value})
 	}
 	return result
 }
@@ -133,7 +133,7 @@ var GVRMaps IGVRMaps = &groupVersionCollection{
 	ConfigMaps:             {Group: "", Version: "v1", Resource: "configmaps"},
 	Secrets:                {Group: "", Version: "v1", Resource: "secrets"},
 	ResourceQuota:          {Group: "", Version: "v1", Resource: "resourcequotas"},
-	Service:                {Group: "", Version: "v1", Resource: "micro"},
+	Service:                {Group: "", Version: "v1", Resource: "services"},
 	Namespace:              {Group: "", Version: "v1", Resource: "namespaces"},
 	PersistentVolume:       {Group: "", Version: "v1", Resource: "persistentvolumes"},
 	PersistentVolumeClaims: {Group: "", Version: "v1", Resource: "persistentvolumeclaims"},
