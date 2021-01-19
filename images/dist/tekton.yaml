@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: tekton
+  name: tekton
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tekton
+  template:
+    metadata:
+      labels:
+        app: tekton
+    spec:
+      serviceAccount: fuxi-app
+      containers:
+        - name: tekton
+          image: harbor.ym/devops/tekton:v0.0.1
+          args: [ "--registry", "etcd", "--registry_address", "etcd.kube-system.svc.cluster.local:2379" ]
+          imagePullPolicy: Always
+          env:
+            - name: IN_CLUSTER
+              value: "true"
+      restartPolicy: Always
