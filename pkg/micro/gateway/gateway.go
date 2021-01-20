@@ -1,7 +1,7 @@
 package gateway
 
 import (
-	"github.com/micro/go-micro/v2/config/cmd"
+	"github.com/micro/micro/v2/cmd"
 	"github.com/micro/micro/v2/plugin"
 	"github.com/yametech/yamecloud/pkg/k8s"
 	self "github.com/yametech/yamecloud/pkg/micro"
