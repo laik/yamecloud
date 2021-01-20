@@ -5,6 +5,7 @@ import (
 	"github.com/yametech/yamecloud/pkg/action/service/tenant"
 	"github.com/yametech/yamecloud/pkg/k8s"
 	"github.com/yametech/yamecloud/pkg/micro/gateway"
+	"github.com/yametech/yamecloud/pkg/permission"
 	"github.com/yametech/yamecloud/pkg/uri"
 )
 
@@ -24,7 +25,7 @@ type IAuthorization interface {
 	IsTenantOwner(userName string) (bool, error)
 	IsDepartmentOwner(userName string) (bool, error)
 	IsWithGranted(userName string) (bool, error)
-	CheckPermission(userName string, op *uri.Op) (bool, error)
+	CheckPermission(userName string, op *uri.URI) (bool, error)
 	CheckNamespace(userName, namespace string) (bool, error)
 }
 
@@ -120,7 +121,7 @@ func (auth *Authorization) IsWithGranted(userName string) (bool, error) {
 }
 
 //check whether a user has specified uri permission
-func (auth *Authorization) CheckPermission(userName string, op *uri.Op) (bool, error) {
+func (auth *Authorization) CheckPermission(userName string, uri *uri.URI) (bool, error) {
 	roles, err := auth.getUserRoles(userName)
 	if err != nil {
 		return false, err
@@ -136,8 +137,12 @@ func (auth *Authorization) CheckPermission(userName string, op *uri.Op) (bool, e
 			break
 		}
 		privilege := specPrivilege.(map[k8s.ResourceType]uint16)
-		resourcePrivilege := privilege[op.Resource]
-		if resourcePrivilege > 0 && (resourcePrivilege&1<<op.Type) > 0 {
+		resourcePrivilege := privilege[uri.Resource]
+		opPosition, exist := permission.OpMap[uri.Op]
+		if !exist {
+			return false, nil
+		}
+		if resourcePrivilege > 0 && (resourcePrivilege&1<<opPosition) > 0 {
 			return true, nil
 		}
 

@@ -165,7 +165,7 @@ func CheckUser(auth IAuthorization) gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
 			return
 		}
-		op, err := uri.NewUriParser().ParseOp(c.Request.URL.Path)
+		op, err := uri.NewURIParser().ParseOp(c.Request.URL.Path)
 		if err != nil {
 			c.Abort()
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})

@@ -303,7 +303,7 @@ func (auth *FakeAuthorization) IsWithGranted(userName string) (bool, error) {
 }
 
 //check whether a user has specified uri permission
-func (auth *FakeAuthorization) CheckPermission(userName string, op *uri.Op) (bool, error) {
+func (auth *FakeAuthorization) CheckPermission(userName string, uri *uri.URI) (bool, error) {
 	if userName == "ordinaryUser" {
 		return true, nil
 	}
