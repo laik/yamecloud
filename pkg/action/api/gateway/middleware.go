@@ -1,95 +1,222 @@
 package gateway
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/yametech/yamecloud/common"
-	"github.com/yametech/yamecloud/pkg/k8s"
-	"github.com/yametech/yamecloud/pkg/micro/gateway"
-	"github.com/yametech/yamecloud/pkg/permission"
 	"github.com/yametech/yamecloud/pkg/uri"
+	"net/http"
 )
 
-//func jwt() gin.HandlerFunc{
-//	//return
-//}
-var excludeMap = map[string]string{"/user-login": "POST"}
+const (
+	IsSkip                = "isSkip"
+	AuthorizationUserName = "userName"
+	UserIdentification    = "userIdentification"
+)
 
-func Authorize(auth *Authorization) gin.HandlerFunc {
+func IsNeedSkip(auth IAuthorization) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		path := c.Request.URL.Path
 		method := c.Request.Method
-		//skip exclude url
-		if isSkip(path, method) {
-			c.Next()
+		isNeedSkip, err := auth.IsNeedSkip(method, path)
+		if err != nil {
+			c.Abort()
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
 			return
 		}
 
-		//get token
+		if isNeedSkip {
+			c.Set(IsSkip, true)
+		}
+	}
+
+}
+
+func ValidateToken(auth IAuthorization) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		isSkip := c.GetBool(IsSkip)
+		if isSkip {
+			c.Next()
+			return
+		}
 		token := c.Request.Header.Get(common.AuthorizationHeader)
 		if token == "" {
+			c.Abort()
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
 			return
 		}
 		//decode token
-		decodeToken, err := (&gateway.Token{}).Decode(token)
+		decodeToken, err := auth.ValidateToken(token)
+		if err != nil {
+			c.Abort()
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
+			return
+		}
+		c.Set(AuthorizationUserName, decodeToken.UserName)
+
+	}
+}
+
+func IsAdmin(auth IAuthorization) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		isSkip := c.GetBool(IsSkip)
+		if isSkip {
+			c.Next()
+			return
+		}
+		username := c.GetString(AuthorizationUserName)
+		if username == "" {
+			c.Abort()
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
+			return
+		}
+		isAdmin, err := auth.IsAdmin(username)
+		if err != nil {
+			c.Abort()
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
+			return
+		}
+		if isAdmin {
+			c.Set(UserIdentification, Admin)
+		}
+
+	}
+}
+
+func IsTenantOwner(auth IAuthorization) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		isSkip := c.GetBool(IsSkip)
+		if isSkip {
+			c.Next()
+			return
+		}
+		_, exists := c.Get(UserIdentification)
+		if exists {
+			c.Next()
+			return
+		}
+		username := c.GetString(AuthorizationUserName)
+		if username == "" {
+			c.Abort()
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
+			return
+		}
+		isTenantOwner, err := auth.IsTenantOwner(username)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
 			return
 		}
+		if isTenantOwner {
+			c.Set(UserIdentification, TenantOwner)
+		}
 
-		//get user permission
-		//privilegeMap, err := auth.getPermission(decodeToken.UserName)
-		//if err != nil {
-		//	c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
-		//	return
-		//}
+	}
+}
 
-		privilegeMap := map[k8s.ResourceType]permission.Type{k8s.Pod: 255}
+func IsDepartmentOwner(auth IAuthorization) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		isSkip := c.GetBool(IsSkip)
+		if isSkip {
+			c.Next()
+			return
+		}
+		_, exists := c.Get(UserIdentification)
+		if exists {
+			c.Next()
+			return
+		}
 
-		//check permission
+		username := c.GetString(AuthorizationUserName)
+		if username == "" {
+			c.Abort()
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
+			return
+		}
+		isDepartmentOwner, err := auth.IsDepartmentOwner(username)
+		if err != nil {
+			c.Abort()
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
+			return
+		}
+		if isDepartmentOwner {
+			c.Set(UserIdentification, DepartmentOwner)
+		}
+
+	}
+}
+
+func CheckUser(auth IAuthorization) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		isSkip := c.GetBool(IsSkip)
+		if isSkip {
+			c.Next()
+			return
+		}
+
+		_, exists := c.Get(UserIdentification)
+		if exists {
+			c.Next()
+			return
+		}
+		c.Set(UserIdentification, OrdinaryUser)
+
+		username := c.GetString(AuthorizationUserName)
+		if username == "" {
+			c.Abort()
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
+			return
+		}
 		op, err := uri.NewURIParser().ParseOp(c.Request.URL.Path)
-		if err != nil || op == nil {
+		if err != nil {
+			c.Abort()
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
 			return
 		}
-		if !checkPermission(&privilegeMap, op) {
+		checkNamespace, err := auth.CheckNamespace(username, op.Namespace)
+		if err != nil {
+			c.Abort()
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
 			return
 		}
-		//check if namespace allow access when op.Namespace not nil
-		if op.Namespace != "" {
-			isAllow, err := auth.allowNamespaceAccess(decodeToken.UserName, op.Namespace)
+		if !checkNamespace {
+			c.Abort()
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
+			return
+		}
+		checkPermission, err := auth.CheckPermission(username, op)
+		if err != nil {
+			c.Abort()
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
+			return
+		}
+		if !checkPermission {
+			c.Abort()
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
+			return
+		}
+
+	}
+}
+
+func IsWithGranted(auth IAuthorization) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		path := c.Request.URL.Path
+		// todo replace real grant path
+		if path == "/grantPath" {
+			username := c.GetString(AuthorizationUserName)
+			if username == "" {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
+				return
+			}
+			isWithGranted, err := auth.IsWithGranted(username)
 			if err != nil {
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
 				return
 			}
-
-			if !isAllow {
-				c.JSON(http.StatusUnauthorized, gin.H{"error": "namespace not allow access"})
+			if !isWithGranted {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
 				return
 			}
 		}
 	}
 
-}
-
-func checkPermission(permissionMap *map[k8s.ResourceType]permission.Type, op *uri.Op) bool {
-	permissionValue := (*permissionMap)[op.Resource]
-	if permissionValue&1<<op.Type != 0 {
-		return true
-	}
-	return false
-}
-
-func isSkip(path string, method string) bool {
-	requestMethod, exists := excludeMap[path]
-	if !exists {
-		return false
-	}
-	if method == requestMethod {
-		return true
-	}
-	return false
 }
