@@ -230,3 +230,54 @@ func Test_parseOp(t *testing.T) {
 		}
 	}
 }
+
+type uriStruct2 struct {
+	uriStruct
+	ResourceVersion string
+}
+
+// TODO
+func Test_parseWatch(t *testing.T) {
+	parser := NewURIParser()
+
+	type expectedStruct struct {
+		uri         string
+		uriStruct2s []uriStruct2
+	}
+
+	expectedStructs := []expectedStruct{
+		{`http://compass.ym/api/watch?api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fpipelineruns%3Fwatch%3D1%26resourceVersion%3D167634323&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Ftaskruns%3Fwatch%3D1%26resourceVersion%3D167634323&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Ftasks%3Fwatch%3D1%26resourceVersion%3D167634323&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fpipelines%3Fwatch%3D1%26resourceVersion%3D167634323&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fpipelineresources%3Fwatch%3D1%26resourceVersion%3D167634323&api=%2Fapi%2Fv1%2Fnamespaces%3Fwatch%3D1%26resourceVersion%3D167634332`,
+			[]uriStruct2{
+				{ResourceVersion: "", uriStruct: uriStruct{}},
+				{ResourceVersion: "", uriStruct: uriStruct{}},
+				{ResourceVersion: "", uriStruct: uriStruct{}},
+				{ResourceVersion: "", uriStruct: uriStruct{}},
+				{ResourceVersion: "", uriStruct: uriStruct{}},
+				{ResourceVersion: "", uriStruct: uriStruct{}},
+			},
+		},
+		{`http://compass.ym/api/watch?api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fsw-userops%2Fpipelineruns%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fchewu-dev%2Fpipelineruns%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fyce-cloud-extensions-ops%2Fpipelineruns%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fsw-userops%2Ftaskruns%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fchewu-dev%2Ftaskruns%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fyce-cloud-extensions-ops%2Ftaskruns%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fsw-userops%2Ftasks%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fchewu-dev%2Ftasks%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fyce-cloud-extensions-ops%2Ftasks%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fsw-userops%2Fpipelines%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fchewu-dev%2Fpipelines%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fyce-cloud-extensions-ops%2Fpipelines%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fsw-userops%2Fpipelineresources%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fchewu-dev%2Fpipelineresources%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fyce-cloud-extensions-ops%2Fpipelineresources%3Fwatch%3D1%26resourceVersion%3D167664896`,
+			[]uriStruct2{
+				{ResourceVersion: "", uriStruct: uriStruct{}},
+				{ResourceVersion: "", uriStruct: uriStruct{}},
+				{ResourceVersion: "", uriStruct: uriStruct{}},
+				{ResourceVersion: "", uriStruct: uriStruct{}},
+				{ResourceVersion: "", uriStruct: uriStruct{}},
+				{ResourceVersion: "", uriStruct: uriStruct{}},
+			},
+		},
+	}
+
+	_ = parser
+	_ = expectedStructs
+	uris, err := parser.ParseWatch(expectedStructs[0].uri)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	////expectedUris := []*URI{
+	////
+	////}
+	_ = uris
+
+}

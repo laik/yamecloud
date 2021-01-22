@@ -2,7 +2,6 @@ package v1
 
 import (
 	"github.com/yametech/yamecloud/pkg/k8s"
-	"github.com/yametech/yamecloud/pkg/permission"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -13,9 +12,9 @@ import (
 type BaseRoleSpec struct {
 	TenantId string `json:"tenant_id, omitempty`
 	// +optional
-	DepartmentId string                               `json:"department_id, omitempty"`
-	Value        uint32                               `json:"value, omitempty"`
-	Privilege    map[k8s.ResourceType]permission.Type `json:"privilege, omitempty"`
+	DepartmentId string                           `json:"department_id, omitempty"`
+	Value        uint32                           `json:"value, omitempty"`
+	Privilege    map[k8s.ResourceType]interface{} `json:"privilege, omitempty"`
 	// +optional
 	Comment string `json:"comment, omitempty"`
 }
