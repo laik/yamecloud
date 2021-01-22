@@ -38,10 +38,9 @@ func ValidateToken(auth IAuthorization) gin.HandlerFunc {
 			c.Next()
 			return
 		}
-
-		//get token
 		token := c.Request.Header.Get(common.AuthorizationHeader)
 		if token == "" {
+			c.Abort()
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "error"})
 			return
 		}
