@@ -56,7 +56,7 @@ func NewServiceServer(serviceName string, server *api.Server) *serviceServer {
 		group.GET("/apis/extensions/v1beta1/namespaces/:namespace/ingresses/:name", serviceServer.GetIngress)
 		group.POST("/apis/extensions/v1beta1/namespaces/:namespace/ingresses", serviceServer.ApplyIngress)
 		group.DELETE("/apis/extensions/v1beta1/namespaces/:namespace/ingresses/:name", serviceServer.DeleteIngress)
-		group.PUT("/api/v1/namespaces/:namespace/ingresses/:name", serviceServer.UpdateIngress)
+		group.PUT("/apis/extensions/v1beta1/namespaces/:namespace/ingresses/:name", serviceServer.UpdateIngress)
 	}
 
 	return serviceServer
