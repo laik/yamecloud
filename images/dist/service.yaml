@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: service
+  name: service
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service
+  template:
+    metadata:
+      labels:
+        app: service
+    spec:
+      serviceAccount: fuxi-app
+      containers:
+        - name: service
+          image: harbor.ym/devops/service:0.0.1
+          args: [ "--registry", "etcd", "--registry_address", "etcd.kube-system.svc.cluster.local:2379" ]
+          imagePullPolicy: Always
+          env:
+            - name: IN_CLUSTER
+              value: "true"
+      restartPolicy: Always

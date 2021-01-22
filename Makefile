@@ -13,13 +13,16 @@ dep:
 build: dep
 	go build ./cmd/...
 
-build-image: servicemesh
+build-image: servicemesh tekton service
 
 servicemesh:
 	docker build -t ${REPO}/service-mesh:${VERSION} -f images/Dockerfile.servicemesh .
 
 tekton:
 	docker build -t ${REPO}/tekton:${VERSION} -f images/Dockerfile.tekton .
+
+service:
+	docker build -t ${REPO}/service:${VERSION} -f images/Dockerfile.service .
 
 gateway:
 	go run cmd/gateway/*.go api --handler=http --address 0.0.0.0:8000
