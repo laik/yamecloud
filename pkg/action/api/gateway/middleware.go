@@ -75,12 +75,12 @@ func Authorize(auth *Authorization) gin.HandlerFunc {
 
 }
 
-func checkPermission(permissionMap *map[k8s.ResourceType]permission.Type, op *uri.Op) bool {
-	permissionValue := (*permissionMap)[op.Resource]
-	if permissionValue&1<<op.Type != 0 {
-		return true
-	}
-	return false
+func checkPermission(permissionMap *map[k8s.ResourceType]permission.Type, op *uri.URI) bool {
+	//permissionValue := (*permissionMap)[op.Resource]
+	//if permissionValue&1<<op.Type != 0 {
+	//	return true
+	//}
+	return true
 }
 
 func isSkip(path string, method string) bool {
