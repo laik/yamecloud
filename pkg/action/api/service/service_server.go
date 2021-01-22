@@ -37,6 +37,7 @@ func NewServiceServer(serviceName string, server *api.Server) *serviceServer {
 		group.GET("/api/v1/namespaces/:namespace/services/:name", serviceServer.GetService)
 		group.POST("/api/v1/namespaces/:namespace/services", serviceServer.ApplyService)
 		group.DELETE("/api/v1/namespaces/:namespace/services/:name", serviceServer.DeleteService)
+		group.PUT("/api/v1/namespaces/:namespace/services/:name", serviceServer.UpdateService)
 	}
 
 	// endpoint
@@ -55,6 +56,7 @@ func NewServiceServer(serviceName string, server *api.Server) *serviceServer {
 		group.GET("/apis/extensions/v1beta1/namespaces/:namespace/ingresses/:name", serviceServer.GetIngress)
 		group.POST("/apis/extensions/v1beta1/namespaces/:namespace/ingresses", serviceServer.ApplyIngress)
 		group.DELETE("/apis/extensions/v1beta1/namespaces/:namespace/ingresses/:name", serviceServer.DeleteIngress)
+		group.PUT("/api/v1/namespaces/:namespace/ingresses/:name", serviceServer.UpdateIngress)
 	}
 
 	return serviceServer
