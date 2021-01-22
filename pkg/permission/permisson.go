@@ -1,29 +1,42 @@
 package permission
 
-type Type = uint16
+type OpPosition = uint16
 
 const (
 	//
-	VIEW Type = 0x00
+	ViewPosition OpPosition = 0x00
 	//
-	APPLY Type = 0x01
+	ApplyPosition OpPosition = 0x01
 	//
-	DELETE Type = 0x03
+	DeletePosition OpPosition = 0x03
 	// LOG pod log op
-	LOG Type = 0x04
+	LogPosition OpPosition = 0x04
 	// LOG pod attach shell op
-	ATTACH Type = 0x05
+	AttachPosition OpPosition = 0x05
 	// ANNOTATE metadata annotation
-	ANNOTATE Type = 0x06
+	AnnotationPosition OpPosition = 0x06
 	// LABEL metadata labels
-	LABEL Type = 0x07
+	LabelPosition OpPosition = 0x07
 )
 
-type OpTypeName = string
+type OpName = string
 
 const (
-	Log      OpTypeName = "log"
-	Attach   OpTypeName = "attach"
-	Annotate OpTypeName = "annotate"
-	Label    OpTypeName = "label"
+	View     OpName = "view"
+	Apply    OpName = "apply"
+	Delete   OpName = "delete"
+	Log      OpName = "log"
+	Attach   OpName = "attach"
+	Annotate OpName = "annotate"
+	Label    OpName = "label"
 )
+
+var OpMap = map[OpName]OpPosition{
+	View:     ViewPosition,
+	Apply:    ApplyPosition,
+	Delete:   DeletePosition,
+	Log:      LogPosition,
+	Attach:   AttachPosition,
+	Annotate: AnnotationPosition,
+	Label:    LabelPosition,
+}
