@@ -34,11 +34,19 @@ func (s *Gateway) HandleFunc(pattern string, handler func(http.ResponseWriter, *
 }
 func (s *Gateway) Handle(pattern string, handler http.Handler) self.Interface {
 	panic("don't not implement me")
+
 }
 
-func NewMicroGateway(handler http.Handler) error {
+func NewMicroGateway(handler http.Handler, authorization IAuthorization) error {
+
 	handlerWrappers := []plugin.Handler{
-		filter(handler),
+		ServerFilter(handler),
+		GrantCheckFilter(authorization),
+		PermissionFilter(authorization),
+		NamespaceFilter(authorization),
+		IdentificationFilter(authorization),
+		ValidateTokenFilter(authorization),
+		SkipFilter(authorization),
 	}
 	if err := plugin.Register(plugin.NewPlugin(plugin.WithHandler(handlerWrappers...))); err != nil {
 		return err

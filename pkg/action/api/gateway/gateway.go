@@ -23,28 +23,31 @@ func NewGatewayServer(serviceName string, server *api.Server) *gatewayServer {
 		// action service
 		loginHandle: NewLoginHandle(server.Interface),
 	}
-	auth := NewAuthorization(server.Interface)
-	server.Use(
-		IsNeedSkip(auth),
-		ValidateToken(auth),
-		IsAdmin(auth),
-		IsTenantOwner(auth),
-		IsDepartmentOwner(auth),
-		CheckUser(auth),
-		IsWithGranted(auth),
-	)
-
-	server.Any("/*any", func(g *gin.Context) {
-		if g.Request.RequestURI == "/user-login" {
-			gatewayServer.userLogin(g)
-			return
-		}
-
-		if g.Request.RequestURI == "/config" {
-			gatewayServer.userConfig(g)
-			return
-		}
-	})
+	//auth := NewAuthorization(server.Interface)
+	//server.Use(
+	//	IsNeedSkip(auth),
+	//	ValidateToken(auth),
+	//	IsAdmin(auth),
+	//	IsTenantOwner(auth),
+	//	IsDepartmentOwner(auth),
+	//	CheckNamespace(auth),
+	//	CheckPermission(auth),
+	//	IsWithGranted(auth),
+	//)
+	server.POST("/user-login", gatewayServer.userLogin)
+	server.GET("/config", gatewayServer.userConfig)
+	//server.Any("/*any", func(g *gin.Context) {
+	//	if g.Request.RequestURI == "/user-login" {
+	//		gatewayServer.userLogin(g)
+	//		return
+	//	}
+	//
+	//	if g.Request.RequestURI == "/config" {
+	//		gatewayServer.userConfig(g)
+	//		return
+	//	}
+	//	g.Next()
+	//})
 
 	return gatewayServer
 }
@@ -65,14 +68,14 @@ func (gw *gatewayServer) userLogin(g *gin.Context) {
 		common.RequestParametersError(g, err)
 		return
 	}
-	bytes, err := gw.loginHandle.Auth(user)
+	userConfig, err := gw.loginHandle.Auth(user)
 	if err != nil {
-		g.JSON(http.StatusOK, gin.H{"msg": "账号或密码错误"})
+		g.JSON(http.StatusBadRequest, gin.H{"msg": "账号或密码错误"})
 		return
 	}
-	if bytes == nil {
-		g.JSON(http.StatusOK, gin.H{"msg": "账号或密码错误"})
+	if userConfig == nil {
+		g.JSON(http.StatusBadRequest, gin.H{"msg": "账号或密码错误"})
 		return
 	}
-	g.JSON(http.StatusOK, bytes)
+	g.JSON(http.StatusOK, userConfig)
 }

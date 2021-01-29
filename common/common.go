@@ -12,6 +12,7 @@ const (
 	HttpRequestUserHeaderKey = `x-wrapper-username`
 	MicroSaltUserHeader      = `go.micro.gateway.login`
 	AuthorizationHeader      = "Authorization"
+	RequestCompletedKey      = "Request-Completed"
 )
 
 var (
