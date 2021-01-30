@@ -79,6 +79,18 @@ const (
 	WorkloadEntry   ResourceType = "workloadentries"
 )
 
+type Op = string
+
+var (
+	tektonResource = map[string]map[string]bool{
+		Pipeline: {
+			"create": false,
+			"update": false,
+			"delete": false,
+		},
+	}
+)
+
 type IGVRMaps interface {
 	Subscribe(include ...string) []Resource
 }
