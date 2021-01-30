@@ -12,9 +12,9 @@ import (
 type BaseRoleSpec struct {
 	TenantId string `json:"tenant_id, omitempty`
 	// +optional
-	DepartmentId string                           `json:"department_id, omitempty"`
-	Value        uint32                           `json:"value, omitempty"`
-	Privilege    map[k8s.ResourceType]interface{} `json:"privilege, omitempty"`
+	DepartmentId string                      `json:"department_id, omitempty"`
+	Value        uint32                      `json:"value, omitempty"`
+	Privilege    map[k8s.ResourceType]string `json:"privilege, omitempty"`
 	// +optional
 	Comment string `json:"comment, omitempty"`
 }

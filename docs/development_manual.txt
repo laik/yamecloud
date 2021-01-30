@@ -1,0 +1,7 @@
+# how to create new type
+which type-scaffold
+```
+example:
+type-scaffold --kind Base --resource tenants
+
+```
