@@ -10,11 +10,14 @@ import (
 
 // BaseRoleSpec defines the desired state of BaseRole
 type BaseRoleSpec struct {
-	TenantId string `json:"tenant_id, omitempty`
 	// +optional
-	DepartmentId string                      `json:"department_id, omitempty"`
-	Value        uint32                      `json:"value, omitempty"`
-	Privilege    map[k8s.ResourceType]string `json:"privilege, omitempty"`
+	TenantId string `json:"tenant_id, omitempty"`
+	// +optional
+	DepartmentId string `json:"department_id, omitempty"`
+	// +optional
+	Namespaces []string `json:"namespaces, omitempty"`
+	// +optional
+	Privilege map[k8s.ResourceType][]string `json:"privilege, omitempty"`
 	// +optional
 	Comment string `json:"comment, omitempty"`
 }

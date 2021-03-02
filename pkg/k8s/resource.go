@@ -5,14 +5,14 @@ import (
 )
 
 const (
-	Water                    ResourceType = "water"
-	Deployment               ResourceType = "deployment"
-	Stone                    ResourceType = "stone"
-	StatefulSet              ResourceType = "statefulset"
-	StatefulSet1             ResourceType = "statefulset1"
+	Water                    ResourceType = "waters"
+	Deployment               ResourceType = "deployments"
+	Stone                    ResourceType = "stones"
+	StatefulSet              ResourceType = "statefulsets"
+	StatefulSet1             ResourceType = "statefulset1s"
 	DaemonSet                ResourceType = "daemonsets"
-	Injector                 ResourceType = "injector"
-	Pod                      ResourceType = "pod"
+	Injector                 ResourceType = "injectors"
+	Pod                      ResourceType = "pods"
 	Job                      ResourceType = "jobs"
 	CronJobs                 ResourceType = "cronjobs"
 	ReplicaSet               ResourceType = "replicasets"
@@ -33,7 +33,7 @@ const (
 	Role                     ResourceType = "roles"
 	ClusterRole              ResourceType = "clusterroles"
 	RoleBinding              ResourceType = "rolebindings"
-	Namespace                ResourceType = "namesapces"
+	Namespace                ResourceType = "namespaces"
 	PodSecurityPolicie       ResourceType = "podsecuritypolicies"
 	ClusterRoleBinding       ResourceType = "clusterrolebindings"
 	Endpoint                 ResourceType = "endpoints"
@@ -49,7 +49,7 @@ const (
 
 	// tenant for PaaS
 	BaseDepartment ResourceType = "basedepartments"
-	BaseTenant     ResourceType = "basedtenants"
+	BaseTenant     ResourceType = "basetenants"
 	BaseRole       ResourceType = "baseroles"
 	BaseUser       ResourceType = "baseusers"
 	BaseRoleUser   ResourceType = "baseroleusers"
@@ -67,6 +67,7 @@ const (
 	TaskRun          ResourceType = "taskruns"
 	PipelineResource ResourceType = "pipelineresources"
 	TektonGraph      ResourceType = "tektongraphs"
+	OpsSecret        ResourceType = "ops-secrets"
 	TektonWebHook    ResourceType = "tektonwebhooks"
 	TektonStore      ResourceType = "tektonstores"
 
@@ -126,10 +127,11 @@ var GVRMaps IGVRMaps = &groupVersionCollection{
 	Field: {Group: "fuxi.nip.io", Version: "v1", Resource: "fields"},
 
 	// PaaS RBAC
-	BaseDepartment: {Group: "fuxi.nip.io", Version: "v1", Resource: "basedepartments"},
-	BaseRole:       {Group: "fuxi.nip.io", Version: "v1", Resource: "baseroles"},
-	BaseUser:       {Group: "fuxi.nip.io", Version: "v1", Resource: "baseusers"},
-	BaseRoleUser:   {Group: "fuxi.nip.io", Version: "v1", Resource: "baseroleusers"},
+	BaseTenant:     {Group: "yamecloud.io", Version: "v1", Resource: "basetenants"},
+	BaseDepartment: {Group: "yamecloud.io", Version: "v1", Resource: "basedepartments"},
+	BaseRole:       {Group: "yamecloud.io", Version: "v1", Resource: "baseroles"},
+	BaseUser:       {Group: "yamecloud.io", Version: "v1", Resource: "baseusers"},
+	BaseRoleUser:   {Group: "yamecloud.io", Version: "v1", Resource: "baseroleusers"},
 
 	StatefulSet: {Group: "apps", Version: "v1", Resource: "statefulsets"},
 	DaemonSet:   {Group: "apps", Version: "v1", Resource: "daemonsets"},
@@ -177,6 +179,7 @@ var GVRMaps IGVRMaps = &groupVersionCollection{
 	TaskRun:          {Group: "tekton.dev", Version: "v1alpha1", Resource: "taskruns"},
 	PipelineResource: {Group: "tekton.dev", Version: "v1alpha1", Resource: "pipelineresources"},
 	TektonGraph:      {Group: "fuxi.nip.io", Version: "v1", Resource: "tektongraphs"},
+	OpsSecret:        {Group: "", Version: "v1", Resource: "secrets"},
 	TektonWebHook:    {Group: "fuxi.nip.io", Version: "v1", Resource: "tektonwebhooks"},
 	TektonStore:      {Group: "fuxi.nip.io", Version: "v1", Resource: "tektonstores"},
 

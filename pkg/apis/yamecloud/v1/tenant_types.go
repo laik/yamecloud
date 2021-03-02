@@ -9,8 +9,9 @@ import (
 
 // BaseTenant defines the desired state of BaseTenant
 type BaseTenantSpec struct {
-	Name        *string  `json:"name,omitempty"`
-	Departments []string `json:"departments,omitempty"`
+	Name       *string  `json:"name,omitempty"`
+	Owner      *string  `json:"owner,omitempty"`
+	Namespaces []string `json:"namespaces,omitempty"`
 }
 
 // BaseTenantStatus defines the observed state of BaseTenant
@@ -24,7 +25,7 @@ type BaseTenantStatus struct {
 
 // BaseTenant is the Schema for the basetents API
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:path=basetenant,scope=Namespaced
+// +kubebuilder:resource:path=basetenants,scope=Namespaced
 type BaseTenant struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

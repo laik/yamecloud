@@ -6,6 +6,7 @@ import (
 	"github.com/yametech/yamecloud/pkg/action/service"
 	"github.com/yametech/yamecloud/pkg/action/service/tenant"
 	"github.com/yametech/yamecloud/pkg/micro/gateway"
+	"github.com/yametech/yamecloud/pkg/utils"
 	"time"
 )
 
@@ -15,9 +16,10 @@ type LoginHandle struct {
 	roleServices     *tenant.BaseRole
 	deptServices     *tenant.BaseDepartment
 	tenantServices   *tenant.BaseTenant
+	auth             *gateway.Authorization
 }
 
-func (lh *LoginHandle) Auth(user *User) ([]byte, error) {
+func (lh *LoginHandle) Auth(user *User) (*userConfig, error) {
 	userObj, err := lh.userServices.Get("kube-system", user.Username)
 	if err != nil {
 		return nil, err
@@ -28,7 +30,7 @@ func (lh *LoginHandle) Auth(user *User) ([]byte, error) {
 	}
 	//baseUser := &v1.BaseUser{}
 	//runtimeObjectToInstanceObj(obj.Unstructured, baseUser)
-	if password != user.Password {
+	if utils.Sha1(user.Password) != password.(string) {
 		return nil, fmt.Errorf("password not match")
 	}
 
@@ -37,42 +39,32 @@ func (lh *LoginHandle) Auth(user *User) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(tokenStr)
-	// user AllowedNamespaces
-	specDeptId, err := userObj.Get("spec.department_id")
+
+	//check whether or not an admin
+	isAdmin, _ := lh.auth.IsAdmin(user.Username)
+
+	//check whether or not a tenant owner
+	isTenantOwner, err := lh.auth.IsTenantOwner(user.Username)
 	if err != nil {
 		return nil, err
 	}
-	deptId := specDeptId.(string)
-	deptObj, err := lh.deptServices.Get("kube-system", deptId)
+	//check whether or not a department owner
+	isDepartmentOwner, err := lh.auth.IsDepartmentOwner(user.Username)
 	if err != nil {
 		return nil, err
-	}
-	deptSpecNamespace, err := deptObj.Get("spec.namespace")
-	if err != nil {
-		return nil, err
-	}
-	var namespace []string
-	if deptSpecNamespace != nil {
-		namespace = deptSpecNamespace.([]string)
 	}
 
-	deptSpecDefaultNamespace, err := deptObj.Get("spec.default_namespace")
+	allowNamespaces, err := lh.auth.AllowNamespaces(user.Username, isAdmin, isTenantOwner, isDepartmentOwner)
 	if err != nil {
 		return nil, err
 	}
-	var defaultNamespace string
-	if deptSpecDefaultNamespace != nil {
-		defaultNamespace = deptSpecDefaultNamespace.(string)
-	}
 
-	return []byte(
-		NewUserConfig(
-			user.Username,
-			tokenStr,
-			namespace,
-			defaultNamespace,
-		).String(),
+	return NewUserConfig(
+		user.Username,
+		tokenStr,
+		allowNamespaces,
+		isAdmin,
+		isTenantOwner,
 	), nil
 }
 
@@ -83,6 +75,7 @@ func NewLoginHandle(svcInterface service.Interface) *LoginHandle {
 		roleServices:     tenant.NewBaseRole(svcInterface),
 		deptServices:     tenant.NewBaseDepartment(svcInterface),
 		tenantServices:   tenant.NewBaseTenant(svcInterface),
+		auth:             gateway.NewAuthorization(svcInterface),
 	}
 	return lh
 }

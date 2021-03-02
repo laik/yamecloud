@@ -3,7 +3,9 @@ package uri
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/yametech/yamecloud/pkg/permission"
 	"io"
+	"net/http"
 	"net/url"
 	"reflect"
 	"strings"
@@ -37,6 +39,7 @@ type URI struct {
 	_count  int
 	_offset int64
 	_url    string
+	_method string
 	uriStruct
 	// watch url need resource version
 	ResourceVersion string `json:"resource_version"`
@@ -44,7 +47,7 @@ type URI struct {
 
 // Parser yamecloud URI general interface analysis
 type Parser interface {
-	ParseOp(url string) (*URI, error)
+	ParseOp(method, url string) (*URI, error)
 	ParseWatch(url string) ([]*URI, error)
 }
 
@@ -175,22 +178,36 @@ func (u *URI) parseWatch() error {
 	return nil
 }
 
-func (p *parseImplement) ParseOp(url string) (*URI, error) {
-	return parse(url)
+func (p *parseImplement) ParseOp(method, url string) (*URI, error) {
+	return parse(method, url)
 }
 
-func parse(_url string) (*URI, error) {
+func parse(_method, _url string) (*URI, error) {
 	_URL, err := url.Parse(_url)
 	if err != nil {
 		return nil, err
 	}
 	uri := &URI{
-		_url:   _URL.Path,
-		_count: strings.Count(_URL.Path, separateKeyword),
+		_method: _method,
+		_url:    _URL.Path,
+		_count:  strings.Count(_URL.Path, separateKeyword),
 	}
 	if err := uri.parse(); err != nil {
 		return nil, err
 	}
+	if uri.Op == "" {
+		switch _method {
+		case http.MethodGet:
+			uri.Op = permission.View
+		case http.MethodPost:
+			uri.Op = permission.Apply
+		case http.MethodPut:
+			uri.Op = permission.Apply
+		case http.MethodDelete:
+			uri.Op = permission.Delete
+		}
+	}
+
 	return uri, nil
 }
 

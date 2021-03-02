@@ -13,12 +13,12 @@ type BaseRole struct {
 
 func NewBaseRole(svcInterface service.Interface) *BaseRole {
 	baseRole := &BaseRole{Interface: svcInterface}
-	svcInterface.Install(k8s.BaseUser, baseRole)
+	svcInterface.Install(k8s.BaseRole, baseRole)
 	return baseRole
 }
 
 func (b *BaseRole) Get(namespace, name string) (*service.UnstructuredExtend, error) {
-	item, err := b.Interface.Get(namespace, k8s.BaseUser, name)
+	item, err := b.Interface.Get(namespace, k8s.BaseRole, name)
 	if err != nil {
 		return nil, err
 	}

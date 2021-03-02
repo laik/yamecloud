@@ -22,11 +22,7 @@ func (uc *userConfig) String() string {
 	return string(bytesData)
 }
 
-func NewUserConfig(user string, token string, allowedNamespaces []string, defaultNamespace string) *userConfig {
-	isClusterAdmin := false
-	if user == "admin" {
-		isClusterAdmin = true
-	}
+func NewUserConfig(user string, token string, allowedNamespaces []string, isClusterAdmin, isTenantOwner bool) *userConfig {
 	return &userConfig{
 		LensVersion:       "1.0",
 		LensTheme:         "",
@@ -34,9 +30,9 @@ func NewUserConfig(user string, token string, allowedNamespaces []string, defaul
 		Token:             token,
 		AllowedNamespaces: allowedNamespaces,
 		IsClusterAdmin:    isClusterAdmin,
-		IsTenantOwner:     true,
+		IsTenantOwner:     isTenantOwner,
 		ChartEnable:       true,
 		KubectlAccess:     true,
-		DefaultNamespace:  defaultNamespace,
+		DefaultNamespace:  "",
 	}
 }
