@@ -152,6 +152,7 @@ func NamespaceFilter(auth IAuthorization) plugin.Handler {
 
 			op, err := uriParser.ParseOp(r.Method, r.URL.Path)
 			if err != nil {
+				fmt.Printf("username %s access url %s error: %v\n", username, r.URL.Path, err)
 				apiCommon.ResponseJSONFromError(w, http.StatusForbidden, username, err)
 				return
 			}
@@ -194,6 +195,7 @@ func PermissionFilter(auth IAuthorization) plugin.Handler {
 
 			op, err := uriParser.ParseOp(r.Method, r.URL.Path)
 			if err != nil {
+				fmt.Printf("username %s access url %s error: %v\n", username, r.URL.Path, err)
 				apiCommon.ResponseJSONFromError(w, http.StatusForbidden, username, err)
 				return
 			}

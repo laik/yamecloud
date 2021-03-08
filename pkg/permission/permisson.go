@@ -46,12 +46,7 @@ var Tree = TreeNode{
 		{
 			Name: "metrics",
 			Children: []*TreeNode{
-				{
-					Name: "metrics",
-					Children: []*TreeNode{
-						{Name: Metrics},
-					},
-				},
+				{Name: Metrics},
 			},
 		},
 		{

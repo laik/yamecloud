@@ -53,7 +53,7 @@ base:
 	docker build -t ${REPO}/base:${VERSION} -f images/Dockerfile.base .
 
 gateway:
-	docker build -t ${REPO}/base:${VERSION} -f images/Dockerfile.gateway .
+	docker build -t ${REPO}/gateway:${VERSION} -f images/Dockerfile.gateway .
 
 gateway_run:
 	go run cmd/gateway/*.go api --handler=http --address 0.0.0.0:8000
