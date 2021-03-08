@@ -16,12 +16,12 @@ RUN go mod download
 ADD . .
 
 # Build if not via apline enable static compiled => CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o build/base cmd/base/*.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o build/gateway cmd/gateway/*.go
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM alpine:latest
 WORKDIR /
-COPY --from=builder /workspace/build/base .
+COPY --from=builder /workspace/build/gateway .
 
-ENTRYPOINT ["/base"]
+ENTRYPOINT ["/gateway"]

@@ -252,33 +252,6 @@ func ServerFilter(self http.Handler) plugin.Handler {
 				self.ServeHTTP(w, r)
 				return
 			}
-
-			// Ignore uri
-			//if strings.Contains(r.URL.Path, "/workload/shell/pod") ||
-			//	strings.Contains(r.URL.Path, "/webhook") {
-			//	redirect.ServeHTTP(w, r)
-			//	return
-			//}
-
-			//tokenHeader := r.Header.Get("Authorization")
-			//userToken, e := _token.Decode(tokenHeader)
-			//if e != nil {
-			//	w.WriteHeader(http.StatusUnauthorized)
-			//	return
-			//}
-			//
-			//r.Header.Set(common.HttpRequestUserHeaderKey, userToken.UserName)
-
-			// all uri access authorization certainty
-			//self.ServeHTTP(w, r)
-
-			//isRequestCompleted := r.Header.Get(common.RequestCompletedKey)
-			//r.Header.Del(common.RequestCompletedKey)
-
-			// other uri redirect to backend service
-			//if isRequestCompleted != "true" {
-			//	redirect.ServeHTTP(w, r)
-			//}
 			redirect.ServeHTTP(w, r)
 		})
 	}
