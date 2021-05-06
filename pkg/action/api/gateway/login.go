@@ -2,13 +2,16 @@ package gateway
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/yametech/yamecloud/common"
 	"github.com/yametech/yamecloud/pkg/action/service"
 	"github.com/yametech/yamecloud/pkg/action/service/tenant"
 	"github.com/yametech/yamecloud/pkg/micro/gateway"
 	"github.com/yametech/yamecloud/pkg/utils"
-	"time"
 )
+
+const PASSWORD_NOT_MATH = "password not match"
 
 type LoginHandle struct {
 	userServices     *tenant.BaseUser
@@ -24,14 +27,14 @@ func (lh *LoginHandle) Auth(user *User) (*userConfig, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	password, err := userObj.Get("spec.password")
 	if err != nil {
-		return nil, fmt.Errorf("password not match")
+		return nil, fmt.Errorf(PASSWORD_NOT_MATH)
 	}
-	//baseUser := &v1.BaseUser{}
-	//runtimeObjectToInstanceObj(obj.Unstructured, baseUser)
+
 	if utils.Sha1(user.Password) != password.(string) {
-		return nil, fmt.Errorf("password not match")
+		return nil, fmt.Errorf(PASSWORD_NOT_MATH)
 	}
 
 	expireTime := time.Now().Add(time.Hour * 24).Unix()

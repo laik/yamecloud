@@ -1,10 +1,11 @@
 package gateway
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/yametech/yamecloud/pkg/action/api"
 	"github.com/yametech/yamecloud/pkg/action/api/common"
-	"net/http"
 )
 
 type gatewayServer struct {
@@ -46,11 +47,11 @@ func (gw *gatewayServer) userLogin(g *gin.Context) {
 	}
 	userConfig, err := gw.loginHandle.Auth(user)
 	if err != nil {
-		g.JSON(http.StatusBadRequest, gin.H{"msg": "账号或密码错误"})
+		g.JSON(http.StatusBadRequest, "incorrect username or password")
 		return
 	}
 	if userConfig == nil {
-		g.JSON(http.StatusBadRequest, gin.H{"msg": "账号或密码错误"})
+		g.JSON(http.StatusBadRequest, "incorrect username or password")
 		return
 	}
 	g.JSON(http.StatusOK, userConfig)
