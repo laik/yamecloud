@@ -150,7 +150,7 @@ func NamespaceFilter(auth IAuthorization) plugin.Handler {
 				isDepartmentOwner = true
 			}
 
-			op, err := uriParser.ParseOp(r.Method, r.URL.Path)
+			op, err := uriParser.ParseOp(r.Method, fmt.Sprintf("%s?%s", r.URL.Path, r.URL.RawQuery))
 			if err != nil {
 				fmt.Printf("username %s access url %s error: %v\n", username, r.URL.Path, err)
 				apiCommon.ResponseJSONFromError(w, http.StatusForbidden, username, err)
@@ -193,7 +193,7 @@ func PermissionFilter(auth IAuthorization) plugin.Handler {
 				return
 			}
 
-			op, err := uriParser.ParseOp(r.Method, r.URL.Path)
+			op, err := uriParser.ParseOp(r.Method, fmt.Sprintf("%s?%s", r.URL.Path, r.URL.RawQuery))
 			if err != nil {
 				fmt.Printf("username %s access url %s error: %v\n", username, r.URL.Path, err)
 				apiCommon.ResponseJSONFromError(w, http.StatusForbidden, username, err)
