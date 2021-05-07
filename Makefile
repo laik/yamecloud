@@ -1,6 +1,6 @@
 # the makefile describe
-REPO=harbor.ym/devops
-VERSION=0.0.1
+REPO=yametech
+VERSION=0.2.0
 
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
@@ -38,10 +38,20 @@ dep:
 build: dep
 	go build ./cmd/...
 
-build-image: servicemesh tekton service base
+build-image: servicemesh tekton service base gateway
+
+push-image: 
+	docker push ${REPO}/servicemesh:${VERSION}
+	docker push ${REPO}/tekton:${VERSION}
+	docker push ${REPO}/service:${VERSION}
+	docker push ${REPO}/base:${VERSION}
+	docker push ${REPO}/gateway:${VERSION}
+
+network:
+	docker build -t ${REPO}/network:${VERSION} -f images/Dockerfile.servicemesh .
 
 servicemesh:
-	docker build -t ${REPO}/service-mesh:${VERSION} -f images/Dockerfile.servicemesh .
+	docker build -t ${REPO}/servicemesh:${VERSION} -f images/Dockerfile.servicemesh .
 
 tekton:
 	docker build -t ${REPO}/tekton:${VERSION} -f images/Dockerfile.tekton .
@@ -53,4 +63,22 @@ base:
 	docker build -t ${REPO}/base:${VERSION} -f images/Dockerfile.base .
 
 gateway:
+	docker build -t ${REPO}/gateway:${VERSION} -f images/Dockerfile.gateway .
+
+gateway_run:
 	go run cmd/gateway/*.go api --handler=http --address 0.0.0.0:8000
+
+base_run:
+	go run cmd/base/*.go api
+
+service_run:
+	go run cmd/service/*.go api
+
+servicemesh_run:
+	go run cmd/servicemesh/*.go api
+
+tekton_run:
+	go run cmd/service/*.go api
+
+workload_run:
+	go run cmd/workload/*.go api

@@ -8,5 +8,5 @@ import (
 
 // Tree Permission
 func (s *baseServer) treePermission(g *gin.Context) {
-	g.JSON(http.StatusOK, permission.PermissionTree)
+	g.JSON(http.StatusOK, permission.Tree)
 }

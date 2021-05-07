@@ -1,10 +1,11 @@
 package gateway
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/yametech/yamecloud/pkg/action/api"
 	"github.com/yametech/yamecloud/pkg/action/api/common"
-	"net/http"
 )
 
 type gatewayServer struct {
@@ -23,31 +24,8 @@ func NewGatewayServer(serviceName string, server *api.Server) *gatewayServer {
 		// action service
 		loginHandle: NewLoginHandle(server.Interface),
 	}
-	//auth := NewAuthorization(server.Interface)
-	//server.Use(
-	//	IsNeedSkip(auth),
-	//	ValidateToken(auth),
-	//	IsAdmin(auth),
-	//	IsTenantOwner(auth),
-	//	IsDepartmentOwner(auth),
-	//	CheckNamespace(auth),
-	//	CheckPermission(auth),
-	//	IsWithGranted(auth),
-	//)
 	server.POST("/user-login", gatewayServer.userLogin)
 	server.GET("/config", gatewayServer.userConfig)
-	//server.Any("/*any", func(g *gin.Context) {
-	//	if g.Request.RequestURI == "/user-login" {
-	//		gatewayServer.userLogin(g)
-	//		return
-	//	}
-	//
-	//	if g.Request.RequestURI == "/config" {
-	//		gatewayServer.userConfig(g)
-	//		return
-	//	}
-	//	g.Next()
-	//})
 
 	return gatewayServer
 }
@@ -58,7 +36,6 @@ type User struct {
 }
 
 func (gw *gatewayServer) userConfig(g *gin.Context) {
-
 	g.JSON(http.StatusOK, nil)
 }
 
@@ -70,11 +47,11 @@ func (gw *gatewayServer) userLogin(g *gin.Context) {
 	}
 	userConfig, err := gw.loginHandle.Auth(user)
 	if err != nil {
-		g.JSON(http.StatusBadRequest, gin.H{"msg": "账号或密码错误"})
+		g.JSON(http.StatusBadRequest, "incorrect username or password")
 		return
 	}
 	if userConfig == nil {
-		g.JSON(http.StatusBadRequest, gin.H{"msg": "账号或密码错误"})
+		g.JSON(http.StatusBadRequest, "incorrect username or password")
 		return
 	}
 	g.JSON(http.StatusOK, userConfig)

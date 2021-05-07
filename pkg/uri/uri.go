@@ -3,13 +3,14 @@ package uri
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/yametech/yamecloud/pkg/permission"
 	"io"
 	"net/http"
 	"net/url"
 	"reflect"
 	"strings"
 	"unsafe"
+
+	"github.com/yametech/yamecloud/pkg/permission"
 )
 
 const (
@@ -187,20 +188,28 @@ func parse(_method, _url string) (*URI, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	uri := &URI{
 		_method: _method,
 		_url:    _URL.Path,
 		_count:  strings.Count(_URL.Path, separateKeyword),
 	}
+
 	if err := uri.parse(); err != nil {
 		return nil, err
 	}
+
 	if uri.Op == "" {
 		switch _method {
 		case http.MethodGet:
 			uri.Op = permission.View
 		case http.MethodPost:
-			uri.Op = permission.Apply
+			if uri.Resource == "metrics" {
+				uri.Op = permission.Metrics
+				uri.Namespace = _URL.Query().Get("kubernetes_namespace")
+			} else {
+				uri.Op = permission.Apply
+			}
 		case http.MethodPut:
 			uri.Op = permission.Apply
 		case http.MethodDelete:
@@ -223,7 +232,12 @@ func (u *URI) parse() error {
 		case 1:
 			u.Service = item
 			continue
+
 		case 2:
+			if item == "metrics" {
+				u.Resource = "metrics"
+				continue
+			}
 			u.API = item
 			continue
 		}
@@ -244,6 +258,11 @@ func (u *URI) parse() error {
 		case "api":
 			switch index {
 			case 3:
+				// add metrics parse
+				if item == "metrics" {
+					u.Resource = item
+					continue
+				}
 				u.Version = item
 				continue
 			case 4:

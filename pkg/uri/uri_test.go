@@ -224,6 +224,8 @@ func Test_parseOp(t *testing.T) {
 	}
 
 	expectedStructs := []expectedStruct{
+		{http.MethodPost, "/workload/api/metrics?start=1615188480&end=1615192080&step=60&kubernetes_namespace=im", uriStruct{Service: "workload", API: "api", Resource: "metrics", Namespace: "im", Op: "metrics"}},
+		{http.MethodPost, "/workload/metrics?start=1615188480&end=1615192080&step=60&kubernetes_namespace=im", uriStruct{Service: "workload", API: "", Resource: "metrics", Namespace: "im", Op: "metrics"}},
 		{http.MethodGet, "/workload/api/v1/pods", uriStruct{Service: "workload", API: "api", Namespace: "", Version: "v1", Resource: "pods", ResourceName: "", Op: "view"}},
 		{http.MethodGet, "/workload/api/v1/namespaces", uriStruct{Service: "workload", API: "api", Namespace: "", Version: "v1", Resource: "namespaces", ResourceName: "", Op: "view"}},
 		{http.MethodGet, "/workload/api/v1/namespaces/im", uriStruct{Service: "workload", API: "api", Namespace: "im", Version: "v1", Resource: "namespaces", ResourceName: "im", Op: "view"}},

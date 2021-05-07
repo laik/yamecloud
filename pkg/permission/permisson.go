@@ -14,6 +14,7 @@ const (
 	Label    OpName = "label"
 	Run      OpName = "run"
 	Rerun    OpName = "rerun"
+	Metrics  OpName = "metrics"
 )
 
 type TreeNode struct {
@@ -21,7 +22,8 @@ type TreeNode struct {
 	Children []*TreeNode `json:"children"`
 }
 
-var PermissionTree = TreeNode{
+// Rename to Tree
+var Tree = TreeNode{
 	Name: "compass",
 	Children: []*TreeNode{
 		{
@@ -39,6 +41,12 @@ var PermissionTree = TreeNode{
 				{Name: Apply},
 				{Name: Delete},
 				{Name: Annotate},
+			},
+		},
+		{
+			Name: "metrics",
+			Children: []*TreeNode{
+				{Name: Metrics},
 			},
 		},
 		{

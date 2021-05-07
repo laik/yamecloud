@@ -2,23 +2,23 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: base
-  name: base
+    app: base-test
+  name: base-test
   namespace: kube-system
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: base
+      app: base-test
   template:
     metadata:
       labels:
-        app: base
+        app: base-test
     spec:
       serviceAccount: fuxi-app
       containers:
-        - name: base
-          image: harbor.ym/devops/base:0.0.1
+        - name: base-test
+          image: harbor.ym/devops/base:test-0.2.0
           args: [ "--registry", "etcd", "--registry_address", "etcd.kube-system.svc.cluster.local:2379" ]
           imagePullPolicy: Always
           env:
