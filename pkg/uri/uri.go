@@ -240,7 +240,7 @@ func (u *URI) parse() error {
 			}
 
 			if item == "attach" {
-				u.Resource = "pod"
+				u.Resource = "pods"
 				u.Op = "attach"
 				continue
 			}
