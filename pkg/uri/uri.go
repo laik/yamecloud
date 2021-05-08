@@ -238,6 +238,13 @@ func (u *URI) parse() error {
 				u.Resource = "metrics"
 				continue
 			}
+
+			if item == "attach" {
+				u.Resource = "pod"
+				u.Op = "attach"
+				continue
+			}
+
 			u.API = item
 			continue
 		}
@@ -250,6 +257,12 @@ func (u *URI) parse() error {
 		if lastOp {
 			u.Op = item
 			continue
+		}
+
+		if u.Op == "attach" && index == 4 {
+			u.Namespace = item
+		} else if u.Op == "attach" && index == 6 {
+			u.ResourceName = item
 		}
 
 		///workload/api/v1/namespaces/im/pods
