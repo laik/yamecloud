@@ -1,11 +1,12 @@
 package gateway
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/yametech/yamecloud/common"
 	"github.com/yametech/yamecloud/pkg/action/api"
-	"github.com/yametech/yamecloud/pkg/action/api/common"
+	api_common "github.com/yametech/yamecloud/pkg/action/api/common"
+	"github.com/yametech/yamecloud/pkg/micro/gateway"
+	"net/http"
 )
 
 type gatewayServer struct {
@@ -36,13 +37,25 @@ type User struct {
 }
 
 func (gw *gatewayServer) userConfig(g *gin.Context) {
-	g.JSON(http.StatusOK, nil)
+	tokenStr := g.GetHeader(common.AuthorizationHeader)
+	cc, err := (&gateway.Token{}).Decode(tokenStr)
+	if err != nil {
+		api_common.RequestParametersError(g, err)
+		return
+	}
+	user := &User{Username: cc.UserName}
+	userConfig, err := gw.loginHandle.getUserConfig(user, tokenStr)
+	if err != nil {
+		api_common.RequestParametersError(g, err)
+		return
+	}
+	g.JSON(http.StatusOK, userConfig.String())
 }
 
 func (gw *gatewayServer) userLogin(g *gin.Context) {
 	user := &User{}
 	if err := g.ShouldBindJSON(user); err != nil {
-		common.RequestParametersError(g, err)
+		api_common.RequestParametersError(g, err)
 		return
 	}
 	userConfig, err := gw.loginHandle.Auth(user)

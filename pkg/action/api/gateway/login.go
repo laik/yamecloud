@@ -22,27 +22,7 @@ type LoginHandle struct {
 	auth             *gateway.Authorization
 }
 
-func (lh *LoginHandle) Auth(user *User) (*userConfig, error) {
-	userObj, err := lh.userServices.Get("kube-system", user.Username)
-	if err != nil {
-		return nil, err
-	}
-
-	password, err := userObj.Get("spec.password")
-	if err != nil {
-		return nil, fmt.Errorf(PASSWORD_NOT_MATH)
-	}
-
-	if utils.Sha1(user.Password) != password.(string) {
-		return nil, fmt.Errorf(PASSWORD_NOT_MATH)
-	}
-
-	expireTime := time.Now().Add(time.Hour * 24).Unix()
-	tokenStr, err := (&gateway.Token{}).Encode(common.MicroSaltUserHeader, user.Username, expireTime)
-	if err != nil {
-		return nil, err
-	}
-
+func (lh *LoginHandle) getUserConfig(user *User, tokenStr string) (*userConfig, error) {
 	//check whether or not an admin
 	isAdmin, _ := lh.auth.IsAdmin(user.Username)
 
@@ -69,6 +49,30 @@ func (lh *LoginHandle) Auth(user *User) (*userConfig, error) {
 		isAdmin,
 		isTenantOwner,
 	), nil
+}
+
+func (lh *LoginHandle) Auth(user *User) (*userConfig, error) {
+	userObj, err := lh.userServices.Get("kube-system", user.Username)
+	if err != nil {
+		return nil, err
+	}
+
+	password, err := userObj.Get("spec.password")
+	if err != nil {
+		return nil, fmt.Errorf(PASSWORD_NOT_MATH)
+	}
+
+	if utils.Sha1(user.Password) != password.(string) {
+		return nil, fmt.Errorf(PASSWORD_NOT_MATH)
+	}
+
+	expireTime := time.Now().Add(time.Hour * 24).Unix()
+	tokenStr, err := (&gateway.Token{}).Encode(common.MicroSaltUserHeader, user.Username, expireTime)
+	if err != nil {
+		return nil, err
+	}
+
+	return lh.getUserConfig(user, tokenStr)
 }
 
 func NewLoginHandle(svcInterface service.Interface) *LoginHandle {

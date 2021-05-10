@@ -140,12 +140,15 @@ func NamespaceFilter(auth IAuthorization) plugin.Handler {
 			isTenantOwner := false
 			isDepartmentOwner := false
 			userIdentification := r.Header.Get(UserIdentification)
+
 			if userIdentification == string(Admin) {
 				isAdmin = true
 			}
+
 			if userIdentification == string(TenantOwner) {
 				isTenantOwner = true
 			}
+
 			if userIdentification == string(DepartmentOwner) {
 				isDepartmentOwner = true
 			}
@@ -244,13 +247,7 @@ func ServerFilter(self http.Handler) plugin.Handler {
 	return func(redirect http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-			if strings.EqualFold(r.URL.Path, "/user-login") {
-				self.ServeHTTP(w, r)
-				return
-			}
-
-			// user login return CaaS config
-			if r.Method == http.MethodGet && r.URL.Path == "/config" {
+			if strings.EqualFold(r.URL.Path, "/user-login") || strings.EqualFold(r.URL.Path, "/config") {
 				self.ServeHTTP(w, r)
 				return
 			}
