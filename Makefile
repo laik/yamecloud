@@ -38,14 +38,14 @@ dep:
 build: dep
 	go build ./cmd/...
 
-build-image: servicemesh tekton service base gateway
-
+build-image: servicemesh tekton service base gateway shell push-image
 push-image: 
 	docker push ${REPO}/servicemesh:${VERSION}
 	docker push ${REPO}/tekton:${VERSION}
 	docker push ${REPO}/service:${VERSION}
 	docker push ${REPO}/base:${VERSION}
 	docker push ${REPO}/gateway:${VERSION}
+	docker push ${REPO}/shell:${VERSION}
 
 network:
 	docker build -t ${REPO}/network:${VERSION} -f images/Dockerfile.servicemesh .
