@@ -23,8 +23,8 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 )
 
-// END_OF_TRANSMISSION terminal end of
-const END_OF_TRANSMISSION = "\u0004"
+// EndOfTransmission terminal end of
+const EndOfTransmission = "\u0004"
 
 // OP      DIRECTION  FIELD(S) USED  DESCRIPTION
 type OP uint8
@@ -46,11 +46,11 @@ const (
 	OUTEXIT // 6
 )
 
-type ShellType string
+type Type string
 
 const (
-	DebugShell  ShellType = "debug"
-	CommonShell ShellType = "common"
+	DebugShell  Type = "debug"
+	CommonShell Type = "common"
 )
 
 // Global import the package init the session manager
@@ -133,19 +133,15 @@ func (sm *sessionManager) process(request *attachPodRequest, cmd []string, pty P
 	if err != nil {
 		return err
 	}
-	err = exec.Stream(
+
+	return exec.Stream(
 		remotecommand.StreamOptions{
 			Stdin:             pty,
 			Stdout:            pty,
 			Stderr:            pty,
-			TerminalSizeQueue: pty,
 			Tty:               true,
+			TerminalSizeQueue: pty,
 		})
-
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 // sessionChannels a http connect
@@ -163,6 +159,7 @@ type sessionChannels struct {
 type message struct {
 	Data, SessionID string
 	Rows, Cols      uint16
+	Width, Height   uint16
 	Op              OP
 }
 
@@ -178,14 +175,14 @@ func (s *sessionChannels) Next() *remotecommand.TerminalSize {
 
 // Write impl io.Writer
 func (s *sessionChannels) Write(p []byte) (int, error) {
-	msg, err := json.Marshal(
-		message{
-			Op:   STDOUT,
-			Data: string(p),
-		})
+	msg, err := json.Marshal(message{
+		Op:   STDOUT,
+		Data: string(p),
+	})
 	if err != nil {
 		return 0, err
 	}
+
 	if err = s.session.Send(string(msg)); err != nil {
 		return 0, err
 	}
@@ -196,11 +193,10 @@ func (s *sessionChannels) Write(p []byte) (int, error) {
 // Toast can be used to send the user any OOB messages
 // hterm puts these in the center of the terminal
 func (s *sessionChannels) Toast(p string) error {
-	msg, err := json.Marshal(
-		message{
-			Op:   TOAST,
-			Data: p,
-		})
+	msg, err := json.Marshal(message{
+		Op:   TOAST,
+		Data: p,
+	})
 	if err != nil {
 		return err
 	}
@@ -220,30 +216,28 @@ func (s *sessionChannels) Read(p []byte) (n int, err error) {
 	var msg message
 	err = json.Unmarshal([]byte(m), &msg)
 	if err != nil {
-		return copy(p, END_OF_TRANSMISSION), err
+		return copy(p, EndOfTransmission), err
 	}
 
 	switch msg.Op {
 	case STDIN:
 		return copy(p, msg.Data), nil
-	case INEXIT: // exit from clientv2 event
-		return 0, fmt.Errorf("clientv2 exit")
+	case INEXIT: // exit from client v2 event
+		return 0, fmt.Errorf("client v2 exit")
 	case RESIZE:
 		s.sizeChan <- remotecommand.TerminalSize{
-			Width:  msg.Cols,
-			Height: msg.Rows,
+			Width:  msg.Width,
+			Height: msg.Height,
 		}
 		return 0, nil
 	default:
-		return copy(p, END_OF_TRANSMISSION), fmt.Errorf("unknown message type '%d'", msg.Op)
+		return copy(p, EndOfTransmission), fmt.Errorf("unknown message type '%d'", msg.Op)
 	}
 }
 
 func createAttachHandler(path string) http.Handler {
-	sessionID := sockjs.DefaultJSessionID
-	defaultOption := sockjs.DefaultOptions
-	defaultOption.JSessionID = sessionID
-	return sockjs.NewHandler(path, defaultOption, HandleTerminalSession)
+	sockjs.DefaultOptions.JSessionID = sockjs.DefaultJSessionID
+	return sockjs.NewHandler(path, sockjs.DefaultOptions, HandleTerminalSession)
 }
 
 func HandleTerminalSession(session sockjs.Session) {
@@ -421,7 +415,7 @@ func (sm *sessionManager) lanuchDebugPod(request *attachPodRequest, pty PtyHandl
 	//	authStr = string(registrySecret.Data["authStr"])
 	//}
 
-	cmd := []string{"/bin/bash", "-l"}
+	cmd := []string{"/bin/bash", "-c", "export COLUMNS=1000000000", "&&", "export TERM=xterm"}
 
 	commandBytes, err := json.Marshal(cmd)
 	if err != nil {
