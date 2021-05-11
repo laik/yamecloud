@@ -46,7 +46,7 @@ const (
 	OUTEXIT // 6
 )
 
-type Type string
+type Type = string
 
 const (
 	DebugShell  Type = "debug"
@@ -377,25 +377,21 @@ func (sm *sessionManager) lanuchDebugPod(request *attachPodRequest, pty PtyHandl
 		return err
 	}
 
-	// TODO: refactor as kubernetes api style, reuse rbac mechanism of kubernetes
-	var targetHost string
-	targetHost = pod.Status.HostIP
-	//TODO:fix hardcode. should remove const or configMap.will be daynamic
-	agentPort := 10027
-	uri, err := url.Parse(fmt.Sprintf("http://%s:%d", targetHost, agentPort))
+	uri, err := url.Parse(fmt.Sprintf("http://%s:%d", pod.Status.HostIP, 10027))
 	if err != nil {
 		return err
 	}
 	uri.Path = fmt.Sprintf("/api/v1/debug")
 	params := url.Values{}
-	//TODO: hardcode,should use front end. Interactive Design probelm
-	image := "nicolaka/netshoot:latest"
-	params.Add("image", image)
+
+	if request.Image == "" {
+		request.Image = "nicolaka/netshoot:latest"
+	}
+	params.Add("image", request.Image)
 	params.Add("container", containerID)
 	params.Add("verbosity", fmt.Sprintf("%v", "0"))
 	hstNm, _ := os.Hostname()
 	params.Add("hostname", hstNm)
-
 	params.Add("username", "")
 	//TODO: should be set false
 	params.Add("lxcfsEnabled", "true")
@@ -415,8 +411,7 @@ func (sm *sessionManager) lanuchDebugPod(request *attachPodRequest, pty PtyHandl
 	//	authStr = string(registrySecret.Data["authStr"])
 	//}
 
-	cmd := []string{"/bin/bash", "-c", "export COLUMNS=1000000000", "&&", "export TERM=xterm"}
-
+	cmd := []string{"/bin/bash"}
 	commandBytes, err := json.Marshal(cmd)
 	if err != nil {
 		return err
@@ -428,7 +423,6 @@ func (sm *sessionManager) lanuchDebugPod(request *attachPodRequest, pty PtyHandl
 }
 
 func (sm *sessionManager) launchCommonPod(request *attachPodRequest, session *sessionChannels) error {
-
 	var err error
 	validShells := []string{"bash", "sh", "csh"}
 	if isValidShell(validShells, request.Shell) {
@@ -457,11 +451,11 @@ func waitForTerminal(request *attachPodRequest, sessionId string) {
 
 	defer close(session.bound)
 	var err error
-	if request.ShellType == string(DebugShell) {
-		err = globalSessionManager.lanuchDebugPod(request, session)
-	}
 
-	if request.ShellType == string(CommonShell) {
+	switch request.ShellType {
+	case DebugShell:
+		err = globalSessionManager.lanuchDebugPod(request, session)
+	default:
 		err = globalSessionManager.launchCommonPod(request, session)
 	}
 

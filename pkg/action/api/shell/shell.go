@@ -43,6 +43,7 @@ type attachPodRequest struct {
 	Container string `json:"container"`
 	Shell     string `json:"shell"`
 	ShellType string `json:"shellType"`
+	Image     string `json:"image"`
 }
 
 func wrapH(h http.Handler) gin.HandlerFunc {
@@ -64,6 +65,7 @@ func (s *shellServer) podAttach(g *gin.Context) {
 		Container: g.Param("container"),
 		ShellType: g.Param("shelltype"),
 		Shell:     g.Query("shell"),
+		Image:     g.Query("image"),
 	}
 
 	sessionId := generateTerminalSessionId()
