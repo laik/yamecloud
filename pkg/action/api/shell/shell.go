@@ -2,10 +2,11 @@ package shell
 
 import (
 	"fmt"
+	"net/http"
+
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/yametech/yamecloud/pkg/action/api"
@@ -33,7 +34,6 @@ func NewShellServer(serviceName string, server *api.Server, clientSet *kubernete
 	group.Any("/shell/pod/*path", serveHttp)
 	group.GET("/attach/namespace/:namespace/pod/:name/container/:container/:shelltype", shellServer.podAttach)
 
-	_ = group
 	return shellServer
 }
 
