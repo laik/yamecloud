@@ -52,9 +52,9 @@ func NewInstallConfigure(resLister k8s.ResourceLister) (*InstallConfigure, error
 	}
 
 	installConfigure := &InstallConfigure{
-		Interface: dynInterface,
-		Config:    resetConfig,
-
+		Interface:            dynInterface,
+		Config:               resetConfig,
+		Clientset:            clientSet,
 		ResourceLister:       resLister,
 		CacheInformerFactory: cacheInformerFactory,
 	}

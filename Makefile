@@ -65,6 +65,9 @@ base:
 gateway:
 	docker build -t ${REPO}/gateway:${VERSION} -f images/Dockerfile.gateway .
 
+shell:
+	docker build -t ${REPO}/shell:${VERSION} -f images/Dockerfile.shell .
+
 gateway_run:
 	go run cmd/gateway/*.go api --handler=http --address 0.0.0.0:8000
 

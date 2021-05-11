@@ -118,7 +118,7 @@ func (s *baseServer) UpdateBaseUser(g *gin.Context) {
 	}
 	password := utils.Get(_unstructured.Object, "spec.password")
 
-	if specPassword != password {
+	if specPassword.(string) != utils.Sha1(password.(string)) {
 		utils.Set(_unstructured.Object, "spec.password", utils.Sha1(password.(string)))
 	}
 
