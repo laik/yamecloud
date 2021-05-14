@@ -5,6 +5,7 @@ import (
 	"github.com/yametech/yamecloud/pkg/k8s"
 	"github.com/yametech/yamecloud/pkg/utils"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/watch"
 	"strconv"
 	"strings"
 )
@@ -84,6 +85,7 @@ type Interface interface {
 	Apply(namespace string, resource k8s.ResourceType, name string, unstructuredExtend *UnstructuredExtend) (*UnstructuredExtend, bool, error)
 	ForceUpdate(namespace string, resource k8s.ResourceType, name string, unstructuredExtend *UnstructuredExtend) (*UnstructuredExtend, error)
 	Delete(namespace string, resource k8s.ResourceType, name string) error
+	Watch(namespace string, resource k8s.ResourceType, resourceVersion string, selector string) (<-chan watch.Event, error)
 	Install(k8s.ResourceType, IResourceService)
 }
 
@@ -96,6 +98,10 @@ type Service struct {
 
 func (s *Service) Install(resourceType k8s.ResourceType, r IResourceService) {
 	s.services[resourceType] = r
+}
+
+func (s *Service) Watch(namespace string, resource k8s.ResourceType, resourceVersion string, selector string) (<-chan watch.Event, error) {
+	return s.Interface.Watch(namespace, resource, resourceVersion, selector)
 }
 
 func (s *Service) Apply(namespace string, resource k8s.ResourceType, name string, unstructuredExtend *UnstructuredExtend) (*UnstructuredExtend, bool, error) {
@@ -138,6 +144,10 @@ var _ Interface = &FakeService{}
 
 type FakeService struct {
 	Data map[string]interface{}
+}
+
+func (f *FakeService) Watch(namespace string, resource k8s.ResourceType, resourceVersion string, selector string) (<-chan watch.Event, error) {
+	panic("implement me")
 }
 
 func (f *FakeService) ForceUpdate(namespace string, resource k8s.ResourceType, name string, unstructuredExtend *UnstructuredExtend) (*UnstructuredExtend, error) {

@@ -252,6 +252,18 @@ type uriStruct2 struct {
 	ResourceVersion string
 }
 
+func urisToUriStruct2(uris []*URI) []uriStruct2 {
+	uri2s := make([]uriStruct2, 0, 2)
+	for _, uri := range uris {
+		uriStruct2 := uriStruct2{
+			uriStruct:       uri.uriStruct,
+			ResourceVersion: uri.ResourceVersion,
+		}
+		uri2s = append(uri2s, uriStruct2)
+	}
+	return uri2s
+}
+
 // TODO
 func Test_parseWatch(t *testing.T) {
 	parser := NewURIParser()
@@ -262,38 +274,34 @@ func Test_parseWatch(t *testing.T) {
 	}
 
 	expectedStructs := []expectedStruct{
-		{`http://compass.ym/api/watch?api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fpipelineruns%3Fwatch%3D1%26resourceVersion%3D167634323&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Ftaskruns%3Fwatch%3D1%26resourceVersion%3D167634323&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Ftasks%3Fwatch%3D1%26resourceVersion%3D167634323&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fpipelines%3Fwatch%3D1%26resourceVersion%3D167634323&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fpipelineresources%3Fwatch%3D1%26resourceVersion%3D167634323&api=%2Fapi%2Fv1%2Fnamespaces%3Fwatch%3D1%26resourceVersion%3D167634332`,
+		{`http://compass.ym/watcher/watch?api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fpipelineruns%3Fwatch%3D1%26resourceVersion%3D167634323&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Ftaskruns%3Fwatch%3D1%26resourceVersion%3D167634323&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Ftasks%3Fwatch%3D1%26resourceVersion%3D167634323&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fpipelines%3Fwatch%3D1%26resourceVersion%3D167634323&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fpipelineresources%3Fwatch%3D1%26resourceVersion%3D167634323&api=%2Fapi%2Fv1%2Fnamespaces%3Fwatch%3D1%26resourceVersion%3D167634332`,
 			[]uriStruct2{
-				{ResourceVersion: "", uriStruct: uriStruct{}},
-				{ResourceVersion: "", uriStruct: uriStruct{}},
-				{ResourceVersion: "", uriStruct: uriStruct{}},
-				{ResourceVersion: "", uriStruct: uriStruct{}},
-				{ResourceVersion: "", uriStruct: uriStruct{}},
-				{ResourceVersion: "", uriStruct: uriStruct{}},
-			},
-		},
-		{`http://compass.ym/api/watch?api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fsw-userops%2Fpipelineruns%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fchewu-dev%2Fpipelineruns%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fyce-cloud-extensions-ops%2Fpipelineruns%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fsw-userops%2Ftaskruns%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fchewu-dev%2Ftaskruns%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fyce-cloud-extensions-ops%2Ftaskruns%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fsw-userops%2Ftasks%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fchewu-dev%2Ftasks%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fyce-cloud-extensions-ops%2Ftasks%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fsw-userops%2Fpipelines%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fchewu-dev%2Fpipelines%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fyce-cloud-extensions-ops%2Fpipelines%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fsw-userops%2Fpipelineresources%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fchewu-dev%2Fpipelineresources%3Fwatch%3D1%26resourceVersion%3D167664896&api=%2Fapis%2Ftekton.dev%2Fv1alpha1%2Fnamespaces%2Fyce-cloud-extensions-ops%2Fpipelineresources%3Fwatch%3D1%26resourceVersion%3D167664896`,
-			[]uriStruct2{
-				{ResourceVersion: "", uriStruct: uriStruct{}},
-				{ResourceVersion: "", uriStruct: uriStruct{}},
-				{ResourceVersion: "", uriStruct: uriStruct{}},
-				{ResourceVersion: "", uriStruct: uriStruct{}},
-				{ResourceVersion: "", uriStruct: uriStruct{}},
-				{ResourceVersion: "", uriStruct: uriStruct{}},
+				{ResourceVersion: "167634323", uriStruct: uriStruct{API: "apis", Group: "tekton.dev", Version: "v1alpha1", Namespace: "", Resource: "pipelineruns"}},
+				{ResourceVersion: "167634323", uriStruct: uriStruct{API: "apis", Group: "tekton.dev", Version: "v1alpha1", Namespace: "", Resource: "taskruns"}},
+				{ResourceVersion: "167634323", uriStruct: uriStruct{API: "apis", Group: "tekton.dev", Version: "v1alpha1", Namespace: "", Resource: "tasks"}},
+				{ResourceVersion: "167634323", uriStruct: uriStruct{API: "apis", Group: "tekton.dev", Version: "v1alpha1", Namespace: "", Resource: "pipelines"}},
+				{ResourceVersion: "167634323", uriStruct: uriStruct{API: "apis", Group: "tekton.dev", Version: "v1alpha1", Namespace: "", Resource: "pipelineresources"}},
+				{ResourceVersion: "167634332", uriStruct: uriStruct{API: "api", Group: "", Version: "v1", Namespace: "", Resource: "namespaces"}},
 			},
 		},
 	}
 
 	_ = parser
 	_ = expectedStructs
-	uris, err := parser.ParseWatch(expectedStructs[0].uri)
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	////expectedUris := []*URI{
-	////
-	////}
-	_ = uris
+	for _, e := range expectedStructs {
+		uris, err := parser.ParseWatch(e.uri)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		result := urisToUriStruct2(uris)
+
+		if !reflect.DeepEqual(&e.uriStruct2s, &result) {
+			t.Fatalf("src %v not equal to dest %v", e.uriStruct2s, result)
+		}
+
+		_ = uris
+	}
 
 }

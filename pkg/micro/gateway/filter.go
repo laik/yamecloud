@@ -49,20 +49,17 @@ func ValidateTokenFilter(auth IAuthorization) plugin.Handler {
 			}
 			token := r.Header.Get(common.AuthorizationHeader)
 			if token == "" {
-				//apiCommon.Unauthorized(c, "")
-				//SetRequestCompletedFlag(c.Request)
-				//w.WriteHeader(http.StatusUnauthorized)
-				apiCommon.ResponseJSON(w, http.StatusUnauthorized, nil, UnauthorizedMessage)
+				apiCommon.ResponseJSON(w, http.StatusUnauthorized, fmt.Sprintf("METHOD: %s URL: %s", r.Method, r.URL), UnauthorizedMessage)
 				return
 			}
+
 			//decode token
 			decodeToken, err := auth.ValidateToken(token)
 			if err != nil {
-				//apiCommon.Unauthorized(c, decodeToken)
-				//SetRequestCompletedFlag(c.Request)
 				apiCommon.ResponseJSONFromError(w, http.StatusUnauthorized, token, err)
 				return
 			}
+
 			r.Header.Add(AuthorizationUserName, decodeToken.UserName)
 			h.ServeHTTP(w, r)
 		})
@@ -79,9 +76,7 @@ func IdentificationFilter(auth IAuthorization) plugin.Handler {
 			}
 			username := r.Header.Get(AuthorizationUserName)
 			if username == "" {
-				//apiCommon.Forbidden(c, "")
-				//SetRequestCompletedFlag(c.Request)
-				apiCommon.ResponseJSON(w, http.StatusForbidden, nil, ForbiddenMessage)
+				apiCommon.ResponseJSON(w, http.StatusForbidden, fmt.Sprintf("METHOD: %s URL: %s", r.Method, r.URL), ForbiddenMessage)
 				return
 			}
 			isAdmin, err := auth.IsAdmin(username)
@@ -132,7 +127,7 @@ func NamespaceFilter(auth IAuthorization) plugin.Handler {
 
 			username := r.Header.Get(AuthorizationUserName)
 			if username == "" {
-				apiCommon.ResponseJSON(w, http.StatusForbidden, nil, ForbiddenMessage)
+				apiCommon.ResponseJSON(w, http.StatusForbidden, fmt.Sprintf("METHOD: %s URL: %s", r.Method, r.URL), ForbiddenMessage)
 				return
 			}
 
@@ -155,19 +150,21 @@ func NamespaceFilter(auth IAuthorization) plugin.Handler {
 
 			op, err := uriParser.ParseOp(r.Method, fmt.Sprintf("%s?%s", r.URL.Path, r.URL.RawQuery))
 			if err != nil {
-				fmt.Printf("username %s access url %s error: %v\n", username, r.URL.Path, err)
-				apiCommon.ResponseJSONFromError(w, http.StatusForbidden, username, err)
+				apiCommon.ResponseJSONFromError(w, http.StatusForbidden,
+					fmt.Sprintf("user: %s op: %s resource: %s", username, op.Op, op.Resource), err)
 				return
 			}
+
 			checkNamespace, err := auth.CheckNamespace(username, op.Namespace, isAdmin, isTenantOwner, isDepartmentOwner)
 			if err != nil {
-				apiCommon.ResponseJSONFromError(w, http.StatusForbidden, username, err)
+				apiCommon.ResponseJSONFromError(w, http.StatusForbidden, fmt.Sprintf("user: %s op: %s resource: %s namespace: %s", username, op.Op, op.Resource, op.Namespace), err)
 				return
 			}
 			if !checkNamespace {
-				apiCommon.ResponseJSON(w, http.StatusForbidden, username, ForbiddenMessage)
+				apiCommon.ResponseJSON(w, http.StatusForbidden, fmt.Sprintf("user: %s op: %s resource: %s namespace: %s", username, op.Op, op.Resource, op.Namespace), ForbiddenMessage)
 				return
 			}
+
 			h.ServeHTTP(w, r)
 		})
 	}
@@ -195,15 +192,13 @@ func PermissionFilter(auth IAuthorization) plugin.Handler {
 				h.ServeHTTP(w, r)
 				return
 			}
-
 			op, err := uriParser.ParseOp(r.Method, fmt.Sprintf("%s?%s", r.URL.Path, r.URL.RawQuery))
 			if err != nil {
-				fmt.Printf("username %s access url %s error: %v\n", username, r.URL.Path, err)
 				apiCommon.ResponseJSONFromError(w, http.StatusForbidden, username, err)
 				return
 			}
+
 			checkPermission, err := auth.CheckPermission(username, op)
-			fmt.Println(username, "access", r.URL.Path, ", checkPermission=", checkPermission)
 			if err != nil {
 				apiCommon.ResponseJSONFromError(w, http.StatusForbidden, username, err)
 				return
