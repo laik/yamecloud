@@ -76,10 +76,10 @@ var subscribeList = k8s.GVRMaps.Subscribe(
 	k8s.BaseRoleUser,
 
 	// network for container ovn/ovs control plant
-	//k8s.IP,
-	//k8s.SubNet,
-	//k8s.Vlan,
-	//k8s.NetworkAttachmentDefinition,
+	k8s.IP,
+	k8s.SubNet,
+	k8s.Vlan,
+	k8s.NetworkAttachmentDefinition,
 
 	//tekton
 	k8s.Pipeline,

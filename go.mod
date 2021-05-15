@@ -1,6 +1,6 @@
 module github.com/yametech/yamecloud
 
-go 1.14
+go 1.16
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -17,7 +17,8 @@ require (
 
 replace (
 	github.com/coreos/etcd => github.com/yametech/etcd v3.3.20-grpc1.27-origmodule+incompatible
-	github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
+	github.com/micro/go-micro/v2 => github.com/yametech/go-micro-2.9.1/v2 v2.0.0-20210515101553-bf309f80bb28
+	github.com/micro/micro/v2 => github.com/yametech/micro-2.9.3/v2 v2.0.0-20210515104251-6a140d397ddb
 	google.golang.org/grpc => google.golang.org/grpc v1.27.0
 	k8s.io/api => k8s.io/api v0.20.6
 	k8s.io/apimachinery => k8s.io/apimachinery v0.20.6
