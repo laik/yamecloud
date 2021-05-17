@@ -9,7 +9,7 @@ import (
 	"io"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
-	"time"
+	"sync"
 )
 
 type watcherServer struct {
@@ -39,7 +39,7 @@ type watcherEvent struct {
 }
 
 func (s *watcherServer) watch(g *gin.Context) {
-	watcherEventChan := make(chan watch.Event, 32)
+	watcherEventChan := make(chan watcherEvent, 32)
 	errors := make(chan error)
 	fullURL := g.Request.URL.String()
 	ctx, cancel := context.WithCancel(context.Background())
@@ -53,9 +53,6 @@ func (s *watcherServer) watch(g *gin.Context) {
 		URL:    fullURL,
 		Status: 410,
 	}
-
-	ticker := time.NewTicker(20 * time.Second)
-	defer ticker.Stop()
 
 	g.Stream(func(w io.Writer) bool {
 		select {
@@ -78,22 +75,21 @@ func (s *watcherServer) watch(g *gin.Context) {
 				return false
 			}
 			g.SSEvent("", event)
-
-		case <-ticker.C:
-			g.SSEvent("", "")
 		}
 
 		return true
 	})
 }
 
-func (s *watcherServer) startWatch(url string, ctx context.Context, writeEventChan chan<- watch.Event) error {
+func (s *watcherServer) startWatch(url string, ctx context.Context, writeEventChan chan<- watcherEvent) error {
 	uris, err := s.parser.ParseWatch(url)
 	if err != nil {
 		return err
 	}
 
 	closes := make([]chan struct{}, 0)
+	wg := sync.WaitGroup{}
+	wg.Add(len(uris))
 	for _, u := range uris {
 		eventC, err := s.Watch(u.Namespace, u.Resource, u.ResourceVersion, "")
 		if err != nil {
@@ -101,13 +97,17 @@ func (s *watcherServer) startWatch(url string, ctx context.Context, writeEventCh
 		}
 		_close := make(chan struct{})
 		go func() {
+			defer wg.Done()
 			for {
 				select {
 				case event, ok := <-eventC:
 					if !ok {
 						return
 					}
-					writeEventChan <- event
+					writeEventChan <- watcherEvent{
+						Type:   event.Type,
+						Object: event.Object,
+					}
 				case <-_close:
 					return
 				}
@@ -121,6 +121,8 @@ func (s *watcherServer) startWatch(url string, ctx context.Context, writeEventCh
 			_close <- struct{}{}
 		}
 	}()
+
+	wg.Wait()
 
 	return nil
 }

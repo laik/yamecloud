@@ -26,7 +26,7 @@ const serviceName = "terminal"
 const version = "latest"
 
 var subscribeList = k8s.GVRMaps.Subscribe(
-	k8s.Pod,
+//k8s.Pod,
 )
 
 func main() {

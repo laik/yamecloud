@@ -37,6 +37,7 @@ var adminList = []string{"admin"}
 var excludeMap = map[string]string{
 	"/user-login":           http.MethodPost,
 	"/workload/watch":       http.MethodGet,
+	"/watcher/watch":        http.MethodGet,
 	"/base/permission_tree": http.MethodGet,
 }
 

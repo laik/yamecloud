@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/yametech/yamecloud/pkg/action/api"
 	apiService "github.com/yametech/yamecloud/pkg/action/api/watcher"
 	"github.com/yametech/yamecloud/pkg/action/service"
@@ -11,6 +10,8 @@ import (
 	"github.com/yametech/yamecloud/pkg/k8s"
 	"github.com/yametech/yamecloud/pkg/k8s/datasource"
 	"github.com/yametech/yamecloud/pkg/k8s/types"
+	"os"
+	"strings"
 )
 
 /*
@@ -25,7 +26,7 @@ export IN_CLUSTER=true
 const serviceName = "watcher"
 const version = "latest"
 
-var subscribeList = k8s.GVRMaps.Subscribe(
+var defaultResources = []string{
 	k8s.Water,
 	k8s.Deployment,
 	k8s.Stone,
@@ -62,47 +63,81 @@ var subscribeList = k8s.GVRMaps.Subscribe(
 	// deployment resource workload template for CaaS
 	k8s.WorkloadsTemplate,
 
-	// form render
-	//k8s.FormRender,
-	//k8s.Page,
-	//k8s.Form,
-	//k8s.Field,
-
 	// tenant for PaaS
 	k8s.BaseDepartment,
 	k8s.BaseTenant,
 	k8s.BaseRole,
 	k8s.BaseUser,
 	k8s.BaseRoleUser,
+}
 
-	// network for container ovn/ovs control plant
-	k8s.IP,
-	k8s.SubNet,
-	k8s.Vlan,
-	k8s.NetworkAttachmentDefinition,
+var needDescSubscribeMap = map[string]k8s.ResourceType{
+	"ip":                          k8s.IP,
+	"subnet":                      k8s.SubNet,
+	"vlan":                        k8s.Vlan,
+	"networkAttachmentDefinition": k8s.NetworkAttachmentDefinition,
 
 	//tekton
-	k8s.Pipeline,
-	k8s.PipelineRun,
-	k8s.Task,
-	k8s.TaskRun,
-	k8s.PipelineResource,
-	k8s.TektonGraph,
-	k8s.OpsSecret,
-	k8s.TektonWebHook,
-	k8s.TektonStore,
+	"pipeline":         k8s.Pipeline,
+	"pipelinerun":      k8s.PipelineRun,
+	"task":             k8s.Task,
+	"taskrun":          k8s.TaskRun,
+	"pipelineresource": k8s.PipelineResource,
+	"tektongraph":      k8s.TektonGraph,
+	"opssecret":        k8s.OpsSecret,
+	"tektonwebhook":    k8s.TektonWebHook,
+	"tektonstore":      k8s.TektonStore,
 
 	//Istio  NetWorking
-	k8s.Gateway,
-	k8s.DestinationRule,
-	k8s.ServiceEntry,
-	k8s.Sidecar,
-	k8s.VirtualService,
-	k8s.WorkloadEntry,
-)
+	"gateway":         k8s.Gateway,
+	"destinationrule": k8s.DestinationRule,
+	"serviceentry":    k8s.ServiceEntry,
+	"sidecar":         k8s.Sidecar,
+	"virtualservice":  k8s.VirtualService,
+	"workloadentry":   k8s.WorkloadEntry,
+}
+
+func subscribeMapList(includes ...string) []string {
+	result := make([]string, 0)
+	for _, v := range needDescSubscribeMap {
+		pass := false
+		if len(includes) != 0 {
+			for _, item := range includes {
+				if v == item {
+					pass = true
+				}
+			}
+		}
+		if len(includes) != 0 && !pass {
+			continue
+		}
+		result = append(result, v)
+	}
+
+	return result
+}
+
+var subscribeList []string
+
+var subscribeListString string
 
 func main() {
-	config, err := configure.NewInstallConfigure(types.NewResourceITypes(subscribeList))
+	subscribeListString := os.Getenv("SUBLIST")
+
+	subscribeList = append(subscribeList, defaultResources...)
+
+	if subscribeListString == "*" {
+		subscribeList = append(subscribeList, subscribeMapList()...)
+	} else if subscribeListString != "" {
+		subscribeList = strings.Split(subscribeListString, ",")
+		subscribeList = append(subscribeList, subscribeMapList(subscribeList...)...)
+	}
+
+	fmt.Printf("service watch resource: %v\n", subscribeList)
+
+	resourceList := k8s.GVRMaps.Subscribe(subscribeList...)
+
+	config, err := configure.NewInstallConfigure(types.NewResourceITypes(resourceList))
 	if err != nil {
 		panic(fmt.Sprintf("new install configure error %s", err))
 	}
