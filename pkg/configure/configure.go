@@ -32,7 +32,7 @@ func NewInstallConfigure(resLister k8s.ResourceLister) (*InstallConfigure, error
 	)
 
 	if common.InCluster {
-		_, resetConfig, err = client.CreateInClusterConfig()
+		clientSet, resetConfig, err = client.CreateInClusterConfig()
 		if err != nil {
 			return nil, err
 		}
