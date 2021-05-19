@@ -40,10 +40,8 @@ func (s *baseServer) ListBaseDepartment(g *gin.Context) {
 	g.JSON(http.StatusOK, list)
 }
 
-// Update or Create BaseDepartment
+// ApplyBaseDepartment Update or Create BaseDepartment
 func (s *baseServer) ApplyBaseDepartment(g *gin.Context) {
-	namespace := g.Param("namespace")
-
 	raw, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("get raw data error (%s)", err))
@@ -62,7 +60,7 @@ func (s *baseServer) ApplyBaseDepartment(g *gin.Context) {
 	}
 
 	name := _unstructured.GetName()
-	newUnstructuredExtend, isUpdate, err := s.BaseDepartment.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := s.BaseDepartment.Apply("", name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return

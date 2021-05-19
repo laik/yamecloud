@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 
 	"github.com/yametech/yamecloud/pkg/action/api"
@@ -18,7 +17,7 @@ import (
 export MICRO_SERVER_ADDRESS=0.0.0.0:8080
 */
 
-const serviceName = "network"
+const serviceName = "sdn"
 const version = "latest"
 
 var subscribeList = k8s.GVRMaps.Subscribe(
@@ -29,8 +28,6 @@ var subscribeList = k8s.GVRMaps.Subscribe(
 )
 
 func main() {
-	flag.Parse()
-
 	config, err := configure.NewInstallConfigure(types.NewResourceITypes(subscribeList))
 	if err != nil {
 		panic(fmt.Sprintf("new install configure error %s", err))

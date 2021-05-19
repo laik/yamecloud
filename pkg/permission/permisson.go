@@ -314,7 +314,7 @@ var Tree = TreeNode{
 			},
 		},
 		{
-			Name: "network",
+			Name: "sdn",
 			Children: []*TreeNode{
 				{
 					Name: k8s.Service,

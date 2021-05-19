@@ -34,48 +34,43 @@ func NewBaseServer(serviceName string, server *api.Server) *baseServer {
 	// BaseTenant
 	{
 		group.GET("/apis/yamecloud.io/v1/basetenants", baseServer.ListBaseTenant)
-		group.GET("/apis/yamecloud.io/v1/namespaces/:namespace/basetenants", baseServer.ListBaseTenant)
-		group.GET("/apis/yamecloud.io/v1/namespaces/:namespace/basetenants/:name", baseServer.GetBaseTenant)
-		group.POST("/apis/yamecloud.io/v1/namespaces/:namespace/basetenants", baseServer.ApplyBaseTenant)
-		group.DELETE("/apis/yamecloud.io/v1/namespaces/:namespace/basetenants/:name", baseServer.DeleteBaseTenant)
+		group.GET("/apis/yamecloud.io/v1/basetenants/:name", baseServer.GetBaseTenant)
+		group.POST("/apis/yamecloud.io/v1/basetenants", baseServer.ApplyBaseTenant)
+		group.DELETE("/apis/yamecloud.io/v1/basetenants/:name", baseServer.DeleteBaseTenant)
 	}
 
 	// BaseDepartment
 	{
 		group.GET("/apis/yamecloud.io/v1/basedepartments", baseServer.ListBaseDepartment)
-		group.GET("/apis/yamecloud.io/v1/namespaces/:namespace/basedepartments", baseServer.ListBaseDepartment)
-		group.GET("/apis/yamecloud.io/v1/namespaces/:namespace/basedepartments/:name", baseServer.GetBaseDepartment)
-		group.POST("/apis/yamecloud.io/v1/namespaces/:namespace/basedepartments", baseServer.ApplyBaseDepartment)
-		group.DELETE("/apis/yamecloud.io/v1/namespaces/:namespace/basedepartments/:name", baseServer.DeleteBaseDepartment)
+		group.GET("/apis/yamecloud.io/v1/basedepartments/:name", baseServer.GetBaseDepartment)
+		group.POST("/apis/yamecloud.io/v1/basedepartments", baseServer.ApplyBaseDepartment)
+		group.DELETE("/apis/yamecloud.io/v1/basedepartments/:name", baseServer.DeleteBaseDepartment)
 	}
 
 	// BaseRole
 	{
 		group.GET("/apis/yamecloud.io/v1/baseroles", baseServer.ListBaseRole)
-		group.GET("/apis/yamecloud.io/v1/namespaces/:namespace/baseroles", baseServer.ListBaseRole)
-		group.GET("/apis/yamecloud.io/v1/namespaces/:namespace/baseroles/:name", baseServer.GetBaseRole)
-		group.POST("/apis/yamecloud.io/v1/namespaces/:namespace/baseroles", baseServer.ApplyBaseRole)
-		group.PUT("/apis/yamecloud.io/v1/namespaces/:namespace/baseroles/:name", baseServer.UpdateBaseRole)
-		group.DELETE("/apis/yamecloud.io/v1/namespaces/:namespace/baseroles/:name", baseServer.DeleteBaseRole)
+		group.GET("/apis/yamecloud.io/v1/baseroles/:name", baseServer.GetBaseRole)
+		group.POST("/apis/yamecloud.io/v1/baseroles", baseServer.ApplyBaseRole)
+		group.PUT("/apis/yamecloud.io/v1/baseroles/:name", baseServer.UpdateBaseRole)
+		group.DELETE("/apis/yamecloud.io/v1/baseroles/:name", baseServer.DeleteBaseRole)
 	}
 
 	// BaseUser
 	{
 		group.GET("/apis/yamecloud.io/v1/baseusers", baseServer.ListBaseUser)
-		group.GET("/apis/yamecloud.io/v1/namespaces/:namespace/baseusers", baseServer.ListBaseUser)
-		group.GET("/apis/yamecloud.io/v1/namespaces/:namespace/baseusers/:name", baseServer.GetBaseUser)
-		group.POST("/apis/yamecloud.io/v1/namespaces/:namespace/baseusers", baseServer.ApplyBaseUser)
-		group.PUT("/apis/yamecloud.io/v1/namespaces/:namespace/baseusers/:name", baseServer.UpdateBaseUser)
-		group.DELETE("/apis/yamecloud.io/v1/namespaces/:namespace/baseusers/:name", baseServer.DeleteBaseUser)
+		group.GET("/apis/yamecloud.io/v1/baseusers/:name", baseServer.GetBaseUser)
+		group.POST("/apis/yamecloud.io/v1/baseusers", baseServer.ApplyBaseUser)
+		group.PUT("/apis/yamecloud.io/v1/baseusers/:name", baseServer.UpdateBaseUser)
+		group.DELETE("/apis/yamecloud.io/v1/baseusers/:name", baseServer.DeleteBaseUser)
 	}
 
 	// BaseRoleUser
 	{
 		group.GET("/apis/yamecloud.io/v1/baseroleusers", baseServer.ListBaseRoleUser)
-		group.GET("/apis/yamecloud.io/v1/namespaces/:namespace/baseroleusers", baseServer.ListBaseRoleUser)
-		group.GET("/apis/yamecloud.io/v1/namespaces/:namespace/baseroleusers/:name", baseServer.GetBaseRoleUser)
-		group.POST("/apis/yamecloud.io/v1/namespaces/:namespace/baseroleusers", baseServer.ApplyBaseRoleUser)
-		group.DELETE("/apis/yamecloud.io/v1/namespaces/:namespace/baseroleusers/:name", baseServer.DeleteBaseRoleUser)
+		group.GET("/apis/yamecloud.io/v1/baseroleusers/:name", baseServer.GetBaseRoleUser)
+		group.POST("/apis/yamecloud.io/v1/baseroleusers", baseServer.ApplyBaseRoleUser)
+		group.DELETE("/apis/yamecloud.io/v1/baseroleusers/:name", baseServer.DeleteBaseRoleUser)
 	}
 
 	//permission

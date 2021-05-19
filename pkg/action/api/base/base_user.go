@@ -40,10 +40,8 @@ func (s *baseServer) ListBaseUser(g *gin.Context) {
 	g.JSON(http.StatusOK, list)
 }
 
-// Update or Create BaseUser
+// ApplyBaseUser Update or Create BaseUser
 func (s *baseServer) ApplyBaseUser(g *gin.Context) {
-	namespace := g.Param("namespace")
-
 	raw, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("get raw data error (%s)", err))
@@ -66,7 +64,7 @@ func (s *baseServer) ApplyBaseUser(g *gin.Context) {
 	utils.Set(_unstructured.Object, "spec.password", utils.Sha1(password.(string)))
 
 	name := _unstructured.GetName()
-	newUnstructuredExtend, isUpdate, err := s.BaseUser.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := s.BaseUser.Apply("", name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
@@ -156,6 +154,7 @@ func (s *baseServer) ValidateBaseUserData(g *gin.Context, data *unstructured.Uns
 	if specTenantId == "" {
 		return fmt.Errorf("spec.tenant_id is null")
 	}
+
 	tenantId := specTenantId.(string)
 	err := s.CheckTenantId(g, tenantId)
 	if err != nil {
@@ -167,16 +166,18 @@ func (s *baseServer) ValidateBaseUserData(g *gin.Context, data *unstructured.Uns
 	selector := fmt.Sprintf("tenant.yamecloud.io=%s", tenantId)
 	if specDepartmentId != nil && specDepartmentId != "" {
 		departmentId := specDepartmentId.(string)
-		departmentObjList, err := s.BaseDepartment.List("kube-system", selector)
+		departmentObjList, err := s.BaseDepartment.List("", selector)
 		if err != nil {
 			return fmt.Errorf("list department error (%s)", err)
 		}
+
 		flag := false
 		for _, item := range departmentObjList.Items {
 			if item.GetName() == departmentId {
 				flag = true
 			}
 		}
+
 		if !flag {
 			return fmt.Errorf("illegal department (%s)", departmentId)
 		}
@@ -187,15 +188,18 @@ func (s *baseServer) ValidateBaseUserData(g *gin.Context, data *unstructured.Uns
 
 	specRoles := utils.Get(data.Object, "spec.roles")
 	roles := utils.ToStringArray(specRoles)
+
 	if len(roles) > 0 {
-		roleObjList, err := s.BaseRole.List("kube-system", selector)
+		roleObjList, err := s.BaseRole.List("", selector)
 		if err != nil {
 			return fmt.Errorf("list role error (%s)", err)
 		}
+
 		roleMap := make(map[string]int, 0)
 		for _, item := range roleObjList.Items {
 			roleMap[item.GetName()]++
 		}
+
 		for _, role := range roles {
 			if _, exist := roleMap[role]; !exist {
 				return fmt.Errorf("illegal role (%s)", role)

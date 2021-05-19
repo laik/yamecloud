@@ -6,10 +6,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/yametech/yamecloud/pkg/action/api"
 	"github.com/yametech/yamecloud/pkg/uri"
+	"github.com/yametech/yamecloud/pkg/utils"
 	"io"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
+	"strings"
 	"sync"
+	"time"
 )
 
 type watcherServer struct {
@@ -54,6 +57,8 @@ func (s *watcherServer) watch(g *gin.Context) {
 		Status: 410,
 	}
 
+	ticker := time.NewTicker(30 * time.Second)
+
 	g.Stream(func(w io.Writer) bool {
 		select {
 		case <-g.Writer.CloseNotify():
@@ -75,6 +80,9 @@ func (s *watcherServer) watch(g *gin.Context) {
 				return false
 			}
 			g.SSEvent("", event)
+
+		case <-ticker.C:
+			g.SSEvent("", "{}")
 		}
 
 		return true
@@ -104,6 +112,9 @@ func (s *watcherServer) startWatch(url string, ctx context.Context, writeEventCh
 					if !ok {
 						return
 					}
+					if rewriteOpsSecret(writeEventChan, event) {
+						continue
+					}
 					writeEventChan <- watcherEvent{
 						Type:   event.Type,
 						Object: event.Object,
@@ -125,4 +136,27 @@ func (s *watcherServer) startWatch(url string, ctx context.Context, writeEventCh
 	wg.Wait()
 
 	return nil
+}
+
+func rewriteOpsSecret(eventChan chan<- watcherEvent, item watch.Event) bool {
+	if item.Object.GetObjectKind().GroupVersionKind().Kind != "Secret" {
+		return false
+	}
+
+	secret, err := utils.ObjectToUnstructured(item.Object)
+	if err != nil {
+		return false
+	}
+
+	if _, exist := secret.GetLabels()["tekton"]; !exist {
+		return false
+	}
+	selfLink := secret.GetSelfLink()
+	secret.SetSelfLink(strings.Replace(selfLink, "/secrets", "/ops-secrets", 1))
+	eventChan <- watcherEvent{
+		Type:   item.Type,
+		Object: item.Object,
+	}
+
+	return true
 }

@@ -40,10 +40,8 @@ func (s *baseServer) ListBaseTenant(g *gin.Context) {
 	g.JSON(http.StatusOK, list)
 }
 
-// Update or Create BaseTenant
+// ApplyBaseTenant Update or Create BaseTenant
 func (s *baseServer) ApplyBaseTenant(g *gin.Context) {
-	namespace := g.Param("namespace")
-
 	raw, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("get raw data error (%s)", err))
@@ -61,7 +59,7 @@ func (s *baseServer) ApplyBaseTenant(g *gin.Context) {
 		common.RequestParametersError(g, fmt.Errorf("check tenantId error (%s)", err))
 		return
 	}
-	newUnstructuredExtend, isUpdate, err := s.BaseTenant.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := s.BaseTenant.Apply("", name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
@@ -78,7 +76,7 @@ func (s *baseServer) ApplyBaseTenant(g *gin.Context) {
 	}
 }
 
-// Delete BaseTenant
+// DeleteBaseTenant none
 func (s *baseServer) DeleteBaseTenant(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
@@ -97,23 +95,29 @@ func (s *baseServer) DeleteBaseTenant(g *gin.Context) {
 func (s *baseServer) generateSelector(g *gin.Context) (string, error) {
 	selector := ""
 	userIdentification := g.Request.Header.Get(gateway.UserIdentification)
+
 	if userIdentification == "" || userIdentification != string(gateway.Admin) {
 		username := g.Request.Header.Get(gateway.AuthorizationUserName)
-		userObj, err := s.BaseUser.Get("kube-system", username)
+		userObj, err := s.BaseUser.Get("", username)
 		if err != nil {
 			return selector, err
 		}
+
 		specTenantId, err := userObj.Get("spec.tenant_id")
 		if err != nil {
 			return selector, err
 		}
+
 		if specTenantId == nil {
 			return selector, err
 		}
+
 		tenantId := specTenantId.(string)
 		selector = fmt.Sprintf("tenant.yamecloud.io=%s", tenantId)
+
 		return selector, nil
 	}
+
 	return selector, nil
 }
 
@@ -124,16 +128,19 @@ func (s *baseServer) CheckTenantId(g *gin.Context, tenantId string) error {
 	}
 
 	username := g.Request.Header.Get(gateway.AuthorizationUserName)
-	userObj, err := s.BaseUser.Get("kube-system", username)
+	userObj, err := s.BaseUser.Get("", username)
 	if err != nil {
 		return fmt.Errorf("get user error (%s)", username)
 	}
+
 	specTenantId, err := userObj.Get("spec.tenant_id")
 	if err != nil {
 		return fmt.Errorf("get spec.tenant_id error (%s)", username)
 	}
+
 	if tenantId != specTenantId.(string) {
 		return fmt.Errorf("illegal tenantId (%s)", tenantId)
 	}
+
 	return nil
 }

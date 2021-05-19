@@ -93,7 +93,7 @@ func (auth *Authorization) IsAdmin(userName string) (bool, error) {
 
 //check whether a user is a tenant owner
 func (auth *Authorization) IsTenantOwner(userName string) (bool, error) {
-	userObj, err := auth.userServices.Get("kube-system", userName)
+	userObj, err := auth.userServices.Get("", userName)
 	if err != nil {
 		return false, err
 	}
@@ -110,7 +110,7 @@ func (auth *Authorization) IsTenantOwner(userName string) (bool, error) {
 
 //check whether a user is a department owner
 func (auth *Authorization) IsDepartmentOwner(userName string) (bool, error) {
-	userObj, err := auth.userServices.Get("kube-system", userName)
+	userObj, err := auth.userServices.Get("", userName)
 	if err != nil {
 		return false, err
 	}
@@ -123,7 +123,7 @@ func (auth *Authorization) IsDepartmentOwner(userName string) (bool, error) {
 	}
 	tenantId := specTenantId.(string)
 	selector := fmt.Sprintf("tenant.yamecloud.io=%s", tenantId)
-	deptObjList, err := auth.deptServices.List("kube-system", selector)
+	deptObjList, err := auth.deptServices.List("", selector)
 	if err != nil {
 		return false, err
 	}
@@ -147,7 +147,7 @@ func (auth *Authorization) IsDepartmentOwner(userName string) (bool, error) {
 
 //check whether a user is with granted
 func (auth *Authorization) IsWithGranted(userName string) (bool, error) {
-	userObj, err := auth.userServices.Get("kube-system", userName)
+	userObj, err := auth.userServices.Get("", userName)
 	if err != nil {
 		return false, err
 	}
@@ -172,7 +172,7 @@ func (auth *Authorization) CheckPermission(userName string, uri *uri.URI) (bool,
 		}
 	}
 	for _, role := range roles {
-		roleObj, err := auth.roleServices.Get("kube-system", role)
+		roleObj, err := auth.roleServices.Get("", role)
 		if err != nil {
 			continue
 		}
@@ -217,7 +217,7 @@ func (auth *Authorization) AllowNamespaces(username string, isAdmin, isTenantOwn
 		return nil, nil
 	}
 
-	userObj, _ := auth.userServices.Get("kube-system", username)
+	userObj, _ := auth.userServices.Get("", username)
 	// user AllowedNamespaces
 	allowNamespaces := make([]string, 0)
 	if isTenantOwner {
@@ -254,7 +254,7 @@ func (auth *Authorization) AllowNamespaces(username string, isAdmin, isTenantOwn
 		}
 		tenantId := specTenantId.(string)
 		selector := fmt.Sprintf("tenant.yamecloud.io=%s", tenantId)
-		deptObjList, err := auth.deptServices.List("kube-system", selector)
+		deptObjList, err := auth.deptServices.List("", selector)
 		if err != nil {
 			return nil, err
 		}
@@ -277,13 +277,14 @@ func (auth *Authorization) AllowNamespaces(username string, isAdmin, isTenantOwn
 			}
 		}
 	}
+
 	specRoles, err := userObj.Get("spec.roles")
 	if err != nil {
 		return nil, err
 	}
 	if specRoles != nil {
 		for _, item := range specRoles.([]interface{}) {
-			roleObj, err := auth.roleServices.Get("kube-system", item.(string))
+			roleObj, err := auth.roleServices.Get("", item.(string))
 			if err != nil {
 				continue
 			}
@@ -303,7 +304,7 @@ func (auth *Authorization) AllowNamespaces(username string, isAdmin, isTenantOwn
 }
 
 func (auth *Authorization) getUserRoles(username string) ([]string, error) {
-	userObj, err := auth.userServices.Get("kube-system", username)
+	userObj, err := auth.userServices.Get("", username)
 	if err != nil {
 		return nil, err
 	}

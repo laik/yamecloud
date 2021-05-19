@@ -42,6 +42,7 @@ type BaseDepartmentStatus struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // BaseDepartment is the Schema for the basedepartments API
+// +kubebuilder:resource:scope=Cluster
 type BaseDepartment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

@@ -18,7 +18,8 @@ const (
 var (
 	// InCluster Flag for the application runtime
 	InCluster bool
-	// DefaultConfigFile is the default bootstrap configuration
+
+	// KubeConfig DefaultConfigFile is the default bootstrap configuration
 	KubeConfig *string
 )
 

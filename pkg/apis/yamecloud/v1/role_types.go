@@ -32,6 +32,7 @@ type BaseRoleStatus struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // BaseRole is the Schema for the baseroles API
+// +kubebuilder:resource:scope=Cluster
 type BaseRole struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

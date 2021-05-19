@@ -52,7 +52,7 @@ func (lh *LoginHandle) getUserConfig(user *User, tokenStr string) (*userConfig, 
 }
 
 func (lh *LoginHandle) Auth(user *User) (*userConfig, error) {
-	userObj, err := lh.userServices.Get("kube-system", user.Username)
+	userObj, err := lh.userServices.Get("", user.Username)
 	if err != nil {
 		return nil, err
 	}

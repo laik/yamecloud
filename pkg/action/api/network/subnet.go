@@ -10,15 +10,15 @@ import (
 	"net/http"
 )
 
-// GetNetWorkAttachment none
-func (s *networkServer) GetNetWorkAttachment(g *gin.Context) {
-	namespace := g.Param("namespace")
+// GetSubNet none
+func (s *networkServer) GetSubNet(g *gin.Context) {
+	//namespace := g.Param("namespace")
 	name := g.Param("name")
-	if namespace == "" || name == "" {
-		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
+	if name == "" {
+		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", "", name))
 		return
 	}
-	item, err := s.NetworkAttachmentDefinition.Get(namespace, name)
+	item, err := s.SubNet.Get("", name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -26,9 +26,9 @@ func (s *networkServer) GetNetWorkAttachment(g *gin.Context) {
 	g.JSON(http.StatusOK, item)
 }
 
-// ListNetWorkAttachment none
-func (s *networkServer) ListNetWorkAttachment(g *gin.Context) {
-	list, err := s.NetworkAttachmentDefinition.List(g.Param("namespace"), "")
+// ListSubNet list all subnet
+func (s *networkServer) ListSubNet(g *gin.Context) {
+	list, err := s.SubNet.List("", "")
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
@@ -36,9 +36,9 @@ func (s *networkServer) ListNetWorkAttachment(g *gin.Context) {
 	g.JSON(http.StatusOK, list)
 }
 
-// ApplyNetWorkAttachment Update or Create NetWorkAttachment
-func (s *networkServer) ApplyNetWorkAttachment(g *gin.Context) {
-	namespace := g.Param("namespace")
+// ApplySubNet Update or Create SubNet
+func (s *networkServer) ApplySubNet(g *gin.Context) {
+	namespace := ""
 	raw, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("get raw data error (%s)", err))
@@ -51,7 +51,7 @@ func (s *networkServer) ApplyNetWorkAttachment(g *gin.Context) {
 		return
 	}
 	name := _unstructured.GetName()
-	newUnstructuredExtend, isUpdate, err := s.NetworkAttachmentDefinition.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := s.SubNet.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
@@ -68,45 +68,48 @@ func (s *networkServer) ApplyNetWorkAttachment(g *gin.Context) {
 	}
 }
 
-// DeleteNetWorkAttachment Delete NetWorkAttachment
-func (s *networkServer) DeleteNetWorkAttachment(g *gin.Context) {
-	namespace := g.Param("namespace")
+// DeleteSubNet Delete Service
+func (s *networkServer) DeleteSubNet(g *gin.Context) {
+	namespace := ""
 	name := g.Param("name")
-	if namespace == "" || name == "" {
+	if name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-
-	err := s.NetworkAttachmentDefinition.Delete(namespace, name)
+	err := s.SubNet.Delete(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
 	}
-
 	g.JSON(http.StatusOK, nil)
 }
 
-// UpdateNetWorkAttachment Update NetWorkAttachment
-func (s *networkServer) UpdateNetWorkAttachment(g *gin.Context) {
-	namespace := g.Param("namespace")
+type updateSubNet struct {
+	Data unstructured.Unstructured `json:"data"`
+}
+
+// UpdateSubNet Update Service
+func (s *networkServer) UpdateSubNet(g *gin.Context) {
+	//namespace := g.Param("namespace")
 	name := g.Param("name")
-	if namespace == "" || name == "" {
-		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
+	if name == "" {
+		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", "", name))
 		return
 	}
+
 	raw, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("get raw data error (%s)", err))
 		return
 	}
 
-	updateNetWorkAttachmentData := &unstructured.Unstructured{}
-	if err := json.Unmarshal(raw, updateNetWorkAttachmentData); err != nil {
+	updateSubNetData := &updateSubNet{}
+	if err := json.Unmarshal(raw, updateSubNetData); err != nil {
 		common.RequestParametersError(g, fmt.Errorf("unmarshal from json data error (%s)", err))
 		return
 	}
 
-	newUnstructuredExtend, _, err := s.NetworkAttachmentDefinition.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: updateNetWorkAttachmentData})
+	newUnstructuredExtend, _, err := s.SubNet.Apply("", name, &service.UnstructuredExtend{Unstructured: &updateSubNetData.Data})
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return

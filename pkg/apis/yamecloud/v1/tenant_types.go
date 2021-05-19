@@ -26,6 +26,7 @@ type BaseTenantStatus struct {
 // BaseTenant is the Schema for the basetents API
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:path=basetenants,scope=Namespaced
+// +kubebuilder:resource:scope=Cluster
 type BaseTenant struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

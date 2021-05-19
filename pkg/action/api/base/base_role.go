@@ -42,8 +42,6 @@ func (s *baseServer) ListBaseRole(g *gin.Context) {
 
 // Update or Create BaseRole
 func (s *baseServer) ApplyBaseRole(g *gin.Context) {
-	namespace := g.Param("namespace")
-
 	raw, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("get raw data error (%s)", err))
@@ -62,7 +60,7 @@ func (s *baseServer) ApplyBaseRole(g *gin.Context) {
 	}
 
 	name := _unstructured.GetName()
-	newUnstructuredExtend, isUpdate, err := s.BaseRole.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := s.BaseRole.Apply("", name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
@@ -81,10 +79,9 @@ func (s *baseServer) ApplyBaseRole(g *gin.Context) {
 
 // Update BaseRole
 func (s *baseServer) UpdateBaseRole(g *gin.Context) {
-	namespace := g.Param("namespace")
 	name := g.Param("name")
-	if namespace == "" || name == "" {
-		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
+	if name == "" {
+		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
 		return
 	}
 
@@ -105,7 +102,7 @@ func (s *baseServer) UpdateBaseRole(g *gin.Context) {
 		return
 	}
 
-	newUnstructuredExtend, _, err := s.BaseRole.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, _, err := s.BaseRole.Apply("", name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
@@ -118,15 +115,14 @@ func (s *baseServer) UpdateBaseRole(g *gin.Context) {
 		})
 }
 
-// Delete BaseRole
+// DeleteBaseRole none
 func (s *baseServer) DeleteBaseRole(g *gin.Context) {
-	namespace := g.Param("namespace")
 	name := g.Param("name")
-	if namespace == "" || name == "" {
-		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
+	if name == "" {
+		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
 		return
 	}
-	err := s.BaseRole.Delete(namespace, name)
+	err := s.BaseRole.Delete("", name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -139,46 +135,55 @@ func (s *baseServer) ValidateRoleData(g *gin.Context, data *unstructured.Unstruc
 	if specTenantId == "" {
 		return fmt.Errorf("spec.tenant_id is null")
 	}
+
 	tenantId := specTenantId.(string)
 	err := s.CheckTenantId(g, tenantId)
 	if err != nil {
 		return fmt.Errorf("check tenantId error (%s)", err)
 	}
+
 	specDepartmentId := utils.Get(data.Object, "spec.department_id")
 	if specDepartmentId != nil && specDepartmentId != "" {
 		departmentId := specDepartmentId.(string)
-		selector := fmt.Sprintf("tenant.yamecloud.io=%s", tenantId)
-		departmentObjList, err := s.BaseDepartment.List("kube-system", selector)
+		departmentObjList, err := s.BaseDepartment.List("", fmt.Sprintf("tenant.yamecloud.io=%s", tenantId))
 		if err != nil {
 			return fmt.Errorf("list tenant department error (%s)", err)
 		}
+
 		flag := false
 		for _, item := range departmentObjList.Items {
 			if item.GetName() == departmentId {
 				flag = true
 			}
 		}
+
 		if !flag {
 			return fmt.Errorf("illegal departmentId (%s)", departmentId)
 		}
+
 		roleSpecNamespaces := utils.Get(data.Object, "spec.namespaces")
 		roleNamespaces := utils.ToStringArray(roleSpecNamespaces)
+
 		if len(roleNamespaces) > 0 {
-			departmentObj, err := s.BaseDepartment.Get("kube-system", departmentId)
+			departmentObj, err := s.BaseDepartment.Get("", departmentId)
 			if err != nil {
 				return fmt.Errorf("get department error (%s)", err)
 			}
+
 			deptSpecNamespaces := utils.Get(departmentObj.Object, "spec.namespaces")
 			deptNamespaces := utils.ToStringArray(deptSpecNamespaces)
 			deptNamespaceMap := make(map[string]int, 0)
+
 			for _, deptNamespace := range deptNamespaces {
 				deptNamespaceMap[deptNamespace]++
 			}
+
 			for _, roleNamespace := range roleNamespaces {
 				if _, exist := deptNamespaceMap[roleNamespace]; !exist {
 					return fmt.Errorf("illegal namespace (%s)", roleNamespace)
 				}
 			}
+
 		}
 	}
 	return nil

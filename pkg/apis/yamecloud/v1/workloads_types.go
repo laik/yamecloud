@@ -30,6 +30,7 @@ type WorkloadsStatus struct {
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // Workloads is the Schema for the workloads API
+// +kubebuilder:resource:scope=Cluster
 type Workloads struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

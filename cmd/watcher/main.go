@@ -97,6 +97,34 @@ var needDescSubscribeMap = map[string]k8s.ResourceType{
 	"workloadentry":   k8s.WorkloadEntry,
 }
 
+var needDescSubscribeOVNList = []k8s.ResourceType{
+	k8s.IP,
+	k8s.SubNet,
+	k8s.Vlan,
+	k8s.NetworkAttachmentDefinition,
+}
+
+var needDescSubscribeTEKTONList = []k8s.ResourceType{
+	k8s.Pipeline,
+	k8s.PipelineRun,
+	k8s.Task,
+	k8s.TaskRun,
+	k8s.PipelineResource,
+	k8s.TektonGraph,
+	k8s.OpsSecret,
+	k8s.TektonWebHook,
+	k8s.TektonStore,
+}
+
+var needDescSubscribeISTIOList = []k8s.ResourceType{
+	k8s.Gateway,
+	k8s.DestinationRule,
+	k8s.ServiceEntry,
+	k8s.Sidecar,
+	k8s.VirtualService,
+	k8s.WorkloadEntry,
+}
+
 func subscribeMapList(includes ...string) []string {
 	result := make([]string, 0)
 	for _, v := range needDescSubscribeMap {
@@ -119,21 +147,39 @@ func subscribeMapList(includes ...string) []string {
 
 var subscribeList []string
 
-var subscribeListString string
-
 func main() {
 	subscribeListString := os.Getenv("SUBLIST")
+	subscribeTopicString := os.Getenv("SUBTOPIC")
 
 	subscribeList = append(subscribeList, defaultResources...)
 
 	if subscribeListString == "*" {
 		subscribeList = append(subscribeList, subscribeMapList()...)
 	} else if subscribeListString != "" {
-		subscribeList = strings.Split(subscribeListString, ",")
-		subscribeList = append(subscribeList, subscribeMapList(subscribeList...)...)
+		needSubscribeList := strings.Split(subscribeListString, ",")
+		subscribeList = append(subscribeList, subscribeMapList(needSubscribeList...)...)
 	}
 
-	fmt.Printf("service watch resource: %v\n", subscribeList)
+	if subscribeTopicString == "*" {
+		subscribeList = append(subscribeList, subscribeMapList(needDescSubscribeOVNList...)...)
+		subscribeList = append(subscribeList, subscribeMapList(needDescSubscribeTEKTONList...)...)
+		subscribeList = append(subscribeList, subscribeMapList(needDescSubscribeISTIOList...)...)
+	} else if subscribeTopicString != "" {
+		topicList := strings.Split(subscribeTopicString, ",")
+		for _, topic := range topicList {
+			switch topic {
+			case "tekton":
+				subscribeList = append(subscribeList, subscribeMapList(needDescSubscribeTEKTONList...)...)
+			case "istio":
+				subscribeList = append(subscribeList, subscribeMapList(needDescSubscribeISTIOList...)...)
+			case "ovn":
+				subscribeList = append(subscribeList, subscribeMapList(needDescSubscribeOVNList...)...)
+			}
+		}
+	}
+	subscribeList = unique(subscribeList)
+
+	fmt.Printf("[INFO] service watch resource: %v\n", subscribeList)
 
 	resourceList := k8s.GVRMaps.Subscribe(subscribeList...)
 
@@ -150,7 +196,20 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprintf("web service install error %s", err))
 	}
+
 	if err := microService.Run(); err != nil {
 		panic(err)
 	}
+}
+
+func unique(src []string) []string {
+	keys := make(map[string]bool)
+	list := make([]string, 0)
+	for _, entry := range src {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }
