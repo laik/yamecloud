@@ -38,7 +38,7 @@ dep:
 build: dep
 	go build ./cmd/...
 
-build-image: servicemesh tekton service base gateway shell watcher push-image
+build-image: servicemesh tekton service base gateway shell watcher sdn push-image
 
 push-image: 
 	docker push ${REPO}/servicemesh:${VERSION}
@@ -48,9 +48,10 @@ push-image:
 	docker push ${REPO}/gateway:${VERSION}
 	docker push ${REPO}/shell:${VERSION}
 	docker push ${REPO}/watcher:${VERSION}
+	docker push ${REPO}/sdn:${VERSION}
 
-network:
-	docker build -t ${REPO}/network:${VERSION} -f images/Dockerfile.servicemesh .
+sdn:
+	docker build -t ${REPO}/sdn:${VERSION} -f images/Dockerfile.sdn .
 
 watcher:
 	ame${REPO}/watcher:${VERSION} -f images/Dockerfile.watcher .

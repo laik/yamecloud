@@ -6,6 +6,8 @@ import (
 	"github.com/yametech/yamecloud/pkg/utils"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"strconv"
 	"strings"
 )
@@ -86,6 +88,8 @@ type Interface interface {
 	ForceUpdate(namespace string, resource k8s.ResourceType, name string, unstructuredExtend *UnstructuredExtend) (*UnstructuredExtend, error)
 	Delete(namespace string, resource k8s.ResourceType, name string) error
 	Watch(namespace string, resource k8s.ResourceType, resourceVersion string, selector string) (<-chan watch.Event, error)
+	RESETClient() rest.Interface
+	ClientSet() *kubernetes.Clientset
 	Install(k8s.ResourceType, IResourceService)
 }
 
@@ -94,6 +98,10 @@ var _ Interface = &Service{}
 type Service struct {
 	k8s.Interface
 	services map[k8s.ResourceType]IResourceService
+}
+
+func (s *Service) RESETClient() rest.Interface {
+	panic("implement me")
 }
 
 func (s *Service) Install(resourceType k8s.ResourceType, r IResourceService) {
@@ -144,6 +152,14 @@ var _ Interface = &FakeService{}
 
 type FakeService struct {
 	Data map[string]interface{}
+}
+
+func (f *FakeService) RESETClient() rest.Interface {
+	panic("implement me")
+}
+
+func (f *FakeService) ClientSet() *kubernetes.Clientset {
+	panic("implement me")
 }
 
 func (f *FakeService) Watch(namespace string, resource k8s.ResourceType, resourceVersion string, selector string) (<-chan watch.Event, error) {

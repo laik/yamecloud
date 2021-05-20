@@ -5,6 +5,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/dynamic/dynamicinformer"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 type ResourceType = string
@@ -48,9 +50,15 @@ type IDataOperator interface {
 	Patch(namespace string, resourceType ResourceType, name string, data []byte) (*unstructured.Unstructured, error)
 }
 
+type RESTClient interface {
+	RESTClient() rest.Interface
+	ClientSet() *kubernetes.Clientset
+}
+
 type Interface interface {
 	Lister
 	Watcher
 	ICache
 	IDataOperator
+	RESTClient
 }

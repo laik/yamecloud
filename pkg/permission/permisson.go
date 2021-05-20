@@ -50,7 +50,7 @@ var Tree = TreeNode{
 			},
 		},
 		{
-			Name: "workload",
+			Name: "workloads",
 			Children: []*TreeNode{
 				{
 					Name: k8s.WorkloadsTemplate,
@@ -143,7 +143,7 @@ var Tree = TreeNode{
 					},
 				},
 				{
-					Name: k8s.CronJobs,
+					Name: k8s.CronJob,
 					Children: []*TreeNode{
 						{Name: View},
 						{Name: Apply},
@@ -280,7 +280,7 @@ var Tree = TreeNode{
 			Name: "configuration",
 			Children: []*TreeNode{
 				{
-					Name: k8s.ConfigMaps,
+					Name: k8s.ConfigMap,
 					Children: []*TreeNode{
 						{Name: View},
 						{Name: Apply},
@@ -288,7 +288,7 @@ var Tree = TreeNode{
 					},
 				},
 				{
-					Name: k8s.Secrets,
+					Name: k8s.Secret,
 					Children: []*TreeNode{
 						{Name: View},
 						{Name: Apply},

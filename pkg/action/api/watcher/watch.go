@@ -152,7 +152,7 @@ func rewriteOpsSecret(eventChan chan<- watcherEvent, item watch.Event) bool {
 		return false
 	}
 	selfLink := secret.GetSelfLink()
-	secret.SetSelfLink(strings.Replace(selfLink, "/secrets", "/ops-secrets", 1))
+	secret.SetSelfLink(strings.Replace(selfLink, "/secrets", "/tektonconfig", 1))
 	eventChan <- watcherEvent{
 		Type:   item.Type,
 		Object: item.Object,

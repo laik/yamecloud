@@ -14,12 +14,12 @@ const (
 	Injector                 ResourceType = "injectors"
 	Pod                      ResourceType = "pods"
 	Job                      ResourceType = "jobs"
-	CronJobs                 ResourceType = "cronjobs"
+	CronJob                  ResourceType = "cronjobs"
 	ReplicaSet               ResourceType = "replicasets"
 	Event                    ResourceType = "events"
 	Node                     ResourceType = "nodes"
-	ConfigMaps               ResourceType = "configmaps"
-	Secrets                  ResourceType = "secrets"
+	ConfigMap                ResourceType = "configmaps"
+	Secret                   ResourceType = "secrets"
 	ResourceQuota            ResourceType = "resourcequotas"
 	Service                  ResourceType = "services"
 	Ingress                  ResourceType = "ingresses"
@@ -38,7 +38,7 @@ const (
 	ClusterRoleBinding       ResourceType = "clusterrolebindings"
 	Endpoint                 ResourceType = "endpoints"
 
-	// deployment resource workload template for CaaS
+	// deployment resource workloads template for CaaS
 	WorkloadsTemplate ResourceType = "workloads"
 
 	// form render
@@ -138,14 +138,14 @@ var GVRMaps IGVRMaps = &groupVersionCollection{
 	ReplicaSet:  {Group: "apps", Version: "v1", Resource: "replicasets"},
 	Deployment:  {Group: "apps", Version: "v1", Resource: "deployments"},
 
-	Job:      {Group: "batch", Version: "v1", Resource: "jobs"},
-	CronJobs: {Group: "batch", Version: "v1beta1", Resource: "cronjobs"},
+	Job:     {Group: "batch", Version: "v1", Resource: "jobs"},
+	CronJob: {Group: "batch", Version: "v1beta1", Resource: "cronjobs"},
 
 	Pod:                    {Group: "", Version: "v1", Resource: "pods"},
 	Node:                   {Group: "", Version: "v1", Resource: "nodes"},
 	Event:                  {Group: "", Version: "v1", Resource: "events"},
-	ConfigMaps:             {Group: "", Version: "v1", Resource: "configmaps"},
-	Secrets:                {Group: "", Version: "v1", Resource: "secrets"},
+	ConfigMap:              {Group: "", Version: "v1", Resource: "configmaps"},
+	Secret:                 {Group: "", Version: "v1", Resource: "secrets"},
 	ResourceQuota:          {Group: "", Version: "v1", Resource: "resourcequotas"},
 	Service:                {Group: "", Version: "v1", Resource: "services"},
 	Namespace:              {Group: "", Version: "v1", Resource: "namespaces"},

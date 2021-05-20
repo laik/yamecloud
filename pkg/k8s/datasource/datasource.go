@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/util/retry"
 	"reflect"
@@ -29,6 +30,10 @@ type dataSource struct {
 
 func (d *dataSource) RESTClient() rest.Interface {
 	return d.InstallConfigure.RESTClient()
+}
+
+func (d *dataSource) ClientSet() *kubernetes.Clientset {
+	return d.InstallConfigure.Clientset
 }
 
 func (d *dataSource) XGet(namespace string, resourceType k8s.ResourceType, name string) (*unstructured.Unstructured, error) {
