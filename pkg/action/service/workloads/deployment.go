@@ -25,6 +25,22 @@ func (g *Deployment) Get(namespace, name string) (*service.UnstructuredExtend, e
 	return item, nil
 }
 
+func (g *Deployment) GetScale(namespace, name string) (*service.UnstructuredExtend, error) {
+	item, err := g.Interface.Get(namespace, k8s.Deployment, name, "scale")
+	if err != nil {
+		return nil, err
+	}
+	return item, nil
+}
+
+func (g *Deployment) Scale(namespace, name string, data []byte) (*service.UnstructuredExtend, error) {
+	item, err := g.Interface.Patch(namespace, k8s.Deployment, name, data)
+	if err != nil {
+		return nil, err
+	}
+	return item, nil
+}
+
 func (g *Deployment) List(namespace string, selector string) (*service.UnstructuredListExtend, error) {
 	list, err := g.Interface.List(namespace, k8s.Deployment, selector)
 	if err != nil {

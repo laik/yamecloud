@@ -157,7 +157,7 @@ func (d *dataSource) List(namespace string, resourceType k8s.ResourceType, selec
 		)
 }
 
-func (d *dataSource) Get(namespace string, resourceType k8s.ResourceType, name string) (*unstructured.Unstructured, error) {
+func (d *dataSource) Get(namespace string, resourceType k8s.ResourceType, name string, subresources ...string) (*unstructured.Unstructured, error) {
 	gvr, err := d.ResourceLister.GroupVersionResource(resourceType)
 	if err != nil {
 		return nil, err
@@ -165,7 +165,7 @@ func (d *dataSource) Get(namespace string, resourceType k8s.ResourceType, name s
 	return d.Interface.
 		Resource(gvr).
 		Namespace(namespace).
-		Get(context.TODO(), name, metav1.GetOptions{})
+		Get(context.TODO(), name, metav1.GetOptions{}, subresources...)
 }
 
 func (d *dataSource) Cache() k8s.ICache { return d }

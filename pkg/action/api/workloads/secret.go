@@ -14,7 +14,7 @@ func (s *workloadServer) GetSecret(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
-		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%workloads name=%workloads", namespace, name))
+		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
 	item, err := s.Secret.Get(namespace, name)
@@ -45,19 +45,19 @@ func (s *workloadServer) ApplySecret(g *gin.Context) {
 	namespace := g.Param("namespace")
 	raw, err := g.GetRawData()
 	if err != nil {
-		common.RequestParametersError(g, fmt.Errorf("get raw data error (%workloads)", err))
+		common.RequestParametersError(g, fmt.Errorf("get raw data error (%s)", err))
 		return
 	}
 
 	_unstructured := &unstructured.Unstructured{}
 	if err := _unstructured.UnmarshalJSON(raw); err != nil {
-		common.RequestParametersError(g, fmt.Errorf("unmarshal from json data error (%workloads)", err))
+		common.RequestParametersError(g, fmt.Errorf("unmarshal from json data error (%s)", err))
 		return
 	}
 	name := _unstructured.GetName()
 	newUnstructuredExtend, isUpdate, err := s.Secret.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
-		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%workloads)", err))
+		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
 	}
 
@@ -107,7 +107,7 @@ func (s *workloadServer) DeleteSecret(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
-		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%workloads name=%workloads", namespace, name))
+		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
 	err := s.Secret.Delete(namespace, name)

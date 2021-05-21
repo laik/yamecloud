@@ -36,7 +36,7 @@ type ICache interface {
 
 type Lister interface {
 	List(namespace string, resourceType ResourceType, selector string) (*unstructured.UnstructuredList, error)
-	Get(namespace string, resourceType ResourceType, name string) (*unstructured.Unstructured, error)
+	Get(namespace string, resourceType ResourceType, name string, subresources ...string) (*unstructured.Unstructured, error)
 	Cache() ICache
 }
 

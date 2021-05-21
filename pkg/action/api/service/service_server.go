@@ -51,12 +51,12 @@ func NewServiceServer(serviceName string, server *api.Server) *serviceServer {
 
 	// ingress
 	{
-		group.GET("/apis/extensions/v1beta1/ingresses", serviceServer.ListIngress)
-		group.GET("/apis/extensions/v1beta1/namespaces/:namespace/ingresses", serviceServer.ListIngress)
-		group.GET("/apis/extensions/v1beta1/namespaces/:namespace/ingresses/:name", serviceServer.GetIngress)
-		group.POST("/apis/extensions/v1beta1/namespaces/:namespace/ingresses", serviceServer.ApplyIngress)
-		group.DELETE("/apis/extensions/v1beta1/namespaces/:namespace/ingresses/:name", serviceServer.DeleteIngress)
-		group.PUT("/apis/extensions/v1beta1/namespaces/:namespace/ingresses/:name", serviceServer.UpdateIngress)
+		group.GET("/apis/networking.k8s.io/v1/ingresses", serviceServer.ListIngress)
+		group.GET("/apis/networking.k8s.io/v1/namespaces/:namespace/ingresses", serviceServer.ListIngress)
+		group.GET("/apis/networking.k8s.io/v1/namespaces/:namespace/ingresses/:name", serviceServer.GetIngress)
+		group.POST("/apis/networking.k8s.io/v1/namespaces/:namespace/ingresses", serviceServer.ApplyIngress)
+		group.DELETE("/apis/networking.k8s.io/v1/namespaces/:namespace/ingresses/:name", serviceServer.DeleteIngress)
+		group.PUT("/apis/networking.k8s.io/v1/namespaces/:namespace/ingresses/:name", serviceServer.UpdateIngress)
 	}
 
 	return serviceServer

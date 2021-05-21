@@ -83,11 +83,12 @@ type IResourceService interface {
 
 type Interface interface {
 	List(namespace string, resource k8s.ResourceType, selector string) (*UnstructuredListExtend, error)
-	Get(namespace string, resource k8s.ResourceType, name string) (*UnstructuredExtend, error)
+	Get(namespace string, resource k8s.ResourceType, name string, subresources ...string) (*UnstructuredExtend, error)
 	Apply(namespace string, resource k8s.ResourceType, name string, unstructuredExtend *UnstructuredExtend) (*UnstructuredExtend, bool, error)
 	ForceUpdate(namespace string, resource k8s.ResourceType, name string, unstructuredExtend *UnstructuredExtend) (*UnstructuredExtend, error)
 	Delete(namespace string, resource k8s.ResourceType, name string) error
 	Watch(namespace string, resource k8s.ResourceType, resourceVersion string, selector string) (<-chan watch.Event, error)
+	Patch(namespace string, resource k8s.ResourceType, name string, data []byte) (*UnstructuredExtend, error)
 	RESETClient() rest.Interface
 	ClientSet() *kubernetes.Clientset
 	Install(k8s.ResourceType, IResourceService)
@@ -122,6 +123,11 @@ func (s *Service) ForceUpdate(namespace string, resource k8s.ResourceType, name 
 	return &UnstructuredExtend{Unstructured: u}, err
 }
 
+func (s *Service) Patch(namespace string, resource k8s.ResourceType, name string, data []byte) (*UnstructuredExtend, error) {
+	u, err := s.Interface.Patch(namespace, resource, name, data)
+	return &UnstructuredExtend{Unstructured: u}, err
+}
+
 func (s *Service) List(namespace string, resource k8s.ResourceType, selector string) (*UnstructuredListExtend, error) {
 	list, err := s.Interface.List(namespace, resource, selector)
 	if err != nil {
@@ -130,8 +136,8 @@ func (s *Service) List(namespace string, resource k8s.ResourceType, selector str
 	return &UnstructuredListExtend{list}, nil
 }
 
-func (s *Service) Get(namespace string, resource k8s.ResourceType, name string) (*UnstructuredExtend, error) {
-	item, err := s.Interface.Get(namespace, resource, name)
+func (s *Service) Get(namespace string, resource k8s.ResourceType, name string, subresources ...string) (*UnstructuredExtend, error) {
+	item, err := s.Interface.Get(namespace, resource, name, subresources...)
 	if err != nil {
 		return nil, err
 	}
@@ -152,6 +158,10 @@ var _ Interface = &FakeService{}
 
 type FakeService struct {
 	Data map[string]interface{}
+}
+
+func (f *FakeService) Patch(namespace string, resource k8s.ResourceType, name string, data []byte) (*UnstructuredExtend, error) {
+	panic("implement me")
 }
 
 func (f *FakeService) RESETClient() rest.Interface {
@@ -186,7 +196,7 @@ func (f *FakeService) List(namespace string, resource k8s.ResourceType, selector
 	panic("implement me")
 }
 
-func (f FakeService) Get(namespace string, resource k8s.ResourceType, name string) (*UnstructuredExtend, error) {
+func (f FakeService) Get(namespace string, resource k8s.ResourceType, name string, subresources ...string) (*UnstructuredExtend, error) {
 	panic("implement me")
 }
 func NewFakeService() *FakeService {

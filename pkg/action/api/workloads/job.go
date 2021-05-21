@@ -10,14 +10,14 @@ import (
 	"net/http"
 )
 
-func (s *workloadServer) GetConfigMap(g *gin.Context) {
+func (s *workloadServer) GetJob(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-	item, err := s.ConfigMap.Get(namespace, name)
+	item, err := s.Job.Get(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -25,8 +25,8 @@ func (s *workloadServer) GetConfigMap(g *gin.Context) {
 	g.JSON(http.StatusOK, item)
 }
 
-func (s *workloadServer) ListConfigMap(g *gin.Context) {
-	list, err := s.ConfigMap.List(g.Param("namespace"), "")
+func (s *workloadServer) ListJob(g *gin.Context) {
+	list, err := s.Job.List(g.Param("namespace"), "")
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
@@ -34,7 +34,7 @@ func (s *workloadServer) ListConfigMap(g *gin.Context) {
 	g.JSON(http.StatusOK, list)
 }
 
-func (s *workloadServer) ApplyConfigMap(g *gin.Context) {
+func (s *workloadServer) ApplyJob(g *gin.Context) {
 	namespace := g.Param("namespace")
 	raw, err := g.GetRawData()
 	if err != nil {
@@ -48,7 +48,7 @@ func (s *workloadServer) ApplyConfigMap(g *gin.Context) {
 		return
 	}
 	name := _unstructured.GetName()
-	newUnstructuredExtend, isUpdate, err := s.ConfigMap.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := s.Job.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
@@ -65,7 +65,7 @@ func (s *workloadServer) ApplyConfigMap(g *gin.Context) {
 	}
 }
 
-func (s *workloadServer) UpdateConfigMap(g *gin.Context) {
+func (s *workloadServer) UpdateJob(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
@@ -84,7 +84,7 @@ func (s *workloadServer) UpdateConfigMap(g *gin.Context) {
 		return
 	}
 
-	newUnstructuredExtend, _, err := s.ConfigMap.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: updateNetWorkAttachmentData})
+	newUnstructuredExtend, _, err := s.Job.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: updateNetWorkAttachmentData})
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -96,14 +96,14 @@ func (s *workloadServer) UpdateConfigMap(g *gin.Context) {
 		})
 }
 
-func (s *workloadServer) DeleteConfigMap(g *gin.Context) {
+func (s *workloadServer) DeleteJob(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-	err := s.ConfigMap.Delete(namespace, name)
+	err := s.Job.Delete(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return

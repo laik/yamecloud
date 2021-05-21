@@ -57,7 +57,7 @@ func (s *watcherServer) watch(g *gin.Context) {
 		Status: 410,
 	}
 
-	ticker := time.NewTicker(30 * time.Second)
+	ticker := time.NewTicker(10 * time.Second)
 
 	g.Stream(func(w io.Writer) bool {
 		select {
@@ -82,7 +82,7 @@ func (s *watcherServer) watch(g *gin.Context) {
 			g.SSEvent("", event)
 
 		case <-ticker.C:
-			g.SSEvent("", "{}")
+			g.SSEvent("", `{"type":"PING","url":""}`)
 		}
 
 		return true

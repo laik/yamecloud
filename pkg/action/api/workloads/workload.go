@@ -30,11 +30,12 @@ func (s *workloadServer) Name() string {
 
 func NewWorkloadServer(serviceName string, server *api.Server) *workloadServer {
 	workloadServer := &workloadServer{
-		name:      serviceName,
-		Server:    server,
-		ConfigMap: workload_service.NewConfigMap(server),
-		CronJob:   workload_service.NewCronJob(server),
-		DaemonSet: workload_service.NewDaemonSet(server),
+		name:       serviceName,
+		Server:     server,
+		ConfigMap:  workload_service.NewConfigMap(server),
+		CronJob:    workload_service.NewCronJob(server),
+		DaemonSet:  workload_service.NewDaemonSet(server),
+		Deployment: workload_service.NewDeployment(server),
 
 		Event: workload_service.NewEvent(server),
 		HPA:   workload_service.NewHPA(server),
@@ -77,6 +78,68 @@ func NewWorkloadServer(serviceName string, server *api.Server) *workloadServer {
 		group.POST("/api/v1/namespaces/:namespace/secrets", workloadServer.ApplySecret)
 		group.PUT("/api/v1/namespaces/:namespace/secrets/:name", workloadServer.UpdateSecret)
 		group.DELETE("/api/v1/namespaces/:namespace/secrets/:name", workloadServer.DeleteSecret)
+	}
+
+	// hpa api
+	{
+		group.GET("/apis/autoscaling/v2beta1/horizontalpodautoscalers", workloadServer.ListHPA)
+		group.GET("/apis/autoscaling/v2beta1/namespaces/:namespace/horizontalpodautoscalers", workloadServer.ListHPA)
+		group.GET("/apis/autoscaling/v2beta1/namespaces/:namespace/horizontalpodautoscalers/:name", workloadServer.GetHPA)
+		group.POST("/apis/autoscaling/v2beta1/namespaces/:namespace/horizontalpodautoscalers", workloadServer.ApplyHPA)
+		group.PUT("/apis/autoscaling/v2beta1/namespaces/:namespace/horizontalpodautoscalers/:name", workloadServer.UpdateHPA)
+		group.DELETE("/apis/autoscaling/v2beta1/namespaces/:namespace/horizontalpodautoscalers/:name", workloadServer.DeleteHPA)
+	}
+
+	// deployment api
+	{
+		group.GET("/apis/apps/v1/deployments", workloadServer.ListDeployment)
+		group.GET("/apis/apps/v1/namespaces/:namespace/deployments", workloadServer.ListDeployment)
+		group.GET("/apis/apps/v1/namespaces/:namespace/deployments/:name", workloadServer.GetDeployment)
+		group.POST("/apis/apps/v1/namespaces/:namespace/deployments", workloadServer.ApplyDeployment)
+		group.PUT("/apis/apps/v1/namespaces/:namespace/deployments/:name", workloadServer.UpdateDeployment)
+		group.DELETE("/apis/apps/v1/namespaces/:namespace/deployments/:name", workloadServer.DeleteDeployment)
+		// scale
+		group.GET("/apis/apps/v1/namespaces/:namespace/deployments/:name/scale", workloadServer.DeploymentScaleInfo)
+		group.PUT("/apis/apps/v1/namespaces/:namespace/deployments/:name/scale", workloadServer.DeploymentScale)
+	}
+
+	// daemonset api
+	{
+		group.GET("/apis/apps/v1/daemonsets", workloadServer.ListDaemonSet)
+		group.GET("/apis/apps/v1/namespaces/:namespace/daemonsets", workloadServer.ListDaemonSet)
+		group.GET("/apis/apps/v1/namespaces/:namespace/daemonsets/:name", workloadServer.GetDaemonSet)
+		group.POST("/apis/apps/v1/namespaces/:namespace/daemonsets", workloadServer.ApplyDaemonSet)
+		group.PUT("/apis/apps/v1/namespaces/:namespace/daemonsets/:name", workloadServer.UpdateDaemonSet)
+		group.DELETE("/apis/apps/v1/namespaces/:namespace/daemonsets/:name", workloadServer.DeleteDaemonSet)
+	}
+
+	// statefulset api
+	{
+		group.GET("/apis/apps/v1/statefulsets", workloadServer.ListStatefulSet)
+		group.GET("/apis/apps/v1/namespaces/:namespace/statefulsets", workloadServer.ListStatefulSet)
+		group.GET("/apis/apps/v1/namespaces/:namespace/statefulsets/:name", workloadServer.GetStatefulSet)
+		group.POST("/apis/apps/v1/namespaces/:namespace/statefulsets", workloadServer.ApplyStatefulSet)
+		group.PUT("/apis/apps/v1/namespaces/:namespace/statefulsets/:name", workloadServer.UpdateStatefulSet)
+		group.DELETE("/apis/apps/v1/namespaces/:namespace/statefulsets/:name", workloadServer.DeleteStatefulSet)
+	}
+	// job api
+	{
+		group.GET("/apis/batch/v1/jobs", workloadServer.ListJob)
+		group.GET("/apis/batch/v1/namespaces/:namespace/jobs", workloadServer.ListJob)
+		group.GET("/apis/batch/v1/namespaces/:namespace/jobs/:name", workloadServer.GetJob)
+		group.POST("/apis/batch/v1/namespaces/:namespace/jobs", workloadServer.ApplyJob)
+		group.PUT("/apis/batch/v1/namespaces/:namespace/jobs/:name", workloadServer.UpdateJob)
+		group.DELETE("/apis/batch/v1/namespaces/:namespace/jobs/:name", workloadServer.DeleteJob)
+	}
+
+	// cronjob api
+	{
+		group.GET("/apis/batch/v1beta1/cronjobs", workloadServer.ListCronJob)
+		group.GET("/apis/batch/v1beta1/namespaces/:namespace/cronjobs", workloadServer.ListCronJob)
+		group.GET("/apis/batch/v1beta1/namespaces/:namespace/cronjobs/:name", workloadServer.GetCronJob)
+		group.POST("/apis/batch/v1beta1/namespaces/:namespace/cronjobs", workloadServer.ApplyCronJob)
+		group.PUT("/apis/batch/v1beta1/namespaces/:namespace/cronjobs/:name", workloadServer.UpdateCronJob)
+		group.DELETE("/apis/batch/v1beta1/namespaces/:namespace/cronjobs/:name", workloadServer.DeleteCronJob)
 	}
 
 	_ = group

@@ -10,14 +10,14 @@ import (
 	"net/http"
 )
 
-func (s *workloadServer) GetConfigMap(g *gin.Context) {
+func (s *workloadServer) GetDeployment(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-	item, err := s.ConfigMap.Get(namespace, name)
+	item, err := s.Deployment.Get(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -25,8 +25,8 @@ func (s *workloadServer) GetConfigMap(g *gin.Context) {
 	g.JSON(http.StatusOK, item)
 }
 
-func (s *workloadServer) ListConfigMap(g *gin.Context) {
-	list, err := s.ConfigMap.List(g.Param("namespace"), "")
+func (s *workloadServer) ListDeployment(g *gin.Context) {
+	list, err := s.Deployment.List(g.Param("namespace"), "")
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
@@ -34,7 +34,7 @@ func (s *workloadServer) ListConfigMap(g *gin.Context) {
 	g.JSON(http.StatusOK, list)
 }
 
-func (s *workloadServer) ApplyConfigMap(g *gin.Context) {
+func (s *workloadServer) ApplyDeployment(g *gin.Context) {
 	namespace := g.Param("namespace")
 	raw, err := g.GetRawData()
 	if err != nil {
@@ -48,7 +48,7 @@ func (s *workloadServer) ApplyConfigMap(g *gin.Context) {
 		return
 	}
 	name := _unstructured.GetName()
-	newUnstructuredExtend, isUpdate, err := s.ConfigMap.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := s.Deployment.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
@@ -65,7 +65,7 @@ func (s *workloadServer) ApplyConfigMap(g *gin.Context) {
 	}
 }
 
-func (s *workloadServer) UpdateConfigMap(g *gin.Context) {
+func (s *workloadServer) UpdateDeployment(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
@@ -84,7 +84,7 @@ func (s *workloadServer) UpdateConfigMap(g *gin.Context) {
 		return
 	}
 
-	newUnstructuredExtend, _, err := s.ConfigMap.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: updateNetWorkAttachmentData})
+	newUnstructuredExtend, _, err := s.Deployment.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: updateNetWorkAttachmentData})
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -96,17 +96,51 @@ func (s *workloadServer) UpdateConfigMap(g *gin.Context) {
 		})
 }
 
-func (s *workloadServer) DeleteConfigMap(g *gin.Context) {
+func (s *workloadServer) DeleteDeployment(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-	err := s.ConfigMap.Delete(namespace, name)
+	err := s.Deployment.Delete(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
 	}
 	g.JSON(http.StatusOK, nil)
+}
+
+func (s *workloadServer) DeploymentScaleInfo(g *gin.Context) {
+	namespace := g.Param("namespace")
+	name := g.Param("name")
+
+	if namespace == "" || name == "" {
+		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
+		return
+	}
+	item, err := s.Deployment.GetScale(namespace, name)
+	if err != nil {
+		common.InternalServerError(g, err, err)
+		return
+	}
+	g.JSON(http.StatusOK, item)
+}
+
+func (s *workloadServer) DeploymentScale(g *gin.Context) {
+	namespace := g.Param("namespace")
+	name := g.Param("name")
+
+	rawData, err := g.GetRawData()
+	if err != nil {
+		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s or not form data (%s) error %s", namespace, name, rawData, err))
+		return
+	}
+
+	_, err = s.Deployment.Scale(namespace, name, rawData)
+	if err != nil {
+		common.InternalServerError(g, err, err)
+		return
+	}
+	g.JSON(http.StatusOK, "")
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/yametech/yamecloud/pkg/action/api"
 	"github.com/yametech/yamecloud/pkg/action/api/workloads"
 	"github.com/yametech/yamecloud/pkg/action/service"
@@ -36,7 +37,7 @@ var subscribeList = k8s.GVRMaps.Subscribe(
 func main() {
 	config, err := configure.NewInstallConfigure(types.NewResourceITypes(subscribeList))
 	if err != nil {
-		panic(fmt.Sprintf("new install configure error %workloads", err))
+		panic(fmt.Sprintf("new install configure error %s", err))
 	}
 
 	_datasource := datasource.NewInterface(config)
@@ -45,7 +46,7 @@ func main() {
 
 	microService, err := install.WebServiceInstall(serviceName, version, _datasource, apiServer)
 	if err != nil {
-		panic(fmt.Sprintf("web service install error %workloads", err))
+		panic(fmt.Sprintf("web service install error %s", err))
 	}
 
 	if err := microService.Run(); err != nil {

@@ -28,12 +28,13 @@ const version = "latest"
 
 var defaultResources = []string{
 	k8s.Water,
-	k8s.Deployment,
-	k8s.Stone,
-	k8s.StatefulSet,
 	k8s.StatefulSet1,
-	k8s.DaemonSet,
+	k8s.Stone,
 	k8s.Injector,
+
+	k8s.Deployment,
+	k8s.StatefulSet,
+	k8s.DaemonSet,
 	k8s.Pod,
 	k8s.Job,
 	k8s.CronJob,
