@@ -38,6 +38,8 @@ const (
 	ClusterRoleBinding       ResourceType = "clusterrolebindings"
 	Endpoint                 ResourceType = "endpoints"
 
+	Metrics ResourceType = "metrics"
+
 	// deployment resource workloads template for CaaS
 	WorkloadsTemplate ResourceType = "workloads"
 

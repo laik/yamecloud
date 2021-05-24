@@ -33,6 +33,14 @@ func (g *Event) List(namespace string, selector string) (*service.UnstructuredLi
 	return list, nil
 }
 
+func (g *Event) ListLimit(namespace string, flag string, pos int64, size int64, selector string) (*service.UnstructuredListExtend, error) {
+	list, err := g.Interface.ListLimit(namespace, k8s.Event, flag, pos, size, selector)
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
 func (g *Event) Apply(namespace, name string, unstructuredExtend *service.UnstructuredExtend) (*service.UnstructuredExtend, bool, error) {
 	item, isUpdate, err := g.Interface.Apply(namespace, k8s.Event, name, unstructuredExtend)
 	if err != nil {

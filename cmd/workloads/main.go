@@ -32,6 +32,10 @@ var subscribeList = k8s.GVRMaps.Subscribe(
 	k8s.Secret,
 	k8s.HorizontalPodAutoscaler,
 	k8s.ResourceQuota,
+
+	k8s.Namespace,
+	k8s.Node,
+	k8s.Event,
 )
 
 func main() {

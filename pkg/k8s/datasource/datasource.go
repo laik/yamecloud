@@ -144,6 +144,25 @@ func (d *dataSource) Patch(namespace string, resourceType k8s.ResourceType, name
 	return
 }
 
+func (d *dataSource) ListLimit(namespace string, resourceType k8s.ResourceType, flag string, pos, size int64, selector string) (*unstructured.UnstructuredList, error) {
+	gvr, err := d.ResourceLister.GroupVersionResource(resourceType)
+	if err != nil {
+		return nil, err
+	}
+
+	opts := metav1.ListOptions{LabelSelector: selector}
+	if flag != "" {
+		//opts.Continue = flag
+	}
+	if size > 0 {
+		opts.Limit = size + pos
+	}
+	return d.Interface.
+		Resource(gvr).
+		Namespace(namespace).
+		List(context.TODO(), opts)
+}
+
 func (d *dataSource) List(namespace string, resourceType k8s.ResourceType, selector string) (*unstructured.UnstructuredList, error) {
 	gvr, err := d.ResourceLister.GroupVersionResource(resourceType)
 	if err != nil {

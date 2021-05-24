@@ -22,6 +22,9 @@ type workloadServer struct {
 	*workload_service.ResourceQuota
 	*workload_service.Secret
 	*workload_service.StatefulSet
+	*workload_service.Metrics
+	*workload_service.Namespace
+	*workload_service.Node
 }
 
 func (s *workloadServer) Name() string {
@@ -47,6 +50,10 @@ func NewWorkloadServer(serviceName string, server *api.Server) *workloadServer {
 
 		Secret:      workload_service.NewSecret(server),
 		StatefulSet: workload_service.NewStatefulSet(server),
+		Metrics:     workload_service.NewMetrics(server),
+
+		Namespace: workload_service.NewNamespace(server),
+		Node:      workload_service.NewNode(server),
 	}
 
 	group := workloadServer.Group(fmt.Sprintf("/%s", serviceName))
@@ -140,6 +147,30 @@ func NewWorkloadServer(serviceName string, server *api.Server) *workloadServer {
 		group.POST("/apis/batch/v1beta1/namespaces/:namespace/cronjobs", workloadServer.ApplyCronJob)
 		group.PUT("/apis/batch/v1beta1/namespaces/:namespace/cronjobs/:name", workloadServer.UpdateCronJob)
 		group.DELETE("/apis/batch/v1beta1/namespaces/:namespace/cronjobs/:name", workloadServer.DeleteCronJob)
+	}
+
+	// metrics
+	{
+		group.POST("/metrics", workloadServer.NamespacesMetrics)
+	}
+
+	// event
+	{
+		group.GET("/api/v1/events", workloadServer.ListEvent)
+		group.GET("/api/v1/namespaces/:namespace/events", workloadServer.ListEvent)
+		group.GET("/api/v1/namespaces/:namespace/events/:name", workloadServer.GetEvent)
+	}
+
+	// namespace
+	{
+		group.GET("/api/v1/namespaces", workloadServer.ListNamespace)
+		group.GET("/api/v1/namespaces/:namespace", workloadServer.GetNamespace)
+		group.POST("/api/v1/namespaces", workloadServer.ApplyNamespace)
+		group.DELETE("/api/v1/namespaces/:namespace", workloadServer.DeleteNamespace)
+
+		group.POST("/api/v1/namespaces/:namespace/annotate/node", workloadServer.AnnotateNamespaceAllowedNode)
+		group.POST("/api/v1/namespaces/:namespace/annotate/networkattachment", workloadServer.AnnotateNamespaceNetworkAttach)
+		group.POST("/api/v1/namespaces/:namespace/annotate/storageclass", workloadServer.AnnotateNamespaceAllowedStorageClass)
 	}
 
 	_ = group

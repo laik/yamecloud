@@ -79,16 +79,20 @@ gateway_run:
 	go run cmd/gateway/*.go api --handler=http --address 0.0.0.0:8000
 
 base_run:
-	go run cmd/base/*.go api
+	go run cmd/base/*.go
 
 service_run:
-	go run cmd/service/*.go api
+	go run cmd/service/*.go
 
 servicemesh_run:
-	go run cmd/servicemesh/*.go api
+	go run cmd/servicemesh/*.go
 
 tekton_run:
-	go run cmd/service/*.go api
+	go run cmd/service/*.go
 
-workload_run:
-	go run cmd/workload/*.go api
+workloads_run:
+	go run cmd/workloads/*.go
+
+
+workloadplus_run:
+	go run cmd/workloadplus/*.go
