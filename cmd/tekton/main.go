@@ -33,6 +33,7 @@ var subscribeList = k8s.GVRMaps.Subscribe(
 	k8s.TaskRun,
 	k8s.TektonStore,
 	k8s.TektonWebHook,
+	k8s.TektonGraph,
 )
 
 func main() {

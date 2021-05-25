@@ -5,7 +5,13 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"reflect"
+	"sort"
 )
+
+func Contains(s []string, searchterm string) bool {
+	i := sort.SearchStrings(s, searchterm)
+	return i < len(s) && s[i] == searchterm
+}
 
 func UnmarshalObject(object runtime.Object, target interface{}) error {
 	bytesData, err := json.Marshal(object)

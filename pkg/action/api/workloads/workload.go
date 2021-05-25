@@ -25,6 +25,7 @@ type workloadServer struct {
 	*workload_service.Metrics
 	*workload_service.Namespace
 	*workload_service.Node
+	*workload_service.CRD
 }
 
 func (s *workloadServer) Name() string {
@@ -54,6 +55,7 @@ func NewWorkloadServer(serviceName string, server *api.Server) *workloadServer {
 
 		Namespace: workload_service.NewNamespace(server),
 		Node:      workload_service.NewNode(server),
+		CRD:       workload_service.NewCRD(server),
 	}
 
 	group := workloadServer.Group(fmt.Sprintf("/%s", serviceName))
@@ -151,7 +153,10 @@ func NewWorkloadServer(serviceName string, server *api.Server) *workloadServer {
 
 	// metrics
 	{
-		group.POST("/metrics", workloadServer.NamespacesMetrics)
+		group.POST("/metrics", workloadServer.DefaultMetrics)
+		group.GET("/apis/metrics.k8s.io/v1beta1/nodes", workloadServer.ListNodeMetrics)
+		group.GET("/apis/metrics.k8s.io/v1beta1/pods", workloadServer.ListPodMetrics)
+		group.GET("/apis/metrics.k8s.io/v1beta1/namespaces/:namespace/pods", workloadServer.GetPodMetrics)
 	}
 
 	// event
@@ -173,6 +178,79 @@ func NewWorkloadServer(serviceName string, server *api.Server) *workloadServer {
 		group.POST("/api/v1/namespaces/:namespace/annotate/storageclass", workloadServer.AnnotateNamespaceAllowedStorageClass)
 	}
 
-	_ = group
+	// resource quota
+	{
+		group.GET("/api/v1/resourcequotas", workloadServer.ListResourceQuota)
+		group.GET("/api/v1/namespaces/:namespace/resourcequotas", workloadServer.ListResourceQuota)
+		group.GET("/api/v1/namespaces/:namespace/resourcequotas/:name", workloadServer.GetResourceQuota)
+		group.POST("/api/v1/namespaces/:namespace/resourcequotas", workloadServer.ApplyResourceQuota)
+		group.DELETE("/api/v1/namespaces/:namespace/resourcequotas/:name", workloadServer.DeleteResourceQuota)
+	}
+
+	// CRD
+	// #apiextensions.k8s.io/v1beta1
+	// #v1beta1, > 1.16 v1
+	// CustomResourceDefinition
+	{
+		group.GET("/apis/apiextensions.k8s.io/v1/customresourcedefinitions", workloadServer.ListCustomResourceDefinition)
+
+		ignores := []string{
+			"fuxi.nip.io/v1/workloads",
+			"fuxi.nip.io/v1/basedepartments",
+			"fuxi.nip.io/v1/baseroles",
+			"fuxi.nip.io/v1/baseusers",
+
+			"yamecloud.io/v1/workloads",
+			"yamecloud.io/v1/basedepartments",
+			"yamecloud.io/v1/baseroles",
+			"yamecloud.io/v1/baseusers",
+
+			"nuwa.nip.io/v1/statefulsets",
+			"nuwa.nip.io/v1/stones",
+			"nuwa.nip.io/v1/waters",
+			"nuwa.nip.io/v1/injectors",
+
+			"fuxi.nip.io/v1/tektongraphs",
+			"fuxi.nip.io/v1/tektonwebhooks",
+			"fuxi.nip.io/v1/tektonstores",
+
+			"yamecloud.io/v1/tektongraphs",
+			"yamecloud.io/v1/tektonwebhooks",
+			"yamecloud.io/v1/tektonstores",
+
+			"tekton.dev/v1alpha1/pipelines",
+			"tekton.dev/v1alpha1/pipelineruns",
+			"tekton.dev/v1alpha1/pipelineresources",
+			"tekton.dev/v1alpha1/tasks",
+			"tekton.dev/v1alpha1/taskruns",
+
+			"kubeovn.io/v1/ips",
+			"kubeovn.io/v1/subnets",
+			"kubeovn.io/v1/vlans",
+		}
+		apiVersions, err := workloadServer.ListCustomResourceRouter(ignores)
+		if err != nil {
+			panic(err)
+		}
+		routerPath := "/apis/%s"
+		for _, apiVersion := range apiVersions {
+			relativePath := fmt.Sprintf(routerPath, apiVersion)
+			group.GET(relativePath, workloadServer.ListGeneralCustomResourceDefinition)
+		}
+	}
+
+	// node
+	{
+		group.GET("/api/v1/nodes", workloadServer.ListNode)
+		group.GET("/api/v1/nodes/:name", workloadServer.GetNode)
+		group.POST("/api/v1/nodes", workloadServer.ApplyNode)
+		group.DELETE("/api/v1/nodes/:name", workloadServer.DeleteNode)
+
+	}
+
+	// replicasets
+	{
+		group.GET("apis/apps/v1/replicasets", workloadServer.ListReplicaSet)
+	}
 	return workloadServer
 }

@@ -23,7 +23,7 @@ func RequestParametersError(g *gin.Context, err error) {
 
 func InternalServerError(g *gin.Context, _data interface{}, err error) {
 	g.JSON(http.StatusInternalServerError,
-		gin.H{data: _data, message: err, errors: err.Error()},
+		gin.H{data: _data, message: err.Error(), errors: err.Error()},
 	)
 	g.Abort()
 }

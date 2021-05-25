@@ -10,14 +10,14 @@ import (
 	"net/http"
 )
 
-func (s *workloadServer) GetNode(g *gin.Context) {
+func (s *workloadServer) GetReplicaSet(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-	item, err := s.Node.Get(namespace, name)
+	item, err := s.ReplicaSet.Get(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -25,8 +25,8 @@ func (s *workloadServer) GetNode(g *gin.Context) {
 	g.JSON(http.StatusOK, item)
 }
 
-func (s *workloadServer) ListNode(g *gin.Context) {
-	list, err := s.Node.List("", "")
+func (s *workloadServer) ListReplicaSet(g *gin.Context) {
+	list, err := s.ReplicaSet.List("", "")
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
@@ -34,7 +34,7 @@ func (s *workloadServer) ListNode(g *gin.Context) {
 	g.JSON(http.StatusOK, list)
 }
 
-func (s *workloadServer) ApplyNode(g *gin.Context) {
+func (s *workloadServer) ApplyReplicaSet(g *gin.Context) {
 	namespace := g.Param("namespace")
 	raw, err := g.GetRawData()
 	if err != nil {
@@ -48,7 +48,7 @@ func (s *workloadServer) ApplyNode(g *gin.Context) {
 		return
 	}
 	name := _unstructured.GetName()
-	newUnstructuredExtend, isUpdate, err := s.Node.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := s.ReplicaSet.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
@@ -65,7 +65,7 @@ func (s *workloadServer) ApplyNode(g *gin.Context) {
 	}
 }
 
-func (s *workloadServer) UpdateNode(g *gin.Context) {
+func (s *workloadServer) UpdateReplicaSet(g *gin.Context) {
 	name := g.Param("name")
 	if name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
@@ -84,7 +84,7 @@ func (s *workloadServer) UpdateNode(g *gin.Context) {
 		return
 	}
 
-	newUnstructuredExtend, _, err := s.Node.Apply("", name, &service.UnstructuredExtend{Unstructured: updateNetWorkAttachmentData})
+	newUnstructuredExtend, _, err := s.ReplicaSet.Apply("", name, &service.UnstructuredExtend{Unstructured: updateNetWorkAttachmentData})
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -96,14 +96,14 @@ func (s *workloadServer) UpdateNode(g *gin.Context) {
 		})
 }
 
-func (s *workloadServer) DeleteNode(g *gin.Context) {
+func (s *workloadServer) DeleteReplicaSet(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-	err := s.Node.Delete(namespace, name)
+	err := s.ReplicaSet.Delete(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return

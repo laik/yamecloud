@@ -3,6 +3,7 @@ package workloads
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/go-resty/resty/v2"
 	"github.com/yametech/yamecloud/common"
 	"github.com/yametech/yamecloud/pkg/action/service"
@@ -77,6 +78,70 @@ func (m *Metrics) ProxyToPrometheus(params map[string]string, body []byte) (map[
 	}
 
 	return resultMap, nil
+}
+
+func (m *Metrics) PodMetrics(namespace, name string) (map[string]interface{}, error) {
+	result := make(map[string]interface{})
+	uri := fmt.Sprintf("apis/metrics.k8s.io/v1beta1/%s/%s/pods", namespace, name)
+	data, err := m.
+		ClientSet().
+		RESTClient().
+		Get().
+		AbsPath(uri).
+		DoRaw(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(data, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (m *Metrics) PodMetricsList(namespace string) (map[string]interface{}, error) {
+	result := make(map[string]interface{})
+	uri := "apis/metrics.k8s.io/v1beta1/pods"
+	if namespace != "" {
+		uri = fmt.Sprintf("apis/metrics.k8s.io/v1beta1/namespaces/%s/pods", namespace)
+	}
+
+	data, err := m.
+		ClientSet().
+		RESTClient().
+		Get().
+		AbsPath(uri).
+		DoRaw(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(data, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (m *Metrics) NodeMetricsList() (map[string]interface{}, error) {
+	result := make(map[string]interface{})
+	data, err := m.
+		ClientSet().
+		RESTClient().
+		Get().
+		AbsPath("apis/metrics.k8s.io/v1beta1/nodes").
+		DoRaw(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(data, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func (m Metrics) Get(namespace, name string) (*service.UnstructuredExtend, error) {

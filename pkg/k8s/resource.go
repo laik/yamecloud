@@ -159,7 +159,7 @@ var GVRMaps IGVRMaps = &groupVersionCollection{
 	Ingress:                  {Group: "networking.k8s.io", Version: "v1", Resource: "ingresses"},
 	NetworkPolicy:            {Group: "networking.k8s.io", Version: "v1", Resource: "networkpolicies"},
 	HorizontalPodAutoscaler:  {Group: "autoscaling", Version: "v2beta1", Resource: "horizontalpodautoscalers"},
-	CustomResourceDefinition: {Group: "apiextensions.k8s.io", Version: "v1beta1", Resource: "customresourcedefinitions"},
+	CustomResourceDefinition: {Group: "apiextensions.k8s.io", Version: "v1", Resource: "customresourcedefinitions"},
 
 	StorageClass: {Group: "storage.k8s.io", Version: "v1", Resource: "storageclasses"},
 

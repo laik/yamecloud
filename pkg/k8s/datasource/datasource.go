@@ -9,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
@@ -26,6 +27,16 @@ func NewInterface(configure *configure.InstallConfigure) k8s.Interface {
 
 type dataSource struct {
 	*configure.InstallConfigure
+}
+
+func (d *dataSource) ListGVR(namespace string, gvr schema.GroupVersionResource, selector string) (*unstructured.UnstructuredList, error) {
+	return d.Interface.
+		Resource(gvr).
+		Namespace(namespace).
+		List(
+			context.TODO(),
+			metav1.ListOptions{LabelSelector: selector},
+		)
 }
 
 func (d *dataSource) RESTClient() rest.Interface {

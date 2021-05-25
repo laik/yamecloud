@@ -5,6 +5,7 @@ import (
 	"github.com/yametech/yamecloud/pkg/k8s"
 	"github.com/yametech/yamecloud/pkg/utils"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -82,6 +83,7 @@ type IResourceService interface {
 }
 
 type Interface interface {
+	ListGVR(namespace string, gvr schema.GroupVersionResource, selector string) (*UnstructuredListExtend, error)
 	List(namespace string, resource k8s.ResourceType, selector string) (*UnstructuredListExtend, error)
 	ListLimit(namespace string, resourceType k8s.ResourceType, flag string, pos, size int64, selector string) (*UnstructuredListExtend, error)
 	Get(namespace string, resource k8s.ResourceType, name string, subresources ...string) (*UnstructuredExtend, error)
@@ -100,6 +102,14 @@ var _ Interface = &Service{}
 type Service struct {
 	k8s.Interface
 	services map[k8s.ResourceType]IResourceService
+}
+
+func (s *Service) ListGVR(namespace string, gvr schema.GroupVersionResource, selector string) (*UnstructuredListExtend, error) {
+	list, err := s.Interface.ListGVR(namespace, gvr, selector)
+	if err != nil {
+		return nil, err
+	}
+	return &UnstructuredListExtend{list}, nil
 }
 
 func (s *Service) RESETClient() rest.Interface {

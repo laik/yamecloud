@@ -27,6 +27,7 @@ var subscribeList = k8s.GVRMaps.Subscribe(
 	k8s.DaemonSet,
 	k8s.Job,
 	k8s.CronJob,
+	k8s.ReplicaSet,
 
 	k8s.ConfigMap,
 	k8s.Secret,
@@ -36,6 +37,7 @@ var subscribeList = k8s.GVRMaps.Subscribe(
 	k8s.Namespace,
 	k8s.Node,
 	k8s.Event,
+	k8s.CustomResourceDefinition,
 )
 
 func main() {
