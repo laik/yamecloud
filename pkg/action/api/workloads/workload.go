@@ -26,6 +26,10 @@ type workloadServer struct {
 	*workload_service.Namespace
 	*workload_service.Node
 	*workload_service.CRD
+
+	*workload_service.PV
+	*workload_service.PVC
+	*workload_service.StorageClass
 }
 
 func (s *workloadServer) Name() string {
@@ -56,6 +60,11 @@ func NewWorkloadServer(serviceName string, server *api.Server) *workloadServer {
 		Namespace: workload_service.NewNamespace(server),
 		Node:      workload_service.NewNode(server),
 		CRD:       workload_service.NewCRD(server),
+
+		PV:  workload_service.NewPV(server),
+		PVC: workload_service.NewPVC(server),
+
+		StorageClass: workload_service.NewStorageClass(server),
 	}
 
 	group := workloadServer.Group(fmt.Sprintf("/%s", serviceName))
@@ -252,5 +261,30 @@ func NewWorkloadServer(serviceName string, server *api.Server) *workloadServer {
 	{
 		group.GET("apis/apps/v1/replicasets", workloadServer.ListReplicaSet)
 	}
+
+	// PersistentVolume
+	{
+		group.GET("/api/v1/persistentvolumes", workloadServer.ListPV)
+		group.GET("/api/v1/persistentvolumes/:name", workloadServer.GetPV)
+		group.DELETE("/api/v1/persistentvolumes/:name", workloadServer.DeletePV)
+	}
+
+	// PersistentVolumeClaims
+	{
+		group.GET("/api/v1/persistentvolumeclaims", workloadServer.ListPVC)
+		group.GET("/api/v1/namespaces/:namespace/persistentvolumeclaims", workloadServer.ListPVC)
+		group.GET("/api/v1/namespaces/:namespace/persistentvolumeclaims/:name", workloadServer.GetPVC)
+		group.DELETE("/api/v1/namespaces/:namespace/persistentvolumeclaims/:name", workloadServer.DeletePVC)
+	}
+
+	// #storage.k8s.io
+	{
+		group.GET("/apis/storage.k8s.io/v1/storageclasses", workloadServer.ListStorageClass)
+		group.GET("/apis/storage.k8s.io/v1/storageclasses/:name", workloadServer.GetStorageClass)
+		group.POST("/apis/storage.k8s.io/v1/storageclasses", workloadServer.ApplyStorageClass)
+		group.PUT("/apis/storage.k8s.io/v1/storageclasses/:name", workloadServer.UpdateStorageClass)
+		group.DELETE("/apis/storage.k8s.io/v1/storageclasses/:name", workloadServer.DeleteStorageClass)
+	}
+
 	return workloadServer
 }
