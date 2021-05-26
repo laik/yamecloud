@@ -38,7 +38,7 @@ dep:
 build: dep
 	go build ./cmd/...
 
-build-image: servicemesh tekton service base gateway shell watcher sdn push-image
+build-image: servicemesh tekton service base gateway shell watcher sdn workloadplus workloads push-image
 
 push-image: 
 	docker push ${REPO}/servicemesh:${VERSION}
@@ -49,6 +49,8 @@ push-image:
 	docker push ${REPO}/shell:${VERSION}
 	docker push ${REPO}/watcher:${VERSION}
 	docker push ${REPO}/sdn:${VERSION}
+	docker push ${REPO}/workloads:${VERSION}
+	docker push ${REPO}/workloadplus:${VERSION}
 
 sdn:
 	docker build -t ${REPO}/sdn:${VERSION} -f images/Dockerfile.sdn .
@@ -75,6 +77,12 @@ gateway:
 shell:
 	docker build -t ${REPO}/shell:${VERSION} -f images/Dockerfile.shell .
 
+workloads:
+	docker build -t ${REPO}/workloads:${VERSION} -f images/Dockerfile.workloads .
+
+workloadplus:
+	docker build -t ${REPO}/workloadplus:${VERSION} -f images/Dockerfile.workloadplus .
+
 gateway_run:
 	go run cmd/gateway/*.go api --handler=http --address 0.0.0.0:8000
 
@@ -92,7 +100,6 @@ tekton_run:
 
 workloads_run:
 	go run cmd/workloads/*.go
-
 
 workloadplus_run:
 	go run cmd/workloadplus/*.go

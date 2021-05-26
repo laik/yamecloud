@@ -43,6 +43,9 @@ var subscribeList = k8s.GVRMaps.Subscribe(
 	k8s.PersistentVolume,
 	k8s.PersistentVolumeClaims,
 	k8s.StorageClass,
+
+	// workloads template
+	k8s.Workloads,
 )
 
 func main() {

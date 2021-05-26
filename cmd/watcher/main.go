@@ -62,7 +62,7 @@ var defaultResources = []string{
 	k8s.Endpoint,
 
 	// deployment resource workload template for CaaS
-	k8s.WorkloadsTemplate,
+	k8s.Workloads,
 
 	// tenant for PaaS
 	k8s.BaseDepartment,

@@ -45,17 +45,17 @@ spec:
                 type: string
               metadata:
                 type: string
-              micro:
-                type: string
               resourceType:
+                type: string
+              service:
                 type: string
               volumeClaims:
                 type: string
             required:
             - appName
             - metadata
-            - micro
             - resourceType
+            - service
             - volumeClaims
             type: object
           status:

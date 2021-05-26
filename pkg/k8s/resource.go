@@ -40,8 +40,8 @@ const (
 
 	Metrics ResourceType = "metrics"
 
-	// deployment resource workloads template for CaaS
-	WorkloadsTemplate ResourceType = "workloads"
+	// Workloads deployment resource workloads template for CaaS
+	Workloads ResourceType = "workloads"
 
 	// form render
 	FormRender ResourceType = "formrenders"
@@ -122,11 +122,8 @@ var GVRMaps IGVRMaps = &groupVersionCollection{
 	StatefulSet1: {Group: "nuwa.nip.io", Version: "v1", Resource: "statefulsets"},
 	Injector:     {Group: "nuwa.nip.io", Version: "v1", Resource: "injectors"},
 
-	WorkloadsTemplate: {Group: "fuxi.nip.io", Version: "v1", Resource: "workloads"},
-
-	Page:  {Group: "fuxi.nip.io", Version: "v1", Resource: "pages"},
-	Form:  {Group: "fuxi.nip.io", Version: "v1", Resource: "forms"},
-	Field: {Group: "fuxi.nip.io", Version: "v1", Resource: "fields"},
+	// since 0.2.0 the group version change to yamecloud.io
+	Workloads: {Group: "yamecloud.io", Version: "v1", Resource: "workloads"},
 
 	// PaaS RBAC
 	BaseTenant:     {Group: "yamecloud.io", Version: "v1", Resource: "basetenants"},

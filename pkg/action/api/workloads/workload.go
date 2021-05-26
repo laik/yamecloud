@@ -30,6 +30,8 @@ type workloadServer struct {
 	*workload_service.PV
 	*workload_service.PVC
 	*workload_service.StorageClass
+
+	*workload_service.Template
 }
 
 func (s *workloadServer) Name() string {
@@ -65,9 +67,19 @@ func NewWorkloadServer(serviceName string, server *api.Server) *workloadServer {
 		PVC: workload_service.NewPVC(server),
 
 		StorageClass: workload_service.NewStorageClass(server),
+
+		Template: workload_service.NewTemplate(server),
 	}
 
 	group := workloadServer.Group(fmt.Sprintf("/%s", serviceName))
+	//template
+	{
+		group.POST("/apis/yamecloud.io/v1/workloads", workloadServer.ApplyTemplate)
+		group.PUT("/apis/yamecloud.io/v1/workloads/:name", workloadServer.ApplyTemplate)
+		group.PUT("/apis/yamecloud.io/v1/workloads/:name/label", workloadServer.LabelTemplate)
+		group.DELETE("/apis/yamecloud.io/v1/workloads/:name", workloadServer.DeleteTemplate)
+		group.POST("/apis/yamecloud.io/v1/workloads/:name/deploy", workloadServer.DeployTemplate)
+	}
 
 	// configmap api
 	{
@@ -254,7 +266,7 @@ func NewWorkloadServer(serviceName string, server *api.Server) *workloadServer {
 		group.GET("/api/v1/nodes/:name", workloadServer.GetNode)
 		group.POST("/api/v1/nodes", workloadServer.ApplyNode)
 		group.DELETE("/api/v1/nodes/:name", workloadServer.DeleteNode)
-
+		group.POST("/api/v1/nodes/:name/annotate/geo", workloadServer.NodeGEO)
 	}
 
 	// replicasets

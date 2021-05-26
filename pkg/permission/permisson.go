@@ -22,7 +22,7 @@ type TreeNode struct {
 	Children []*TreeNode `json:"children"`
 }
 
-// Rename to Tree
+// Tree none
 var Tree = TreeNode{
 	Name: "compass",
 	Children: []*TreeNode{
@@ -53,7 +53,7 @@ var Tree = TreeNode{
 			Name: "workloads",
 			Children: []*TreeNode{
 				{
-					Name: k8s.WorkloadsTemplate,
+					Name: k8s.Workloads,
 					Children: []*TreeNode{
 						{Name: View},
 						{Name: Apply},
