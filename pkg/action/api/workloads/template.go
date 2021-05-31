@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/yametech/yamecloud/pkg/action/api/common"
 	"github.com/yametech/yamecloud/pkg/action/service"
+	"github.com/yametech/yamecloud/pkg/utils"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"net/http"
 )
@@ -44,7 +45,7 @@ func (s *workloadServer) ListTemplate(g *gin.Context) {
 	g.JSON(http.StatusOK, list)
 }
 
-func (s *workloadServer) ApplyTemplate(g *gin.Context) {
+func (s *workloadServer) CreateTemplate(g *gin.Context) {
 	raw, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("get raw data error (%s)", err))
@@ -55,7 +56,16 @@ func (s *workloadServer) ApplyTemplate(g *gin.Context) {
 		common.RequestParametersError(g, fmt.Errorf("unmarshal from json data error (%s)", err))
 		return
 	}
-	name := _unstructured.GetName()
+	namespace := _unstructured.GetLabels()["namespace"]
+	name := fmt.Sprintf("%s.%s", _unstructured.GetName(), namespace)
+	utils.Set(_unstructured.Object, "metadata.name", name)
+
+	_unstructuredExist, _ := s.Template.Get("", name)
+	if _unstructuredExist.GetName() != "" {
+		common.RequestParametersError(g, fmt.Errorf("object %s already exists", name))
+		return
+	}
+
 	newUnstructuredExtend, isUpdate, err := s.Template.Apply("", name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
@@ -71,6 +81,36 @@ func (s *workloadServer) ApplyTemplate(g *gin.Context) {
 	} else {
 		g.JSON(http.StatusOK, newUnstructuredExtend)
 	}
+}
+
+func (s *workloadServer) UpdateTemplate(g *gin.Context) {
+	name := g.Param("name")
+	if name == "" {
+		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
+		return
+	}
+	raw, err := g.GetRawData()
+	if err != nil {
+		common.RequestParametersError(g, fmt.Errorf("get raw data error (%s)", err))
+		return
+	}
+
+	_unstructured := &unstructured.Unstructured{}
+	if err := json.Unmarshal(raw, _unstructured); err != nil {
+		common.RequestParametersError(g, fmt.Errorf("unmarshal from json data error (%s)", err))
+		return
+	}
+
+	newUnstructuredExtend, _, err := s.Template.Apply("", name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	if err != nil {
+		common.InternalServerError(g, err, err)
+		return
+	}
+	g.JSON(
+		http.StatusOK,
+		[]service.UnstructuredExtend{
+			*newUnstructuredExtend,
+		})
 }
 
 func (s *workloadServer) LabelTemplate(g *gin.Context) {
@@ -119,12 +159,15 @@ func (s *workloadServer) DeleteTemplate(g *gin.Context) {
 }
 
 type templateParameter struct {
-	Annotations  map[string]string `json:"annotations"`
-	AppName      string            `json:"appName"`
-	Namespace    string            `json:"namespace"`
-	StorageClass string            `json:"storageClass"`
-	Replicas     string            `json:"replicas"`
-	TemplateName string            `json:"templateName"`
+	Data struct {
+		AppName      string `json:"appName"`
+		Namespace    string `json:"namespace"`
+		StorageClass string `json:"storageClass"`
+		Replicas     string `json:"replicas"`
+		TemplateName string `json:"templateName"`
+
+		Annotations map[string]string `json:"annotations"`
+	} `json: "data"`
 }
 
 func (s *workloadServer) DeployTemplate(g *gin.Context) {
@@ -133,154 +176,162 @@ func (s *workloadServer) DeployTemplate(g *gin.Context) {
 		common.RequestParametersError(g, fmt.Errorf("obtain parameters invalid, error: %s", err))
 		return
 	}
-	template, err := s.Template.Get("", tpParams.TemplateName)
+	template, err := s.Template.Get("", tpParams.Data.TemplateName)
 	if err != nil {
-		common.RequestParametersError(g, fmt.Errorf("can not get template %s, error: %s", tpParams.TemplateName, err))
+		common.RequestParametersError(g, fmt.Errorf("can not get template %s, error: %s", tpParams.Data.TemplateName, err))
 		return
 	}
 
-	_ = template
-	//
-	//workloadsTemplate := &workloadsTemplate{
-	//	Metadata:     make(metadataTemplate, 0),
-	//	Service:      serviceTemplate{},
-	//	VolumeClaims: make(volumeClaimsTemplate, 0),
-	//}
-	//if err := json.Unmarshal([]byte(*workloads.Spec.Metadata), &workloadsTemplate.Metadata); err != nil {
-	//	common.ToRequestParamsError(g, err)
-	//	return
-	//}
-	//
-	//if err := json.Unmarshal([]byte(*workloads.Spec.Service), &workloadsTemplate.Service); err != nil {
-	//	common.ToRequestParamsError(g, err)
-	//	return
-	//}
-	//if err := json.Unmarshal([]byte(workloads.Spec.VolumeClaims), &workloadsTemplate.VolumeClaims); err != nil {
-	//	common.ToRequestParamsError(g, err)
-	//	return
-	//}
-	//
-	//var runtimeObj runtime.Object
+	base, _ := template.Get("spec.metadata")
+	bases := base.([]interface{})
+	_ = bases
 
-	//
-	//	var runtimeClassGVR schema.GroupVersionResource
-	//	switch *workloads.Spec.ResourceType {
-	//	case "Stone":
-	//		obj, err := w.namespace.Get("", deployTemplate.Namespace)
-	//		if err != nil {
-	//			common.ToRequestParamsError(g, err)
-	//			return
-	//		}
-	//		namespaceUnstructured := obj.(*unstructured.Unstructured)
-	//		namespace := &corev1.Namespace{}
-	//		if err = runtime.DefaultUnstructuredConverter.FromUnstructured(namespaceUnstructured.Object, namespace); err != nil {
-	//			common.ToRequestParamsError(g, err)
-	//			return
-	//		}
-	//
-	//		notResourceAllocatedError := fmt.Errorf("node resources are not allocated in this namespace, please contact the administrator")
-	//		annotations := namespace.GetAnnotations()
-	//		if annotations == nil {
-	//			common.ToRequestParamsError(g,
-	//				notResourceAllocatedError,
-	//			)
-	//			return
-	//		}
-	//		limits, ok := annotations[constraint.NamespaceAnnotationForNodeResource]
-	//		if !ok {
-	//			common.ToRequestParamsError(g,
-	//				notResourceAllocatedError,
-	//			)
-	//			return
-	//		}
-	//
-	//		cds := make(nuwav1.Coordinates, 0)
-	//		err = json.Unmarshal([]byte(limits), &cds)
-	//		if err != nil {
-	//			common.ToRequestParamsError(g, err)
-	//			return
-	//		}
-	//		if len(cds) == 0 {
-	//			common.ToRequestParamsError(g,
-	//				notResourceAllocatedError,
-	//			)
-	//			return
-	//		}
-	//		replicas, err := strconv.ParseUint(deployTemplate.Replicas, 10, 32)
-	//		if err != nil {
-	//			common.ToRequestParamsError(g, err)
-	//			return
-	//		}
-	//		rs := int32(replicas)
-	//		_, cgs := groupBy(cds, rs)
-	//
-	//		serviceTemplate, err := workloadsTemplateToServiceSpec(workloadsTemplate)
-	//		if err != nil {
-	//			if err != nil {
-	//				common.ToRequestParamsError(g, err)
-	//				return
-	//			}
-	//		}
-	//
-	//		// PodSpec
-	//		podSpec := corev1.PodSpec{}
-	//		podSpec.Containers = workloadsTemplateToPodContainers(workloadsTemplate)
-	//		podSpec.ImagePullSecrets = workloadsTemplateImagePullSecrets(workloadsTemplate)
-	//
-	//		// Labels
-	//		labels := map[string]string{
-	//			"app":               deployTemplate.AppName,
-	//			"app-template-name": deployTemplate.TemplateName,
-	//		}
-	//		runtimeObj = &nuwav1.Stone{
-	//			TypeMeta: metav1.TypeMeta{
-	//				Kind:       "Stone",
-	//				APIVersion: "nuwa.nip.io/v1",
-	//			},
-	//			ObjectMeta: metav1.ObjectMeta{
-	//				Name:        deployTemplate.AppName,
-	//				Namespace:   deployTemplate.Namespace,
-	//				Labels:      labels,
-	//				Annotations: deployTemplate.Annotations,
-	//			},
-	//			Spec: nuwav1.StoneSpec{
-	//				Template: corev1.PodTemplateSpec{
-	//					ObjectMeta: metav1.ObjectMeta{
-	//						Name:   deployTemplate.AppName,
-	//						Labels: labels,
-	//					},
-	//					Spec: podSpec,
-	//				},
-	//				Strategy:             "Alpha", // TODO
-	//				Coordinates:          cgs,
-	//				Service:              *serviceTemplate,
-	//				VolumeClaimTemplates: workloadsTemplateToVolumeClaims(workloadsTemplate, deployTemplate),
-	//			},
-	//		}
-	//		runtimeClassGVR = types.ResourceStone
-	//	}
-	//
-	//	unstructuredObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(runtimeObj)
-	//	if err != nil {
-	//		common.ToRequestParamsError(g, err)
-	//		return
-	//	}
-	//	unstructuredData := &unstructured.Unstructured{Object: unstructuredObj}
-	//
-	//	w.generic.SetGroupVersionResource(runtimeClassGVR)
-	//	newObj, _, err := w.generic.Apply(deployTemplate.Namespace, deployTemplate.AppName, unstructuredData)
-	//	if err != nil {
-	//		common.ToInternalServerError(g, unstructuredData, err)
-	//		return
-	//	}
-	//	g.JSON(
-	//		http.StatusOK,
-	//		[]unstructured.Unstructured{
-	//			*newObj,
-	//		})
-	//
-	//	return
+	g.JSON(http.StatusInternalServerError, "xx")
+
+	_ = template
 }
+
+//
+//workloadsTemplate := &workloadsTemplate{
+//	Metadata:     make(metadataTemplate, 0),
+//	Service:      serviceTemplate{},
+//	VolumeClaims: make(volumeClaimsTemplate, 0),
+//}
+//if err := json.Unmarshal([]byte(*workloads.Spec.Metadata), &workloadsTemplate.Metadata); err != nil {
+//	common.ToRequestParamsError(g, err)
+//	return
+//}
+//
+//if err := json.Unmarshal([]byte(*workloads.Spec.Service), &workloadsTemplate.Service); err != nil {
+//	common.ToRequestParamsError(g, err)
+//	return
+//}
+//if err := json.Unmarshal([]byte(workloads.Spec.VolumeClaims), &workloadsTemplate.VolumeClaims); err != nil {
+//	common.ToRequestParamsError(g, err)
+//	return
+//}
+//
+//var runtimeObj runtime.Object
+
+//
+//	var runtimeClassGVR schema.GroupVersionResource
+//	switch *workloads.Spec.ResourceType {
+//	case "Stone":
+//		obj, err := w.namespace.Get("", deployTemplate.Namespace)
+//		if err != nil {
+//			common.ToRequestParamsError(g, err)
+//			return
+//		}
+//		namespaceUnstructured := obj.(*unstructured.Unstructured)
+//		namespace := &corev1.Namespace{}
+//		if err = runtime.DefaultUnstructuredConverter.FromUnstructured(namespaceUnstructured.Object, namespace); err != nil {
+//			common.ToRequestParamsError(g, err)
+//			return
+//		}
+//
+//		notResourceAllocatedError := fmt.Errorf("node resources are not allocated in this namespace, please contact the administrator")
+//		annotations := namespace.GetAnnotations()
+//		if annotations == nil {
+//			common.ToRequestParamsError(g,
+//				notResourceAllocatedError,
+//			)
+//			return
+//		}
+//		limits, ok := annotations[constraint.NamespaceAnnotationForNodeResource]
+//		if !ok {
+//			common.ToRequestParamsError(g,
+//				notResourceAllocatedError,
+//			)
+//			return
+//		}
+//
+//		cds := make(nuwav1.Coordinates, 0)
+//		err = json.Unmarshal([]byte(limits), &cds)
+//		if err != nil {
+//			common.ToRequestParamsError(g, err)
+//			return
+//		}
+//		if len(cds) == 0 {
+//			common.ToRequestParamsError(g,
+//				notResourceAllocatedError,
+//			)
+//			return
+//		}
+//		replicas, err := strconv.ParseUint(deployTemplate.Replicas, 10, 32)
+//		if err != nil {
+//			common.ToRequestParamsError(g, err)
+//			return
+//		}
+//		rs := int32(replicas)
+//		_, cgs := groupBy(cds, rs)
+//
+//		serviceTemplate, err := workloadsTemplateToServiceSpec(workloadsTemplate)
+//		if err != nil {
+//			if err != nil {
+//				common.ToRequestParamsError(g, err)
+//				return
+//			}
+//		}
+//
+//		// PodSpec
+//		podSpec := corev1.PodSpec{}
+//		podSpec.Containers = workloadsTemplateToPodContainers(workloadsTemplate)
+//		podSpec.ImagePullSecrets = workloadsTemplateImagePullSecrets(workloadsTemplate)
+//
+//		// Labels
+//		labels := map[string]string{
+//			"app":               deployTemplate.AppName,
+//			"app-template-name": deployTemplate.TemplateName,
+//		}
+//		runtimeObj = &nuwav1.Stone{
+//			TypeMeta: metav1.TypeMeta{
+//				Kind:       "Stone",
+//				APIVersion: "nuwa.nip.io/v1",
+//			},
+//			ObjectMeta: metav1.ObjectMeta{
+//				Name:        deployTemplate.AppName,
+//				Namespace:   deployTemplate.Namespace,
+//				Labels:      labels,
+//				Annotations: deployTemplate.Annotations,
+//			},
+//			Spec: nuwav1.StoneSpec{
+//				Template: corev1.PodTemplateSpec{
+//					ObjectMeta: metav1.ObjectMeta{
+//						Name:   deployTemplate.AppName,
+//						Labels: labels,
+//					},
+//					Spec: podSpec,
+//				},
+//				Strategy:             "Alpha", // TODO
+//				Coordinates:          cgs,
+//				Service:              *serviceTemplate,
+//				VolumeClaimTemplates: workloadsTemplateToVolumeClaims(workloadsTemplate, deployTemplate),
+//			},
+//		}
+//		runtimeClassGVR = types.ResourceStone
+//	}
+//
+//	unstructuredObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(runtimeObj)
+//	if err != nil {
+//		common.ToRequestParamsError(g, err)
+//		return
+//	}
+//	unstructuredData := &unstructured.Unstructured{Object: unstructuredObj}
+//
+//	w.generic.SetGroupVersionResource(runtimeClassGVR)
+//	newObj, _, err := w.generic.Apply(deployTemplate.Namespace, deployTemplate.AppName, unstructuredData)
+//	if err != nil {
+//		common.ToInternalServerError(g, unstructuredData, err)
+//		return
+//	}
+//	g.JSON(
+//		http.StatusOK,
+//		[]unstructured.Unstructured{
+//			*newObj,
+//		})
+//
+//	return
+//}
 
 //
 //func workloadsTemplateToServiceSpec(wt *workloadsTemplate) (*corev1.ServiceSpec, error) {

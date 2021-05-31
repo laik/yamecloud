@@ -2,7 +2,7 @@ package utils
 
 import "strings"
 
-// "path":"a.b.c"
+// Set "path":"a.b.c"
 // data = {"a":{"b":{"c":123}}}
 // Set(data,"a.b.c",123)
 func Set(data map[string]interface{}, path string, value interface{}) {
@@ -18,7 +18,7 @@ func Set(data map[string]interface{}, path string, value interface{}) {
 	Set(data[head].(map[string]interface{}), remain, value)
 }
 
-// data = {"a":{"b":{"c":123}}}
+// Get data = {"a":{"b":{"c":123}}}
 // Get(data,"a.b.c") = 123
 func Get(data map[string]interface{}, path string) (value interface{}) {
 	head, remain := shift(path)
@@ -35,7 +35,7 @@ func Get(data map[string]interface{}, path string) (value interface{}) {
 	return nil
 }
 
-// data = {"a":{"b":{"c":123}}}
+// Delete data = {"a":{"b":{"c":123}}}
 // Delete(data,"a.b.c") = {"a":{"b":""}}
 func Delete(data map[string]interface{}, path string) {
 	head, remain := shift(path)

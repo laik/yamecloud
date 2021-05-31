@@ -74,8 +74,8 @@ func NewWorkloadServer(serviceName string, server *api.Server) *workloadServer {
 	group := workloadServer.Group(fmt.Sprintf("/%s", serviceName))
 	//template
 	{
-		group.POST("/apis/yamecloud.io/v1/workloads", workloadServer.ApplyTemplate)
-		group.PUT("/apis/yamecloud.io/v1/workloads/:name", workloadServer.ApplyTemplate)
+		group.POST("/apis/yamecloud.io/v1/workloads", workloadServer.CreateTemplate)
+		group.PUT("/apis/yamecloud.io/v1/workloads/:name", workloadServer.UpdateTemplate)
 		group.PUT("/apis/yamecloud.io/v1/workloads/:name/label", workloadServer.LabelTemplate)
 		group.DELETE("/apis/yamecloud.io/v1/workloads/:name", workloadServer.DeleteTemplate)
 		group.POST("/apis/yamecloud.io/v1/workloads/:name/deploy", workloadServer.DeployTemplate)

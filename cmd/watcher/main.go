@@ -21,6 +21,11 @@ export IN_CLUSTER=true
 #if use etcd discover server
 #argument additions
 --registry etcd --registry_address ${etcd_addr}
+
+# environments
+SUBLIST="";SUBTOPIC=tekton,ovn
+
+SUBTOPIC=[tekton,ovn,istio] or *
 */
 
 const serviceName = "watcher"

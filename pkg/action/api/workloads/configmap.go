@@ -78,13 +78,13 @@ func (s *workloadServer) UpdateConfigMap(g *gin.Context) {
 		return
 	}
 
-	updateNetWorkAttachmentData := &unstructured.Unstructured{}
-	if err := json.Unmarshal(raw, updateNetWorkAttachmentData); err != nil {
+	_unstructured := &unstructured.Unstructured{}
+	if err := json.Unmarshal(raw, _unstructured); err != nil {
 		common.RequestParametersError(g, fmt.Errorf("unmarshal from json data error (%s)", err))
 		return
 	}
 
-	newUnstructuredExtend, _, err := s.ConfigMap.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: updateNetWorkAttachmentData})
+	newUnstructuredExtend, _, err := s.ConfigMap.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return

@@ -84,7 +84,7 @@ workloadplus:
 	docker build -t ${REPO}/workloadplus:${VERSION} -f images/Dockerfile.workloadplus .
 
 gateway_run:
-	go run cmd/gateway/*.go api --handler=http --address 0.0.0.0:8000
+	go run cmd/gateway/*.go api --handler=http --address 0.0.0.0:8080
 
 base_run:
 	go run cmd/base/*.go
