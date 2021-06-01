@@ -190,20 +190,29 @@ func (s *workloadServer) DeployTemplate(g *gin.Context) {
 		return
 	}
 
-	switch resourceType {
-	case "Stone":
-	case "Deployment":
-
-	}
-
 	expected := content.NewTemplateModel()
 	if err := renderBaseTemplate(template, expected); err != nil {
 		common.RequestParametersError(g, fmt.Errorf("can convert template %s, error: %s", tpParams.Data.TemplateName, err))
 		return
 	}
 
+	switch resourceType {
+	case "Stone":
+		if err := renderServicesTemplate(template, expected); err != nil {
+			common.RequestParametersError(g, fmt.Errorf("can convert service template %s, error: %s", tpParams.Data.TemplateName, err))
+			return
+		}
+	case "Deployment":
+
+	}
+
 	g.JSON(http.StatusInternalServerError, expected)
 	return
+}
+
+func renderServicesTemplate(extend *service.UnstructuredExtend, expected content.TemplateModel) error {
+	//metadata, _ := extend.Get("spec.metadata")
+	return nil
 }
 
 func renderBaseTemplate(extend *service.UnstructuredExtend, expected content.TemplateModel) error {
@@ -259,9 +268,14 @@ func renderBaseTemplate(extend *service.UnstructuredExtend, expected content.Tem
 			}
 		}
 
-	}
+		volumeMounts := utils.Get(_container, "volumeMounts").(map[string]interface{})
 
-	_ = expected
+		volumeMountsItems, ok := utils.Get(volumeMounts, "items").(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("containers volume mounts get item error, value: %v", volumeMountsItems)
+		}
+
+	}
 
 	return nil
 }
