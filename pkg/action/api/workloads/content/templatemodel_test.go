@@ -7,7 +7,7 @@ import (
 )
 
 func Test_TemplateModel(t *testing.T) {
-	d := NewTemplateModelImpl()
+	d := NewTemplateModel()
 	d.AddMetadata("devops", "my-deployment", "myuuid").
 		AddContainer("abc", "nginx").
 		AddCommand("start", "nginx").

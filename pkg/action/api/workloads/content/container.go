@@ -36,6 +36,7 @@ type ContainerModel interface {
 	AddArgs(args ...string) ContainerModel
 	AddEnvironment(name, value string) ContainerModel
 	AddResourceLimits(cpuLimit int64, memoryLimit int64, cpuRequest int64, memoryRequest int64) ContainerModel
+	AddResourceLimits2(cpuLimit, memoryLimit, cpuRequest, memoryRequest string) ContainerModel
 	AddVolumeMounts(name, mountPath, subPath string) ContainerModel
 	SetImagePullPolicy(policy ImagePullPolicy) ContainerModel
 	Set(name, image string)
@@ -121,6 +122,25 @@ func (c ContainerModelImpl) AddEnvironment(name, value string) ContainerModel {
 	_environments.Set(name, value)
 
 	c["environments"] = _environments
+
+	return c
+}
+
+func (c ContainerModelImpl) AddResourceLimits2(cpuLimit string, memoryLimit string, cpuRequest string, memoryRequest string) ContainerModel {
+	var _resourceLimits map[string]string
+
+	if __resourceLimits, exist := c["resource_limits"]; !exist {
+		_resourceLimits = make(map[string]string)
+	} else {
+		_resourceLimits = __resourceLimits.(map[string]string)
+	}
+
+	_resourceLimits["cpu_limit"] = cpuLimit
+	_resourceLimits["memory_limit"] = memoryLimit
+	_resourceLimits["cpu_request"] = cpuRequest
+	_resourceLimits["memory_request"] = memoryRequest
+
+	c["resource_limits"] = _resourceLimits
 
 	return c
 }

@@ -30,8 +30,8 @@ var _ TemplateModel = &TemplateModelImpl{}
 
 type TemplateModelImpl map[string]interface{}
 
-func NewTemplateModelImpl() TemplateModelImpl {
-	return make(map[string]interface{})
+func NewTemplateModel() TemplateModel {
+	return make(TemplateModelImpl)
 }
 
 func (d TemplateModelImpl) AddMetadata(namespace, name, uuid string) TemplateModel {

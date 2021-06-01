@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/yametech/yamecloud/pkg/action/api/common"
+	"github.com/yametech/yamecloud/pkg/action/api/workloads/content"
 	"github.com/yametech/yamecloud/pkg/action/service"
 	"github.com/yametech/yamecloud/pkg/utils"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -182,13 +183,87 @@ func (s *workloadServer) DeployTemplate(g *gin.Context) {
 		return
 	}
 
-	base, _ := template.Get("spec.metadata")
-	bases := base.([]interface{})
-	_ = bases
+	resourceTypeInterface, _ := template.Get("spec.resourceType")
+	resourceType, ok := resourceTypeInterface.(string)
+	if resourceType == "" || !ok {
+		common.RequestParametersError(g, fmt.Errorf("can not get template resource type %s, error: %s", tpParams.Data.TemplateName, err))
+		return
+	}
 
-	g.JSON(http.StatusInternalServerError, "xx")
+	switch resourceType {
+	case "Stone":
+	case "Deployment":
 
-	_ = template
+	}
+
+	expected := content.NewTemplateModel()
+	if err := renderBaseTemplate(template, expected); err != nil {
+		common.RequestParametersError(g, fmt.Errorf("can convert template %s, error: %s", tpParams.Data.TemplateName, err))
+		return
+	}
+
+	g.JSON(http.StatusInternalServerError, expected)
+	return
+}
+
+func renderBaseTemplate(extend *service.UnstructuredExtend, expected content.TemplateModel) error {
+	metadata, _ := extend.Get("spec.metadata")
+	containers := make([]map[string]interface{}, 0)
+
+	err := json.Unmarshal([]byte(metadata.(string)), &containers)
+	if err != nil {
+		return fmt.Errorf("convert containers error, value: %v", metadata)
+	} else if len(containers) == 0 {
+		return fmt.Errorf("containers not item, value: %v", containers)
+	}
+
+	for _, _container := range containers {
+
+		name := utils.Get(_container, "base.name").(string)
+		image := utils.Get(_container, "base.image").(string)
+		if image == "" {
+			return fmt.Errorf("container %s not define image", name)
+		}
+
+		imagePullPolicy := utils.Get(_container, "base.imagePullPolicy").(string)
+		cpuLimit := utils.Get(_container, "base.resource.limits.cpu").(string)
+		memoryLimit := utils.Get(_container, "base.resource.limits.memory").(string)
+		cpuRequest := utils.Get(_container, "base.resource.requests.cpu").(string)
+		memoryRequest := utils.Get(_container, "base.resource.requests.memory").(string)
+
+		containerModel := expected.
+			AddContainer(name, image).
+			SetImagePullPolicy(imagePullPolicy).
+			AddResourceLimits2(cpuLimit, memoryLimit, cpuRequest, memoryRequest)
+
+		iCommands := utils.Get(_container, "commands").([]interface{})
+		for _, iCommand := range iCommands {
+			containerModel.AddCommand(iCommand.(string))
+		}
+
+		iArgs := utils.Get(_container, "args").([]interface{})
+		for _, iArg := range iArgs {
+			containerModel.AddArgs(iArg.(string))
+		}
+
+		environments := utils.Get(_container, "environment").([]interface{})
+		for _, iEnvironment := range environments {
+			environment := iEnvironment.(map[string]interface{})
+			envType := utils.Get(environment, "type").(string)
+			switch envType {
+			case "Normal":
+				name := utils.Get(environment, "envConfig.name").(string)
+				value := utils.Get(environment, "envConfig.value").(string)
+				containerModel.AddEnvironment(name, value)
+			default:
+			}
+		}
+
+	}
+
+	_ = expected
+
+	return nil
 }
 
 //
