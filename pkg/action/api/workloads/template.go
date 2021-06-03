@@ -448,7 +448,7 @@ func renderBaseTemplate(extend *service.UnstructuredExtend, expected content.Tem
 				configKey := utils.Get(volumeMount, "mountConfig.configKey").(string)
 
 				expected.AddVolumes(replaceName(mountPath)).
-					AddConfigMap(replaceName(configName), replaceName(configKey), configKey)
+					AddConfigMap(configName, configKey, configKey)
 
 			case "Secrets":
 				mountPath := utils.Get(volumeMount, "mountConfig.mountPath").(string)
@@ -464,7 +464,7 @@ func renderBaseTemplate(extend *service.UnstructuredExtend, expected content.Tem
 				secretKey := utils.Get(volumeMount, "mountConfig.secretKey").(string)
 
 				expected.AddVolumes(replaceName(mountPath)).
-					AddSecret(replaceName(secretName), replaceName(secretKey), secretKey)
+					AddSecret(secretName, secretKey, secretKey)
 			}
 		}
 	}
