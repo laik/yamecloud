@@ -177,10 +177,10 @@ var GVRMaps IGVRMaps = &groupVersionCollection{
 	Task:             {Group: "tekton.dev", Version: "v1alpha1", Resource: "tasks"},
 	TaskRun:          {Group: "tekton.dev", Version: "v1alpha1", Resource: "taskruns"},
 	PipelineResource: {Group: "tekton.dev", Version: "v1alpha1", Resource: "pipelineresources"},
-	TektonGraph:      {Group: "fuxi.nip.io", Version: "v1", Resource: "tektongraphs"},
+	TektonGraph:      {Group: "yamecloud.io", Version: "v1", Resource: "tektongraphs"},
 	OpsSecret:        {Group: "", Version: "v1", Resource: "secrets"},
-	TektonWebHook:    {Group: "fuxi.nip.io", Version: "v1", Resource: "tektonwebhooks"},
-	TektonStore:      {Group: "fuxi.nip.io", Version: "v1", Resource: "tektonstores"},
+	TektonWebHook:    {Group: "yamecloud.io", Version: "v1", Resource: "tektonwebhooks"},
+	TektonStore:      {Group: "yamecloud.io", Version: "v1", Resource: "tektonstores"},
 
 	PodSecurityPolicie: {Group: "policy", Version: "v1beta1", Resource: "podsecuritypolicies"},
 

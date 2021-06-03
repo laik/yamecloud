@@ -90,29 +90,29 @@ func NewTektonServer(serviceName string, server *api.Server) *tektonServer {
 
 	// tektonStore
 	{
-		group.GET("/apis/fuxi.nip.io/v1/tektonstores", tektonServer.ListTektonStore)
-		group.GET("/apis/fuxi.nip.io/v1/namespaces/:namespace/tektonstores", tektonServer.ListTektonStore)
-		group.GET("/apis/fuxi.nip.io/v1/namespaces/:namespace/tektonstores/:name", tektonServer.GetTektonStore)
-		group.POST("/apis/fuxi.nip.io/v1/namespaces/:namespace/tektonstores", tektonServer.ApplyTektonStore)
-		group.DELETE("/apis/fuxi.nip.io/v1/namespaces/:namespace/tektonstores/:name", tektonServer.DeleteTektonStore)
+		group.GET("/apis/yamecloud.io/v1/tektonstores", tektonServer.ListTektonStore)
+		group.GET("/apis/yamecloud.io/v1/namespaces/:namespace/tektonstores", tektonServer.ListTektonStore)
+		group.GET("/apis/yamecloud.io/v1/namespaces/:namespace/tektonstores/:name", tektonServer.GetTektonStore)
+		group.POST("/apis/yamecloud.io/v1/namespaces/:namespace/tektonstores", tektonServer.ApplyTektonStore)
+		group.DELETE("/apis/yamecloud.io/v1/namespaces/:namespace/tektonstores/:name", tektonServer.DeleteTektonStore)
 	}
 
 	// tektonWebhook
 	{
-		group.GET("/apis/fuxi.nip.io/v1/tektonwebhooks", tektonServer.ListTektonWebHook)
-		group.GET("/apis/fuxi.nip.io/v1/namespaces/:namespace/tektonwebhooks", tektonServer.ListTektonWebHook)
-		group.GET("/apis/fuxi.nip.io/v1/namespaces/:namespace/tektonwebhooks/:name", tektonServer.GetTektonWebHook)
-		group.POST("/apis/fuxi.nip.io/v1/namespaces/:namespace/tektonwebhooks", tektonServer.ApplyTektonWebHook)
-		group.DELETE("/apis/fuxi.nip.io/v1/namespaces/:namespace/tektonwebhooks/:name", tektonServer.DeleteTektonWebHook)
+		group.GET("/apis/yamecloud.io/v1/tektonwebhooks", tektonServer.ListTektonWebHook)
+		group.GET("/apis/yamecloud.io/v1/namespaces/:namespace/tektonwebhooks", tektonServer.ListTektonWebHook)
+		group.GET("/apis/yamecloud.io/v1/namespaces/:namespace/tektonwebhooks/:name", tektonServer.GetTektonWebHook)
+		group.POST("/apis/yamecloud.io/v1/namespaces/:namespace/tektonwebhooks", tektonServer.ApplyTektonWebHook)
+		group.DELETE("/apis/yamecloud.io/v1/namespaces/:namespace/tektonwebhooks/:name", tektonServer.DeleteTektonWebHook)
 	}
 
 	// tektonGraph
 	{
-		group.GET("/apis/fuxi.nip.io/v1/tektongraphs", tektonServer.ListTektonGraph)
-		group.GET("/apis/fuxi.nip.io/v1/namespaces/:namespace/tektongraphs", tektonServer.ListTektonGraph)
-		group.GET("/apis/fuxi.nip.io/v1/namespaces/:namespace/tektongraphs/:name", tektonServer.GetTektonGraph)
-		group.POST("/apis/fuxi.nip.io/v1/namespaces/:namespace/tektongraphs", tektonServer.ApplyTektonGraph)
-		group.DELETE("/apis/fuxi.nip.io/v1/namespaces/:namespace/tektongraphs/:name", tektonServer.DeleteTektonGraph)
+		group.GET("/apis/yamecloud.io/v1/tektongraphs", tektonServer.ListTektonGraph)
+		group.GET("/apis/yamecloud.io/v1/namespaces/:namespace/tektongraphs", tektonServer.ListTektonGraph)
+		group.GET("/apis/yamecloud.io/v1/namespaces/:namespace/tektongraphs/:name", tektonServer.GetTektonGraph)
+		group.POST("/apis/yamecloud.io/v1/namespaces/:namespace/tektongraphs", tektonServer.ApplyTektonGraph)
+		group.DELETE("/apis/yamecloud.io/v1/namespaces/:namespace/tektongraphs/:name", tektonServer.DeleteTektonGraph)
 	}
 
 	return tektonServer
