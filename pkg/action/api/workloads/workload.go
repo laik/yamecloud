@@ -32,6 +32,7 @@ type workloadServer struct {
 	*workload_service.StorageClass
 
 	*workload_service.Template
+	*workload_service.APIResources
 }
 
 func (s *workloadServer) Name() string {
@@ -68,10 +69,16 @@ func NewWorkloadServer(serviceName string, server *api.Server) *workloadServer {
 
 		StorageClass: workload_service.NewStorageClass(server),
 
-		Template: workload_service.NewTemplate(server),
+		Template:     workload_service.NewTemplate(server),
+		APIResources: workload_service.NewAPIResources(server),
 	}
 
 	group := workloadServer.Group(fmt.Sprintf("/%s", serviceName))
+
+	//stack
+	{
+		group.POST("/stack", workloadServer.Stack)
+	}
 	//template
 	{
 		group.POST("/apis/yamecloud.io/v1/workloads", workloadServer.CreateTemplate)

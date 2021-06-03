@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/util/retry"
@@ -27,6 +28,48 @@ func NewInterface(configure *configure.InstallConfigure) k8s.Interface {
 
 type dataSource struct {
 	*configure.InstallConfigure
+}
+
+func (d *dataSource) ApplyGVR(namespace, name string, gvr *schema.GroupVersionResource, unstructured *unstructured.Unstructured) (newUnstructured *unstructured.Unstructured, isUpdate bool, err error) {
+	err = retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+		ctx := context.TODO()
+		getObj, getErr := d.
+			Interface.
+			Resource(*gvr).
+			Namespace(namespace).
+			Get(ctx, name, metav1.GetOptions{})
+
+		if errors.IsNotFound(getErr) {
+			newObj, createErr := d.
+				Interface.
+				Resource(*gvr).
+				Namespace(namespace).
+				Create(ctx, unstructured, metav1.CreateOptions{})
+			newUnstructured = newObj
+			return createErr
+		}
+		if getErr != nil {
+			return getErr
+		}
+
+		d.compareObject(getObj, unstructured, false)
+
+		newObj, updateErr := d.
+			Interface.
+			Resource(*gvr).
+			Namespace(namespace).
+			Update(ctx, getObj, metav1.UpdateOptions{})
+
+		newUnstructured = newObj
+		isUpdate = true
+		return updateErr
+	})
+
+	return
+}
+
+func (d *dataSource) DiscoveryClient() *discovery.DiscoveryClient {
+	return d.InstallConfigure.DiscoveryClient
 }
 
 func (d *dataSource) ListGVR(namespace string, gvr schema.GroupVersionResource, selector string) (*unstructured.UnstructuredList, error) {

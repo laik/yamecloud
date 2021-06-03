@@ -42,6 +42,22 @@ func (g *Template) Apply(namespace, name string, unstructuredExtend *service.Uns
 	return item, isUpdate, nil
 }
 
+func (g *Template) CreateStone(namespace, name string, unstructuredExtend *service.UnstructuredExtend) (*service.UnstructuredExtend, bool, error) {
+	item, isUpdate, err := g.Interface.Apply(namespace, k8s.Stone, name, unstructuredExtend)
+	if err != nil {
+		return nil, isUpdate, err
+	}
+	return item, isUpdate, nil
+}
+
+func (g *Template) CreateDeployment(namespace, name string, unstructuredExtend *service.UnstructuredExtend) (*service.UnstructuredExtend, bool, error) {
+	item, isUpdate, err := g.Interface.Apply(namespace, k8s.Deployment, name, unstructuredExtend)
+	if err != nil {
+		return nil, isUpdate, err
+	}
+	return item, isUpdate, nil
+}
+
 func (g *Template) LabelKV(namespace, name, k, v string) (*service.UnstructuredExtend, error) {
 	data := fmt.Sprintf(`{"metadata":{"labels":{"%s":"%s"}}}`, k, v)
 	item, err := g.Interface.Patch(namespace, k8s.Workloads, name, []byte(data))

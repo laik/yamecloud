@@ -23,6 +23,7 @@ type TemplateModel interface {
 	AddVolumes(name string) VolumeModel
 	AddService(name string, serviceType ServiceType) ServiceModel
 	AddCoordinate(group string) CoordinateModel
+	AddImagePullSecrets(names ...string)
 	AddVolumeClaimTemplate(metadataName, storageClass string, size int64)
 }
 
@@ -32,6 +33,10 @@ type TemplateModelImpl map[string]interface{}
 
 func NewTemplateModel() TemplateModel {
 	return make(TemplateModelImpl)
+}
+
+func (d TemplateModelImpl) AddImagePullSecrets(names ...string) {
+	d["image_pull_secrets"] = names
 }
 
 func (d TemplateModelImpl) AddMetadata(namespace, name, uuid string) TemplateModel {

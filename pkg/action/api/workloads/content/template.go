@@ -1,7 +1,7 @@
 package content
 
 const (
-	stoneTpl = `
+	StoneTpl = `
 kind: Stone
 apiVersion: nuwa.nip.io/v1
 metadata:
@@ -87,15 +87,22 @@ spec:
 # if containers end
       {{- end}}
 
+# pull secrets
+      {{- if .image_pull_secrets}}
+      imagePullSecrets:
+        {{range .image_pull_secrets}}
+        - name: {{.}}
+        {{end}}
+      {{- end}}
+
 
 # volumes
       {{- if .volumes}}
       volumes:
         {{range .volumes}}
+        - name: {{.name}}
 
 # configmap or other volumes
-        - name: {{.name}}
-          
           {{- if .configmap}}
           configMap:
             name: {{.configmap.name}}
@@ -104,8 +111,18 @@ spec:
             - key: {{.configmap.items.key}}
               path: {{.configmap.items.path}}
           {{- end}}
+          {{- end}}
 
-        {{- end}}
+# secret 
+          {{- if .secret}}
+          secret:
+            name: {{.secret.name}}
+          {{- if .secret.items}}
+            items:
+            - key: {{.secret.items.key}}
+              path: {{.secret.items.path}}
+          {{- end}}
+          {{- end}}
 
         {{end}}
       {{- end }}
@@ -139,7 +156,7 @@ spec:
           rack: {{.rack}}
           host: {{.host}}
       {{end}}
-      replicas: {{.replicas}}
+      replicas: {{or .replicas 0}}
   {{end}}
 {{end}}
 

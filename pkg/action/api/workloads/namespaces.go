@@ -139,6 +139,8 @@ func (s *workloadServer) AnnotateNamespaceAllowedNode(g *gin.Context) {
 		return
 	}
 
+	currentAnnotations := namespace.GetAnnotations()
+
 	coordinates := make([]map[string]string, 0)
 	for _, nodeName := range ad.Data.Nodes {
 		node, err := s.Node.Get("", nodeName)
@@ -168,23 +170,26 @@ func (s *workloadServer) AnnotateNamespaceAllowedNode(g *gin.Context) {
 		} else {
 			coordinate["host"] = value
 		}
+
+		coordinate["name"] = nodeName
 		coordinates = append(coordinates, coordinate)
 	}
 
 	if len(coordinates) > 0 {
 		bs, _ := json.Marshal(distinctCoordinateListMap(coordinates))
-		namespace.SetAnnotations(map[string]string{"nuwa.kubernetes.io/default_resource_limit": string(bs)})
+		currentAnnotations["nuwa.kubernetes.io/default_resource_limit"] = string(bs)
 	} else {
-		annotations := namespace.GetAnnotations()
-		delete(annotations, "nuwa.kubernetes.io/default_resource_limit")
-		_ = namespace.Set("metadata.annotations", annotations)
+		delete(currentAnnotations, "nuwa.kubernetes.io/default_resource_limit")
 	}
-	_, _, err = s.Namespace.Apply("", namespace.GetName(), namespace)
+
+	namespace.SetAnnotations(currentAnnotations)
+
+	newUnstructuredExtend, _, err := s.Namespace.Apply("", namespace.GetName(), namespace)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
 	}
-	g.JSON(http.StatusOK, "")
+	g.JSON(http.StatusOK, newUnstructuredExtend)
 }
 
 func distinctCoordinateListMap(list []map[string]string) []map[string]string {
@@ -195,6 +200,7 @@ func distinctCoordinateListMap(list []map[string]string) []map[string]string {
 			"zone": item["zone"],
 			"rack": item["rack"],
 			"host": item["host"],
+			"name": item["name"],
 		}
 	}
 
@@ -227,23 +233,24 @@ func (s *workloadServer) AnnotateNamespaceNetworkAttach(g *gin.Context) {
 		return
 	}
 
+	currentAnnotations := namespace.GetAnnotations()
+
 	if ad.Data.NetworkAttachment != "" {
-		namespace.SetAnnotations(map[string]string{
-			"k8s.v1.cni.cncf.io/namespaces": ad.Data.NetworkAttachment,
-		})
+		currentAnnotations["k8s.v1.cni.cncf.io/namespaces"] = ad.Data.NetworkAttachment
+
 	} else {
-		annotations := namespace.GetAnnotations()
-		delete(annotations, "k8s.v1.cni.cncf.io/namespaces")
-		_ = namespace.Set("metadata.annotations", annotations)
+		delete(currentAnnotations, "k8s.v1.cni.cncf.io/namespaces")
 	}
 
-	_, _, err = s.Namespace.Apply("", ad.Data.Namespace, namespace)
+	namespace.SetAnnotations(currentAnnotations)
+
+	newUnstructuredObj, _, err := s.Namespace.Apply("", ad.Data.Namespace, namespace)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
 	}
 
-	g.JSON(http.StatusOK, "")
+	g.JSON(http.StatusOK, newUnstructuredObj)
 }
 
 func (s *workloadServer) AnnotateNamespaceAllowedStorageClass(g *gin.Context) {
@@ -266,26 +273,24 @@ func (s *workloadServer) AnnotateNamespaceAllowedStorageClass(g *gin.Context) {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain form data (%s) check namespace error: %s", rawData, err))
 		return
 	}
+	currentAnnotations := namespace.GetAnnotations()
 	ad.Data.StorageClasses = clearEmptyCharactersItem(ad.Data.StorageClasses)
 
 	if len(ad.Data.StorageClasses) > 0 {
 		bs, _ := json.Marshal(ad.Data.StorageClasses)
-		namespace.SetAnnotations(map[string]string{
-			"fuxi.kubernetes.io/default_storage_limit": string(bs),
-		})
+		currentAnnotations["fuxi.kubernetes.io/default_storage_limit"] = string(bs)
 	} else {
-		annotations := namespace.GetAnnotations()
-		delete(annotations, "fuxi.kubernetes.io/default_storage_limit")
-		_ = namespace.Set("metadata.annotations", annotations)
+		delete(currentAnnotations, "fuxi.kubernetes.io/default_storage_limit")
 	}
+	namespace.SetAnnotations(currentAnnotations)
 
-	_, _, err = s.Namespace.Apply("", ad.Data.Namespace, namespace)
+	newUnstructuredObj, _, err := s.Namespace.Apply("", ad.Data.Namespace, namespace)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
 	}
 
-	g.JSON(http.StatusOK, "")
+	g.JSON(http.StatusOK, newUnstructuredObj)
 }
 
 func clearEmptyCharactersItem(slice []string) []string {

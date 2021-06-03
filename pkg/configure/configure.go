@@ -4,6 +4,7 @@ import (
 	"github.com/yametech/yamecloud/common"
 	"github.com/yametech/yamecloud/pkg/k8s"
 	"github.com/yametech/yamecloud/pkg/k8s/client"
+	"k8s.io/client-go/discovery"
 	dynclient "k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -21,6 +22,8 @@ type InstallConfigure struct {
 	*kubernetes.Clientset
 	// ResourceLister resource lister
 	k8s.ResourceLister
+	// ..
+	*discovery.DiscoveryClient
 }
 
 func NewInstallConfigure(resLister k8s.ResourceLister) (*InstallConfigure, error) {
@@ -51,12 +54,18 @@ func NewInstallConfigure(resLister k8s.ResourceLister) (*InstallConfigure, error
 		dynInterface = cacheInformerFactory.Interface
 	}
 
+	discoveryClient, err := discovery.NewDiscoveryClientForConfig(resetConfig)
+	if err != nil {
+		return nil, err
+	}
+
 	installConfigure := &InstallConfigure{
 		Interface:            dynInterface,
 		Config:               resetConfig,
 		Clientset:            clientSet,
 		ResourceLister:       resLister,
 		CacheInformerFactory: cacheInformerFactory,
+		DiscoveryClient:      discoveryClient,
 	}
 
 	return installConfigure, nil

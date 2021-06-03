@@ -32,6 +32,7 @@ func (s *ServiceModels) Set(name string, c ServiceModel) {
 }
 
 type ServiceModel interface {
+	AddServiceSpec2(protocol Protocol, port, targetPort string)
 	AddServiceSpec(protocol Protocol, port int, targetPort int)
 	AddServiceType(serviceType ServiceType)
 	GetName() string
@@ -40,6 +41,12 @@ type ServiceModel interface {
 var _ ServiceModel = &ServiceModelImpl{}
 
 type ServiceModelImpl map[string]string
+
+func (s ServiceModelImpl) AddServiceSpec2(protocol Protocol, port, targetPort string) {
+	s["protocol"] = protocol
+	s["port"] = port
+	s["target_port"] = targetPort
+}
 
 func NewServiceModel() ServiceModel {
 	return make(ServiceModelImpl)

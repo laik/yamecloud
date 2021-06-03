@@ -10,6 +10,8 @@ import (
 	"github.com/yametech/yamecloud/pkg/utils"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 func (s *workloadServer) GetTemplate(g *gin.Context) {
@@ -191,31 +193,166 @@ func (s *workloadServer) DeployTemplate(g *gin.Context) {
 	}
 
 	expected := content.NewTemplateModel()
-	if err := renderBaseTemplate(template, expected); err != nil {
-		common.RequestParametersError(g, fmt.Errorf("can convert template %s, error: %s", tpParams.Data.TemplateName, err))
+	if err := renderBaseTemplate(template, expected, tpParams.Data.Namespace); err != nil {
+		common.RequestParametersError(g, fmt.Errorf("can not convert template %s, error: %s", tpParams.Data.TemplateName, err))
 		return
 	}
 
+	expected.AddMetadata(tpParams.Data.Namespace, tpParams.Data.AppName, fmt.Sprintf("%s.%s", tpParams.Data.AppName, tpParams.Data.Namespace))
+
+	var unstructuredData *unstructured.Unstructured
+	var newUnstructuredObj *service.UnstructuredExtend
 	switch resourceType {
 	case "Stone":
 		if err := renderServicesTemplate(template, expected); err != nil {
-			common.RequestParametersError(g, fmt.Errorf("can convert service template %s, error: %s", tpParams.Data.TemplateName, err))
+			common.RequestParametersError(g, fmt.Errorf("can not convert service template %s, error: %s", tpParams.Data.TemplateName, err))
+			return
+		}
+
+		namespaceUnstructuredExtend, err := s.Namespace.Get("", tpParams.Data.Namespace)
+		if err != nil {
+			common.RequestParametersError(g, fmt.Errorf("can not get namespace %s, error: %s", tpParams.Data.Namespace, err))
+			return
+		}
+
+		coordinatesStr, ok := namespaceUnstructuredExtend.GetAnnotations()["nuwa.kubernetes.io/default_resource_limit"]
+		if !ok {
+			common.RequestParametersError(g, fmt.Errorf("can not get allowed node on namespace %s", tpParams.Data.Namespace))
+			return
+		}
+
+		coordinates := make([]map[string]interface{}, 0)
+		if err := json.Unmarshal([]byte(coordinatesStr), &coordinates); err != nil {
+			common.RequestParametersError(g, fmt.Errorf("can not unmarshal get allowed node to namespace %s", tpParams.Data.Namespace))
+			return
+		}
+
+		if err := renderCoordinatesTemplate(coordinates, expected, tpParams.Data.Replicas); err != nil {
+			common.RequestParametersError(g, fmt.Errorf("can not convert coordinates template %s, error: %s", tpParams.Data.TemplateName, err))
+			return
+		}
+
+		if err := renderVolumeClaimsTemplate(template, expected, tpParams.Data.StorageClass); err != nil {
+			common.RequestParametersError(g, fmt.Errorf("can not convert volume claim template %s, error: %s", tpParams.Data.TemplateName, err))
+			return
+		}
+
+		unstructuredData, err = content.Render(expected, content.StoneTpl)
+		if err != nil {
+			common.RequestParametersError(g, fmt.Errorf("render stone template %s, error: %s", tpParams.Data.TemplateName, err))
+			return
+		}
+
+		newUnstructuredObj, _, err = s.Template.CreateStone(tpParams.Data.Namespace, unstructuredData.GetName(), &service.UnstructuredExtend{Unstructured: unstructuredData})
+		if err != nil {
+			common.InternalServerError(g, err, fmt.Errorf("create stone error: %v", err))
 			return
 		}
 	case "Deployment":
 
 	}
 
-	g.JSON(http.StatusInternalServerError, expected)
+	g.JSON(http.StatusOK, newUnstructuredObj)
+
 	return
 }
 
-func renderServicesTemplate(extend *service.UnstructuredExtend, expected content.TemplateModel) error {
-	//metadata, _ := extend.Get("spec.metadata")
+func renderVolumeClaimsTemplate(extend *service.UnstructuredExtend, expected content.TemplateModel, storageClassName string) error {
+	volumeClaimsStr, _ := extend.Get("spec.volumeClaims")
+	volumeClaims := make([]map[string]interface{}, 0)
+
+	err := json.Unmarshal([]byte(volumeClaimsStr.(string)), &volumeClaims)
+	if err != nil {
+		return fmt.Errorf("convert volume claims error, value: %v", volumeClaims)
+	}
+
+	if len(volumeClaims) > 0 && storageClassName == "" {
+		return fmt.Errorf("the volume claim request is defined, but the storageClass is not statement")
+	}
+
+	for _, volumeClaim := range volumeClaims {
+		metadataName := utils.Get(volumeClaim, "metadata.name").(string)
+		size := utils.Get(volumeClaim, "spec.resources.requests.storage").(string)
+		_size, err := strconv.ParseUint(size, 10, 64)
+		if err != nil {
+			return fmt.Errorf("parse volume claims size error %s, value: %v", err, volumeClaims)
+		}
+		expected.AddVolumeClaimTemplate(metadataName, storageClassName, int64(_size))
+	}
+
 	return nil
 }
 
-func renderBaseTemplate(extend *service.UnstructuredExtend, expected content.TemplateModel) error {
+func renderCoordinatesTemplate(coordinates []map[string]interface{}, expected content.TemplateModel, replicas string) error {
+	groupCoordinates := make(map[string][]map[string]string)
+	for _, coordinate := range coordinates {
+		group := utils.Get(coordinate, "zone").(string)
+		rack := utils.Get(coordinate, "rack").(string)
+		host := utils.Get(coordinate, "host").(string)
+		if _, exist := groupCoordinates[group]; !exist {
+			groupCoordinates[group] = make([]map[string]string, 0)
+		}
+		groupCoordinates[group] = append(groupCoordinates[group], map[string]string{"zone": group, "rack": rack, "host": host})
+	}
+
+	for group, gcs := range groupCoordinates {
+		coordinateModel := expected.AddCoordinate(group)
+		_replicas, err := strconv.ParseInt(replicas, 10, 64)
+		if err != nil {
+			return fmt.Errorf("parse replicas error: %v", err)
+		}
+		coordinateModel.AddReplicas(int(_replicas))
+		for _, v := range gcs {
+			coordinateModel.AddZoneSet(v["zone"], v["rack"], v["host"])
+		}
+	}
+
+	return nil
+}
+
+func exclude(portName string) string {
+	needChange := false
+	for _, item := range []string{"port", "http", "https"} {
+		if strings.ToLower(portName) == item {
+			needChange = true
+		}
+	}
+	if needChange {
+		return ""
+	}
+	return portName
+}
+
+func renderServicesTemplate(extend *service.UnstructuredExtend, expected content.TemplateModel) error {
+	serviceStr, _ := extend.Get("spec.service")
+
+	services := make(map[string]interface{})
+
+	err := json.Unmarshal([]byte(serviceStr.(string)), &services)
+	if err != nil {
+		return fmt.Errorf("convert services error, value: %v", services)
+	}
+
+	serviceType := utils.Get(services, "type").(string)
+	servicePorts := utils.Get(services, "ports").([]interface{})
+
+	for _, servicePortMap := range servicePorts {
+		servicePort := servicePortMap.(map[string]interface{})
+
+		name := utils.Get(servicePort, "name").(string)
+		serviceModel := expected.AddService(exclude(name), serviceType)
+
+		protocol := utils.Get(servicePort, "protocol").(string)
+		port := utils.Get(servicePort, "port").(string)
+
+		targetPort := utils.Get(servicePort, "targetPort").(string)
+		serviceModel.AddServiceSpec2(protocol, port, targetPort)
+	}
+
+	return nil
+}
+
+func renderBaseTemplate(extend *service.UnstructuredExtend, expected content.TemplateModel, deployNamespace string) error {
 	metadata, _ := extend.Get("spec.metadata")
 	containers := make([]map[string]interface{}, 0)
 
@@ -232,6 +369,18 @@ func renderBaseTemplate(extend *service.UnstructuredExtend, expected content.Tem
 		image := utils.Get(_container, "base.image").(string)
 		if image == "" {
 			return fmt.Errorf("container %s not define image", name)
+		}
+
+		imageFrom := utils.Get(_container, "base.image").(string)
+		switch imageFrom {
+		case "private":
+			imagePullSecret := utils.Get(_container, "base.imagePullSecret").(string)
+			imagePullSecretNamespace := utils.Get(_container, "base.imagePullSecretNamespace").(string)
+			if deployNamespace != imagePullSecretNamespace {
+				return fmt.Errorf("container pull use secret %s but deploy namespace %s not equal to defined namespace %s", imagePullSecret, deployNamespace, imagePullSecretNamespace)
+			}
+			expected.AddImagePullSecrets(imagePullSecret)
+		case "public":
 		}
 
 		imagePullPolicy := utils.Get(_container, "base.imagePullPolicy").(string)
@@ -269,15 +418,62 @@ func renderBaseTemplate(extend *service.UnstructuredExtend, expected content.Tem
 		}
 
 		volumeMounts := utils.Get(_container, "volumeMounts").(map[string]interface{})
-
-		volumeMountsItems, ok := utils.Get(volumeMounts, "items").(map[string]interface{})
+		volumeMountsItems, ok := utils.Get(volumeMounts, "items").([]interface{})
 		if !ok {
-			return fmt.Errorf("containers volume mounts get item error, value: %v", volumeMountsItems)
+			return fmt.Errorf("containers volume mounts get items error, value: %v", volumeMountsItems)
 		}
 
+		for _, volumeMountsItem := range volumeMountsItems {
+			volumeMount := volumeMountsItem.(map[string]interface{})
+			mountType := utils.Get(volumeMount, "mountType").(string)
+
+			switch mountType {
+			case "VolumeClaim":
+				name := utils.Get(volumeMount, "mountConfig.name").(string)
+				mountPath := utils.Get(volumeMount, "mountConfig.mountPath").(string)
+
+				containerModel.AddVolumeMounts(name, mountPath, "")
+
+			case "ConfigMaps":
+				mountPath := utils.Get(volumeMount, "mountConfig.mountPath").(string)
+				subPath := utils.Get(volumeMount, "mountConfig.subPath").(string)
+				namespace := utils.Get(volumeMount, "mountConfig.namespace").(string)
+				if deployNamespace != namespace {
+					return fmt.Errorf("deploy namespace %s not equal defined configmap namespace %s", deployNamespace, namespace)
+				}
+
+				containerModel.AddVolumeMounts(replaceName(mountPath), mountPath, subPath)
+
+				configName := utils.Get(volumeMount, "mountConfig.configName").(string)
+				configKey := utils.Get(volumeMount, "mountConfig.configKey").(string)
+
+				expected.AddVolumes(replaceName(mountPath)).
+					AddConfigMap(replaceName(configName), replaceName(configKey), configKey)
+
+			case "Secrets":
+				mountPath := utils.Get(volumeMount, "mountConfig.mountPath").(string)
+				subPath := utils.Get(volumeMount, "mountConfig.subPath").(string)
+				namespace := utils.Get(volumeMount, "mountConfig.namespace").(string)
+				if deployNamespace != namespace {
+					return fmt.Errorf("deploy namespace %s not equal defined secret namespace %s", deployNamespace, namespace)
+				}
+
+				containerModel.AddVolumeMounts(replaceName(mountPath), mountPath, subPath)
+
+				secretName := utils.Get(volumeMount, "mountConfig.secretName").(string)
+				secretKey := utils.Get(volumeMount, "mountConfig.secretKey").(string)
+
+				expected.AddVolumes(replaceName(mountPath)).
+					AddSecret(replaceName(secretName), replaceName(secretKey), secretKey)
+			}
+		}
 	}
 
 	return nil
+}
+
+func replaceName(path string) string {
+	return strings.TrimPrefix(strings.Replace(strings.Replace(path, "/", "-", -1), ".", "-", -1), "-")
 }
 
 //

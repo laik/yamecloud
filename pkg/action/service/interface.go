@@ -7,6 +7,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"strconv"
@@ -83,6 +84,7 @@ type IResourceService interface {
 }
 
 type Interface interface {
+	ApplyGVR(namespace, name string, gvr *schema.GroupVersionResource, unstructuredExtend *UnstructuredExtend) (*UnstructuredExtend, bool, error)
 	ListGVR(namespace string, gvr schema.GroupVersionResource, selector string) (*UnstructuredListExtend, error)
 	List(namespace string, resource k8s.ResourceType, selector string) (*UnstructuredListExtend, error)
 	ListLimit(namespace string, resourceType k8s.ResourceType, flag string, pos, size int64, selector string) (*UnstructuredListExtend, error)
@@ -94,6 +96,7 @@ type Interface interface {
 	Patch(namespace string, resource k8s.ResourceType, name string, data []byte) (*UnstructuredExtend, error)
 	RESETClient() rest.Interface
 	ClientSet() *kubernetes.Clientset
+	DiscoveryClient() *discovery.DiscoveryClient
 	Install(k8s.ResourceType, IResourceService)
 }
 
@@ -102,6 +105,15 @@ var _ Interface = &Service{}
 type Service struct {
 	k8s.Interface
 	services map[k8s.ResourceType]IResourceService
+}
+
+func (s *Service) ApplyGVR(namespace, name string, gvr *schema.GroupVersionResource, unstructuredExtend *UnstructuredExtend) (*UnstructuredExtend, bool, error) {
+	u, isUpdate, err := s.Interface.ApplyGVR(namespace, name, gvr, unstructuredExtend.Unstructured)
+	return &UnstructuredExtend{Unstructured: u}, isUpdate, err
+}
+
+func (s *Service) DiscoveryClient() *discovery.DiscoveryClient {
+	return s.Interface.DiscoveryClient()
 }
 
 func (s *Service) ListGVR(namespace string, gvr schema.GroupVersionResource, selector string) (*UnstructuredListExtend, error) {

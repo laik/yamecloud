@@ -86,15 +86,16 @@ func (s *workloadServer) DeletePod(g *gin.Context) {
 }
 
 type logRequest struct {
-	Container  string    `json:"container"`
-	Timestamps bool      `json:"timestamps"`
-	SinceTime  time.Time `json:"sinceTime"`
-	TailLines  int64     `json:"tailLines"`
+	Container  string    `form:"container" json:"container"`
+	Timestamps bool      `form:"timestamps" json:"timestamps"`
+	SinceTime  time.Time `form:"sinceTime" json:"sinceTime"`
+	TailLines  int64     `form:"tailLines" json:"tailLines"`
 }
 
 func (s *workloadServer) LogsPod(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
+
 	lq := &logRequest{}
 	if err := g.Bind(lq); err != nil || namespace == "" || name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))

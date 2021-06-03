@@ -4,6 +4,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -48,6 +49,7 @@ type Watcher interface {
 }
 
 type IDataOperator interface {
+	ApplyGVR(namespace, name string, gvr *schema.GroupVersionResource, unstructured *unstructured.Unstructured) (newUnstructured *unstructured.Unstructured, isUpdate bool, err error)
 	Apply(namespace string, resourceType ResourceType, name string, unstructured *unstructured.Unstructured, forceUpdate bool) (newUnstructured *unstructured.Unstructured, isUpdate bool, err error)
 	Delete(namespace string, resourceType ResourceType, name string) error
 	Patch(namespace string, resourceType ResourceType, name string, data []byte) (*unstructured.Unstructured, error)
@@ -58,10 +60,15 @@ type RESTClient interface {
 	ClientSet() *kubernetes.Clientset
 }
 
+type Discovery interface {
+	DiscoveryClient() *discovery.DiscoveryClient
+}
+
 type Interface interface {
 	Lister
 	Watcher
 	ICache
 	IDataOperator
 	RESTClient
+	Discovery
 }

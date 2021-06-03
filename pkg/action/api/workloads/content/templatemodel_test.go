@@ -26,6 +26,11 @@ func Test_TemplateModel(t *testing.T) {
 	d.AddVolumes("data-www-wwwroot-config-production-app-php1").
 		AddConfigMap("mall-hhb-bbc1", "app-php1", "app.php1")
 
+	d.AddVolumes("data-secret-test").
+		AddSecret("mall-hhb-bbc-sec", "app-php1-sec", "app.php1.sec")
+
+	d.AddImagePullSecrets("image-pull-secrets-test")
+
 	d.AddService("1", ClusterIP).AddServiceSpec(TCP, 80, 80)
 	d.AddService("2", "").AddServiceSpec(TCP, 443, 443)
 	d.AddService("3", "").AddServiceSpec(UDP, 443, 443)
@@ -44,7 +49,7 @@ func Test_TemplateModel(t *testing.T) {
 	}
 	fmt.Printf("args \n %s\n", x)
 
-	unstructuredData, err := Render(d, stoneTpl)
+	unstructuredData, err := Render(d, StoneTpl)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -46,6 +46,7 @@ var subscribeList = k8s.GVRMaps.Subscribe(
 
 	// workloads template
 	k8s.Workloads,
+	k8s.Stone,
 )
 
 func main() {
