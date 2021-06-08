@@ -81,6 +81,7 @@ func NewWorkloadServer(serviceName string, server *api.Server) *workloadServer {
 	}
 	//template
 	{
+		group.GET("/apis/yamecloud.io/v1/workloads", workloadServer.ListTemplate)
 		group.POST("/apis/yamecloud.io/v1/workloads", workloadServer.CreateTemplate)
 		group.PUT("/apis/yamecloud.io/v1/workloads/:name", workloadServer.UpdateTemplate)
 		group.PUT("/apis/yamecloud.io/v1/workloads/:name/label", workloadServer.LabelTemplate)

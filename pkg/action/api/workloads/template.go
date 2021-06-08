@@ -39,8 +39,7 @@ func (s *workloadServer) GetTemplate(g *gin.Context) {
 
 func (s *workloadServer) ListTemplate(g *gin.Context) {
 	namespace := g.Param("namespace")
-	labelSelector := fmt.Sprintf("namespace=%s", namespace)
-	list, err := s.Template.List("", labelSelector)
+	list, err := s.Template.List(namespace, "")
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
