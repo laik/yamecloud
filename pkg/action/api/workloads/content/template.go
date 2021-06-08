@@ -174,4 +174,120 @@ spec:
     type: {{or .service_type "ClusterIP"}}
 {{end}}
 `
+
+	DeploymentTpl = `
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{.name}}
+  namespace: {{.namespace}}
+  labels:
+    app: {{.name}}
+spec:
+  replicas: {{or (index .coordinates 0).replicas 0}}
+  selector:
+    matchLabels:
+      app: {{.name}}
+  template:
+    metadata:
+      name: {{.name}}
+      labels:
+        app: {{.name}}
+    spec:
+      {{- if .containers}}
+      containers:
+        {{range $index,$container := .containers}}
+        {{$container_name := (printf "container-%v" $index)}}
+        - name: {{or .name $container_name}}
+          image: {{.image}}
+          imagePullPolicy: {{or .image_pull_policy "Always"}}
+# container port
+          {{- if $.service_ports}}
+          ports:
+            {{range $.service_ports}}
+            - containerPort: {{.target_port}}
+              protocol: {{or .protocol "TCP"}}
+            {{end}}
+          {{- end }}
+# container args
+          {{- if .args}}
+          args:
+            {{ range .args}}
+            - {{.}}
+            {{end}}
+          {{- end }}
+
+#container environments
+          {{- if .environments}}
+          env:
+          {{range .environments}}
+          {{$_value := (printf "'%v'" .value)}}
+            - name: {{.name}}
+              value: {{$_value}}
+          {{end}}
+          {{- end }}
+
+#container volumes mount
+          {{- if .volume_mounts}}
+          volumeMounts:
+            {{range $index,$value := .volume_mounts}}
+            - mountPath: {{.mount_path}}
+              name: {{.name}}
+              {{- if .sub_path}}
+              subPath: {{.sub_path}}
+              {{- end}}
+            {{end}}
+          {{- end}}
+
+# containers range end
+        {{end}}
+# if containers end
+      {{- end}}
+
+# volumes
+      {{- if .volumes}}
+      volumes:
+        {{range .volumes}}
+        - name: {{.name}}
+
+# configmap or other volumes
+          {{- if .configmap}}
+          configMap:
+            name: {{.configmap.name}}
+          {{- if .configmap.items}}
+            items:
+            - key: {{.configmap.items.key}}
+              path: {{.configmap.items.path}}
+          {{- end}}
+          {{- end}}
+
+# secret 
+          {{- if .secret}}
+          secret:
+            name: {{.secret.name}}
+          {{- if .secret.items}}
+            items:
+            - key: {{.secret.items.key}}
+              path: {{.secret.items.path}}
+          {{- end}}
+          {{- end}}
+
+        {{end}}
+      {{- end }}
+
+# service spec
+{{- if .service_ports}}
+  service:
+    ports:
+      {{range $index,$value := .service_ports}}
+      {{$port_name := (printf "port-%v" $index)}}
+      - name: {{or .name $port_name }}
+        protocol: {{or .protocol "TCP"}}
+        port: {{.port}}
+        targetPort: {{.target_port}}
+      {{end}}
+    type: {{or .service_type "ClusterIP"}}
+{{end}}
+
+`
 )

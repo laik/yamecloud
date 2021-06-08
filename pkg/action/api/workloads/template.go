@@ -64,9 +64,11 @@ func (s *workloadServer) CreateTemplate(g *gin.Context) {
 	utils.Set(_unstructured.Object, "metadata.name", name)
 
 	_unstructuredExist, _ := s.Template.Get("", name)
-	if _unstructuredExist.GetName() != "" {
-		common.RequestParametersError(g, fmt.Errorf("object %s already exists", name))
-		return
+	if _unstructuredExist != nil {
+		if _unstructuredExist.GetName() != "" {
+			common.RequestParametersError(g, fmt.Errorf("object %s already exists", name))
+			return
+		}
 	}
 
 	newUnstructuredExtend, isUpdate, err := s.Template.Apply("", name, &service.UnstructuredExtend{Unstructured: _unstructured})
@@ -249,6 +251,45 @@ func (s *workloadServer) DeployTemplate(g *gin.Context) {
 			return
 		}
 	case "Deployment":
+		if err := renderServicesTemplate(template, expected); err != nil {
+			common.RequestParametersError(g, fmt.Errorf("can not convert service template %s, error: %s", tpParams.Data.TemplateName, err))
+			return
+		}
+
+		namespaceUnstructuredExtend, err := s.Namespace.Get("", tpParams.Data.Namespace)
+		if err != nil {
+			common.RequestParametersError(g, fmt.Errorf("can not get namespace %s, error: %s", tpParams.Data.Namespace, err))
+			return
+		}
+
+		coordinatesStr, ok := namespaceUnstructuredExtend.GetAnnotations()["nuwa.kubernetes.io/default_resource_limit"]
+		if !ok {
+			common.RequestParametersError(g, fmt.Errorf("can not get allowed node on namespace %s", tpParams.Data.Namespace))
+			return
+		}
+
+		coordinates := make([]map[string]interface{}, 0)
+		if err := json.Unmarshal([]byte(coordinatesStr), &coordinates); err != nil {
+			common.RequestParametersError(g, fmt.Errorf("can not unmarshal get allowed node to namespace %s", tpParams.Data.Namespace))
+			return
+		}
+
+		if err := renderCoordinatesTemplate(coordinates, expected, tpParams.Data.Replicas); err != nil {
+			common.RequestParametersError(g, fmt.Errorf("can not convert coordinates template %s, error: %s", tpParams.Data.TemplateName, err))
+			return
+		}
+		unstructuredData, err = content.Render(expected, content.DeploymentTpl)
+		if err != nil {
+			common.RequestParametersError(g, fmt.Errorf("render stone template %s, error: %s", tpParams.Data.TemplateName, err))
+			return
+		}
+
+		newUnstructuredObj, _, err = s.Template.CreateDeployment(tpParams.Data.Namespace, unstructuredData.GetName(), &service.UnstructuredExtend{Unstructured: unstructuredData})
+		if err != nil {
+			common.InternalServerError(g, err, fmt.Errorf("create deplyment error: %v", err))
+			return
+		}
+
 
 	}
 
