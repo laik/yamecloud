@@ -113,13 +113,14 @@ func (s *tektonServer) RunPipeline(g *gin.Context) {
 		common.InternalServerError(g, name, fmt.Errorf("get object error (%s)", err))
 		return
 	}
+
 	var width int64 = 1000
 	var height int64 = 1000
 	graphJson := ""
 	graphName := pipelineObj.GetAnnotations()[GraphAnnotationKey]
 	graphObj, err := s.TektonGraph.Get(namespace, graphName)
 	if err != nil {
-		common.InternalServerError(g, graphName, fmt.Errorf("get object error (%s)", err))
+		common.InternalServerError(g, graphName, fmt.Errorf("you may not designed this pipeline yet, please re-edit"))
 		return
 	}
 	if graphObj != nil {
@@ -142,7 +143,20 @@ func (s *tektonServer) RunPipeline(g *gin.Context) {
 		}
 
 	}
-	runGraphName := "run-" + name + strconv.FormatInt(time.Now().Unix(), 10)
+	runGraphName := "run-" + name + "-" + strconv.FormatInt(time.Now().Unix(), 10)
+
+	//create pipelineRun
+	pipelineRunObj := &service.UnstructuredExtend{Unstructured: _unstructured}
+	pipelineRunObj.SetNamespace(namespace)
+	pipelineRunObj.SetAnnotations(map[string]string{RunGraphAnnotationKey: runGraphName})
+
+	appliedPipelineRunObj, _, err := s.PipelineRun.Apply(namespace, pipelineRunObj.GetName(), pipelineRunObj)
+	if err != nil {
+		common.InternalServerError(g, pipelineRunObj, fmt.Errorf("apply object error (%s)", err))
+		return
+	}
+
+	// create graph
 	runGraphObj := &service.UnstructuredExtend{Unstructured: &unstructured.Unstructured{Object: map[string]interface{}{}}}
 	runGraphObj.SetKind(TektonGraphKind)
 	runGraphObj.SetAPIVersion(TektonGraphApiVersion)
@@ -155,41 +169,24 @@ func (s *tektonServer) RunPipeline(g *gin.Context) {
 		"width":  width,
 		"height": height,
 	})
-	runGraphObjBack, _, err := s.TektonGraph.Apply(namespace, runGraphName, runGraphObj)
-	if err != nil {
-		common.InternalServerError(g, runGraphObj, fmt.Errorf("apply object error (%s)", err))
-		return
-	}
-	//create pipelineRun
-	pipelineRunObj := &service.UnstructuredExtend{Unstructured: _unstructured}
-	pipelineRunObj.SetNamespace(namespace)
-	pipelineRunObj.SetAnnotations(map[string]string{
-		RunGraphAnnotationKey: runGraphName,
-	})
 
-	appliedPipelineRunObj, _, err := s.PipelineRun.Apply(namespace, pipelineRunObj.GetName(), pipelineRunObj)
-	if err != nil {
-		common.InternalServerError(g, pipelineRunObj, fmt.Errorf("apply object error (%s)", err))
-		return
-	}
-	utils.Set(runGraphObjBack.Object, "metadata.ownerReferences", []map[string]interface{}{
+	utils.Set(runGraphObj.Object, "metadata.ownerReferences", []map[string]interface{}{
 		{
 			"apiVersion":         appliedPipelineRunObj.GetAPIVersion(),
 			"kind":               appliedPipelineRunObj.GetKind(),
-			"name":               pipelineObj.GetName(),
+			"name":               appliedPipelineRunObj.GetName(),
 			"uid":                appliedPipelineRunObj.GetUID(),
-			"controller":         false,
-			"blockOwnerDeletion": false,
+			"controller":         true,
+			"blockOwnerDeletion": true,
 		},
 	})
 
 	//update tektonGraph
-	appliedRunGraphObj, _, err := s.TektonGraph.Apply(namespace, runGraphObjBack.GetName(), runGraphObjBack)
+	_, _, err = s.TektonGraph.Apply(namespace, runGraphObj.GetName(), runGraphObj)
 	if err != nil {
-		common.InternalServerError(g, runGraphObjBack, fmt.Errorf("apply object error (%s)", err))
+		common.InternalServerError(g, runGraphObj, fmt.Errorf("apply object error (%s)", err))
 		return
 	}
-	_ = appliedRunGraphObj
 
 	g.JSON(http.StatusOK, appliedPipelineRunObj)
 

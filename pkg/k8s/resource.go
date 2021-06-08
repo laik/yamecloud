@@ -69,7 +69,7 @@ const (
 	TaskRun          ResourceType = "taskruns"
 	PipelineResource ResourceType = "pipelineresources"
 	TektonGraph      ResourceType = "tektongraphs"
-	OpsSecret        ResourceType = "ops-secrets"
+	TektonConfig     ResourceType = "tektonconfigs"
 	TektonWebHook    ResourceType = "tektonwebhooks"
 	TektonStore      ResourceType = "tektonstores"
 
@@ -178,7 +178,7 @@ var GVRMaps IGVRMaps = &groupVersionCollection{
 	TaskRun:          {Group: "tekton.dev", Version: "v1alpha1", Resource: "taskruns"},
 	PipelineResource: {Group: "tekton.dev", Version: "v1alpha1", Resource: "pipelineresources"},
 	TektonGraph:      {Group: "yamecloud.io", Version: "v1", Resource: "tektongraphs"},
-	OpsSecret:        {Group: "", Version: "v1", Resource: "secrets"},
+	TektonConfig:     {Group: "", Version: "v1", Resource: "secrets"},
 	TektonWebHook:    {Group: "yamecloud.io", Version: "v1", Resource: "tektonwebhooks"},
 	TektonStore:      {Group: "yamecloud.io", Version: "v1", Resource: "tektonstores"},
 

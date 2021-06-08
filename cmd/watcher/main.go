@@ -90,7 +90,7 @@ var needDescSubscribeMap = map[string]k8s.ResourceType{
 	"taskrun":          k8s.TaskRun,
 	"pipelineresource": k8s.PipelineResource,
 	"tektongraph":      k8s.TektonGraph,
-	"opssecret":        k8s.OpsSecret,
+	"tektonconfig":     k8s.TektonConfig,
 	"tektonwebhook":    k8s.TektonWebHook,
 	"tektonstore":      k8s.TektonStore,
 
@@ -117,7 +117,7 @@ var needDescSubscribeTEKTONList = []k8s.ResourceType{
 	k8s.TaskRun,
 	k8s.PipelineResource,
 	k8s.TektonGraph,
-	k8s.OpsSecret,
+	k8s.TektonConfig,
 	k8s.TektonWebHook,
 	k8s.TektonStore,
 }

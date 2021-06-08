@@ -34,6 +34,8 @@ var subscribeList = k8s.GVRMaps.Subscribe(
 	k8s.TektonStore,
 	k8s.TektonWebHook,
 	k8s.TektonGraph,
+
+	k8s.Secret, // alias to tekton config
 )
 
 func main() {

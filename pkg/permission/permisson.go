@@ -206,7 +206,7 @@ var Tree = TreeNode{
 					},
 				},
 				{
-					Name: k8s.OpsSecret,
+					Name: k8s.TektonConfig,
 					Children: []*TreeNode{
 						{Name: View},
 						{Name: Apply},

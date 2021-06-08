@@ -15,8 +15,8 @@ import (
 const (
 	PipelineRunKind       = "PipelineRun"
 	PipelineRunApiVersion = "tekton.dev/v1alpha1"
-	GraphAnnotationKey    = "fuxi.nip.io/tektongraphs"
-	RunGraphAnnotationKey = "fuxi.nip.io/run-tektongraphs"
+	GraphAnnotationKey    = "yamecloud.io/tektongraphs"
+	RunGraphAnnotationKey = "yamecloud.io/run-tektongraphs"
 )
 
 // Get PipelineRun

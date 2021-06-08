@@ -112,7 +112,7 @@ func (s *watcherServer) startWatch(url string, ctx context.Context, writeEventCh
 					if !ok {
 						return
 					}
-					if rewriteOpsSecret(writeEventChan, event) {
+					if rewriteTektonConfig(writeEventChan, event) {
 						continue
 					}
 					writeEventChan <- watcherEvent{
@@ -138,7 +138,7 @@ func (s *watcherServer) startWatch(url string, ctx context.Context, writeEventCh
 	return nil
 }
 
-func rewriteOpsSecret(eventChan chan<- watcherEvent, item watch.Event) bool {
+func rewriteTektonConfig(eventChan chan<- watcherEvent, item watch.Event) bool {
 	if item.Object.GetObjectKind().GroupVersionKind().Kind != "Secret" {
 		return false
 	}

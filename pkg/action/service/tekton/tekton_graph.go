@@ -41,6 +41,14 @@ func (g *TektonGraph) Apply(namespace, name string, unstructuredExtend *service.
 	return item, isUpdate, nil
 }
 
+func (g *TektonGraph) PatchOwnerReferences(namespace, name string, data []byte) (*service.UnstructuredExtend, error) {
+	item, err := g.Interface.Patch(namespace, k8s.TektonGraph, name, data)
+	if err != nil {
+		return nil, err
+	}
+	return item, nil
+}
+
 func (g *TektonGraph) Delete(namespace, name string) error {
 	err := g.Interface.Delete(namespace, k8s.TektonGraph, name)
 	if err != nil {

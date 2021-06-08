@@ -96,10 +96,16 @@ servicemesh_run:
 	go run cmd/servicemesh/*.go
 
 tekton_run:
-	go run cmd/service/*.go
+	go run cmd/tekton/*.go
 
 workloads_run:
 	go run cmd/workloads/*.go
 
 workloadplus_run:
 	go run cmd/workloadplus/*.go
+
+watcher_run:
+	SUBLIST="" SUBTOPIC=tekton,ovn go run cmd/watcher/*.go
+
+shell_run:
+	go run cmd/shell/*.go

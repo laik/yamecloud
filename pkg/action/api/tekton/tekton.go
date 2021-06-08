@@ -18,6 +18,7 @@ type tektonServer struct {
 	*tekton.TektonStore
 	*tekton.TektonWebHook
 	*tekton.TektonGraph
+	*tekton.TektonConfig
 }
 
 func (s *tektonServer) Name() string {
@@ -37,6 +38,7 @@ func NewTektonServer(serviceName string, server *api.Server) *tektonServer {
 		TektonStore:      tekton.NewTektonStore(server.Interface),
 		TektonWebHook:    tekton.NewTektonWebHook(server.Interface),
 		TektonGraph:      tekton.NewTektonGraph(server.Interface),
+		TektonConfig:     tekton.NewTektonConfig(server.Interface),
 	}
 	group := tektonServer.Group(fmt.Sprintf("/%s", serviceName))
 
@@ -48,6 +50,7 @@ func NewTektonServer(serviceName string, server *api.Server) *tektonServer {
 		group.GET("/apis/tekton.dev/v1alpha1/namespaces/:namespace/pipelines/:name", tektonServer.GetPipeline)
 		group.POST("/apis/tekton.dev/v1alpha1/namespaces/:namespace/pipelines", tektonServer.ApplyPipeline)
 		group.POST("/apis/tekton.dev/v1alpha1/namespaces/:namespace/pipelines/:name/run", tektonServer.RunPipeline)
+		group.PUT("/apis/tekton.dev/v1alpha1/namespaces/:namespace/pipelines/:name", tektonServer.ApplyPipeline)
 		group.DELETE("/apis/tekton.dev/v1alpha1/namespaces/:namespace/pipelines/:name", tektonServer.DeletePipeline)
 	}
 
@@ -76,6 +79,7 @@ func NewTektonServer(serviceName string, server *api.Server) *tektonServer {
 		group.GET("/apis/tekton.dev/v1alpha1/namespaces/:namespace/tasks", tektonServer.ListTask)
 		group.GET("/apis/tekton.dev/v1alpha1/namespaces/:namespace/tasks/:name", tektonServer.GetTask)
 		group.POST("/apis/tekton.dev/v1alpha1/namespaces/:namespace/tasks", tektonServer.ApplyTask)
+		group.PUT("/apis/tekton.dev/v1alpha1/namespaces/:namespace/tasks/:name", tektonServer.ApplyTask)
 		group.DELETE("/apis/tekton.dev/v1alpha1/namespaces/:namespace/tasks/:name", tektonServer.DeleteTask)
 	}
 
@@ -84,7 +88,6 @@ func NewTektonServer(serviceName string, server *api.Server) *tektonServer {
 		group.GET("/apis/tekton.dev/v1alpha1/taskruns", tektonServer.ListTaskRun)
 		group.GET("/apis/tekton.dev/v1alpha1/namespaces/:namespace/taskruns", tektonServer.ListTaskRun)
 		group.GET("/apis/tekton.dev/v1alpha1/namespaces/:namespace/taskruns/:name", tektonServer.GetTaskRun)
-		group.POST("/apis/tekton.dev/v1alpha1/namespaces/:namespace/taskruns", tektonServer.ApplyTask)
 		group.DELETE("/apis/tekton.dev/v1alpha1/namespaces/:namespace/taskruns/:name", tektonServer.DeleteTaskRun)
 	}
 
@@ -112,7 +115,17 @@ func NewTektonServer(serviceName string, server *api.Server) *tektonServer {
 		group.GET("/apis/yamecloud.io/v1/namespaces/:namespace/tektongraphs", tektonServer.ListTektonGraph)
 		group.GET("/apis/yamecloud.io/v1/namespaces/:namespace/tektongraphs/:name", tektonServer.GetTektonGraph)
 		group.POST("/apis/yamecloud.io/v1/namespaces/:namespace/tektongraphs", tektonServer.ApplyTektonGraph)
+		group.PUT("/apis/yamecloud.io/v1/namespaces/:namespace/tektongraphs/:name", tektonServer.ApplyTektonGraph)
 		group.DELETE("/apis/yamecloud.io/v1/namespaces/:namespace/tektongraphs/:name", tektonServer.DeleteTektonGraph)
+	}
+
+	// tektonconfig
+	{
+		group.GET("/api/v1/tektonconfig", tektonServer.ListConfig)
+		group.GET("/api/v1/namespaces/:namespace/tektonconfig", tektonServer.ListConfig)
+		group.GET("/api/v1/namespaces/:namespace/tektonconfig/:name", tektonServer.GetConfig)
+		group.POST("/api/v1/namespaces/:namespace/tektonconfig", tektonServer.ApplyConfig)
+		group.DELETE("/api/v1/namespaces/:namespace/tektonconfig/:name", tektonServer.DeleteConfig)
 	}
 
 	return tektonServer
