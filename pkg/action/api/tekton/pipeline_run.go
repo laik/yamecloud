@@ -8,8 +8,6 @@ import (
 	"github.com/yametech/yamecloud/pkg/utils"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"net/http"
-	"strconv"
-	"time"
 )
 
 const (
@@ -107,47 +105,34 @@ func (s *tektonServer) RerunPipelineRun(g *gin.Context) {
 		return
 	}
 
-	annotations := pipelineRunObj.GetAnnotations()
-	pipelineRunGraphName := annotations[RunGraphAnnotationKey]
-	pipelineRunGraphObj, err := s.TektonGraph.Get(namespace, pipelineRunGraphName)
-	if err != nil {
-		common.InternalServerError(g, pipelineRunGraphName, fmt.Errorf("get object error (%s)", err))
+	oldPipelineRunAnnotations := pipelineRunObj.GetAnnotations()
+	tektonGraphName, exist := oldPipelineRunAnnotations[RunGraphAnnotationKey]
+	if !exist {
+		common.RequestParametersError(g, fmt.Errorf("pipeline run not grpah, pipeline run namespace: %s name: %s", namespace, name))
 		return
 	}
-	tektonGraph := &service.UnstructuredExtend{Unstructured: &unstructured.Unstructured{Object: map[string]interface{}{}}}
-	tektonGraph.SetName(name + strconv.FormatInt(time.Now().Unix(), 10))
-	tektonGraph.SetNamespace(pipelineRunGraphObj.GetNamespace())
-	tektonGraph.SetKind(pipelineRunGraphObj.GetKind())
-	tektonGraph.SetAPIVersion(pipelineRunGraphObj.GetAPIVersion())
-	utils.Set(tektonGraph.Object, "spec", pipelineRunGraphObj.Object["spec"])
-	//delete old pipelineRun graph
-	err = s.TektonGraph.Delete(namespace, pipelineRunGraphName)
+
+	oldGraph, err := s.TektonGraph.Get(namespace, tektonGraphName)
 	if err != nil {
-		common.InternalServerError(g, pipelineRunGraphName, fmt.Errorf("delete object error (%s)", err))
-		return
-	}
-	//create new pipelineRun graph
-	newTektonGrap, _, err := s.TektonGraph.Apply(namespace, tektonGraph.GetName(), tektonGraph)
-	_ = newTektonGrap
-	if err != nil {
-		common.InternalServerError(g, tektonGraph, fmt.Errorf("apply object error (%s)", err))
+		common.InternalServerError(g, err, fmt.Errorf("get object error (%s)", err))
 		return
 	}
 
 	//delete old pipelineRun
 	err = s.PipelineRun.Delete(namespace, name)
 	if err != nil {
-		common.InternalServerError(g, pipelineRunGraphObj, fmt.Errorf("delete object error (%s)", err))
+		common.InternalServerError(g, err, fmt.Errorf("delete object error (%s)", err))
 		return
 	}
-	annotations[RunGraphAnnotationKey] = tektonGraph.GetName()
+
 	newPipelineRunObj := &service.UnstructuredExtend{Unstructured: &unstructured.Unstructured{Object: map[string]interface{}{}}}
 	newPipelineRunObj.SetKind(pipelineRunObj.GetKind())
 	newPipelineRunObj.SetAPIVersion(pipelineRunObj.GetAPIVersion())
 	newPipelineRunObj.SetName(pipelineRunObj.GetName())
 	newPipelineRunObj.SetNamespace(pipelineRunObj.GetNamespace())
-	newPipelineRunObj.SetAnnotations(annotations)
+	newPipelineRunObj.SetAnnotations(oldPipelineRunAnnotations)
 	newPipelineRunObj.SetLabels(pipelineRunObj.GetLabels())
+
 	utils.Set(newPipelineRunObj.Object, "spec", map[string]interface{}{
 		"pipelineRef":         utils.Get(pipelineRunObj.Object, "spec.pipelineRef"),
 		"pipelineSpec":        utils.Get(pipelineRunObj.Object, "spec.pipelineSpec"),
@@ -159,10 +144,35 @@ func (s *tektonServer) RerunPipelineRun(g *gin.Context) {
 		"podTemplate":         utils.Get(pipelineRunObj.Object, "spec.podTemplate"),
 		"workspaces":          utils.Get(pipelineRunObj.Object, "spec.workspaces"),
 	})
+
 	//create new pipelineRun
 	newPipelineRun, _, err := s.PipelineRun.Apply(namespace, name, newPipelineRunObj)
 	if err != nil {
 		common.InternalServerError(g, newPipelineRunObj, fmt.Errorf("apply object error (%s)", err))
+		return
+	}
+
+	tektonGraph := &service.UnstructuredExtend{Unstructured: &unstructured.Unstructured{Object: map[string]interface{}{}}}
+	tektonGraph.SetName(tektonGraphName)
+	tektonGraph.SetNamespace(oldGraph.GetNamespace())
+	tektonGraph.SetKind(oldGraph.GetKind())
+	tektonGraph.SetAPIVersion(oldGraph.GetAPIVersion())
+	utils.Set(tektonGraph.Object, "spec", oldGraph.Object["spec"])
+	utils.Set(tektonGraph.Object, "metadata.ownerReferences", []map[string]interface{}{
+		{
+			"apiVersion":         newPipelineRun.GetAPIVersion(),
+			"kind":               newPipelineRun.GetKind(),
+			"name":               newPipelineRun.GetName(),
+			"uid":                newPipelineRun.GetUID(),
+			"controller":         true,
+			"blockOwnerDeletion": true,
+		},
+	})
+
+	//create new pipelineRun graph
+	_, _, err = s.TektonGraph.Apply(namespace, tektonGraphName, tektonGraph)
+	if err != nil {
+		common.InternalServerError(g, tektonGraph, fmt.Errorf("apply object error (%s)", err))
 		return
 	}
 
