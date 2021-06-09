@@ -184,7 +184,7 @@ metadata:
   labels:
     app: {{.name}}
 spec:
-  replicas: {{or (index .coordinates 0).replicas 0}}
+  replicas: {{or (index .coordinates 0).replicas 1}}
   selector:
     matchLabels:
       app: {{.name}}
@@ -201,6 +201,7 @@ spec:
         - name: {{or .name $container_name}}
           image: {{.image}}
           imagePullPolicy: {{or .image_pull_policy "Always"}}
+
 # container port
           {{- if $.service_ports}}
           ports:
@@ -209,6 +210,7 @@ spec:
               protocol: {{or .protocol "TCP"}}
             {{end}}
           {{- end }}
+
 # container args
           {{- if .args}}
           args:
@@ -271,13 +273,19 @@ spec:
               path: {{.secret.items.path}}
           {{- end}}
           {{- end}}
-
         {{end}}
       {{- end }}
+`
 
+	ServiceTpl = `
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{.name}}
+  namespace: {{.namespace}}
+spec:
 # service spec
 {{- if .service_ports}}
-  service:
     ports:
       {{range $index,$value := .service_ports}}
       {{$port_name := (printf "port-%v" $index)}}
@@ -288,6 +296,7 @@ spec:
       {{end}}
     type: {{or .service_type "ClusterIP"}}
 {{end}}
-
+    selector:
+      app: {{.name}}
 `
 )

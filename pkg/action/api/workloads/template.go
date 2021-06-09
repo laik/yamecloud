@@ -171,7 +171,7 @@ type templateParameter struct {
 		TemplateName string `json:"templateName"`
 
 		Annotations map[string]string `json:"annotations"`
-	} `json: "data"`
+	} `json:"data"`
 }
 
 func (s *workloadServer) DeployTemplate(g *gin.Context) {
@@ -273,13 +273,19 @@ func (s *workloadServer) DeployTemplate(g *gin.Context) {
 			return
 		}
 
+		if len(coordinates) < 1 {
+			common.RequestParametersError(g, fmt.Errorf("can not get allowed node on namespace allowed node less than 1 %s", tpParams.Data.Namespace))
+			return
+		}
+
 		if err := renderCoordinatesTemplate(coordinates, expected, tpParams.Data.Replicas); err != nil {
 			common.RequestParametersError(g, fmt.Errorf("can not convert coordinates template %s, error: %s", tpParams.Data.TemplateName, err))
 			return
 		}
+
 		unstructuredData, err = content.Render(expected, content.DeploymentTpl)
 		if err != nil {
-			common.RequestParametersError(g, fmt.Errorf("render stone template %s, error: %s", tpParams.Data.TemplateName, err))
+			common.RequestParametersError(g, fmt.Errorf("render deplyment template %s, error: %s", tpParams.Data.TemplateName, err))
 			return
 		}
 
@@ -289,6 +295,17 @@ func (s *workloadServer) DeployTemplate(g *gin.Context) {
 			return
 		}
 
+		unstructuredData, err = content.Render(expected, content.ServiceTpl)
+		if err != nil {
+			common.RequestParametersError(g, fmt.Errorf("render stone template %s, error: %s", tpParams.Data.TemplateName, err))
+			return
+		}
+
+		_, _, err = s.Template.CreateService(tpParams.Data.Namespace, unstructuredData.GetName(), &service.UnstructuredExtend{Unstructured: unstructuredData})
+		if err != nil {
+			common.InternalServerError(g, err, fmt.Errorf("create service error: %v", err))
+			return
+		}
 
 	}
 
