@@ -38,7 +38,7 @@ dep:
 build: dep
 	go build ./cmd/...
 
-build-image: servicemesh tekton service base gateway shell watcher sdn workloadplus workloads push-image
+build-image: servicemesh tekton service base gateway shell watcher sdn workloadplus workloads editer accesscontrol push-image
 
 push-image: 
 	docker push ${REPO}/servicemesh:${VERSION}
