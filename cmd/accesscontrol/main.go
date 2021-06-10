@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"github.com/yametech/yamecloud/pkg/action/api"
 	"github.com/yametech/yamecloud/pkg/action/api/accesscontrol"
@@ -25,8 +24,6 @@ var subscribeList = k8s.GVRMaps.Subscribe(
 )
 
 func main() {
-	flag.Parse()
-
 	config, err := configure.NewInstallConfigure(types.NewResourceITypes(subscribeList))
 	if err != nil {
 		panic(fmt.Sprintf("new install configure error %s", err))

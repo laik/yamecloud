@@ -17,7 +17,7 @@ type Metrics struct {
 }
 
 func NewMetrics(svcInterface service.Interface) *Metrics {
-	_metrics := &Metrics{Interface: svcInterface, InCluster: common.InCluster}
+	_metrics := &Metrics{Interface: svcInterface, InCluster: common.InCluster, client: resty.New()}
 	svcInterface.Install(k8s.Metrics, _metrics)
 	return _metrics
 }
