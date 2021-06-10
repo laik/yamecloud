@@ -17,7 +17,11 @@ type Metrics struct {
 }
 
 func NewMetrics(svcInterface service.Interface) *Metrics {
-	_metrics := &Metrics{Interface: svcInterface, InCluster: common.InCluster, client: resty.New()}
+	_metrics := &Metrics{
+		Interface: svcInterface,
+		InCluster: common.InCluster,
+		client:    resty.New(),
+	}
 	svcInterface.Install(k8s.Metrics, _metrics)
 	return _metrics
 }
@@ -34,11 +38,13 @@ func (m *Metrics) ProxyToPrometheus(params map[string]string, body []byte) (map[
 
 	if m.InCluster {
 		for bodyKey, bodyValue := range bodyMap {
-			resp, err := m.client.R().SetQueryParams(params).SetQueryParam("query", bodyValue).Get(PrometheusAddress)
+			resp, err := m.client.R().
+				SetQueryParams(params).
+				SetQueryParam("query", bodyValue).
+				Get(PrometheusAddress)
 			if err != nil {
 				return nil, err
 			}
-
 			var metricsContextMap map[string]interface{}
 			err = json.Unmarshal([]byte(resp.String()), &metricsContextMap)
 			if err != nil {
