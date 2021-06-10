@@ -3,6 +3,7 @@ package workloads
 import (
 	"fmt"
 	"github.com/yametech/yamecloud/pkg/action/api"
+	"github.com/yametech/yamecloud/pkg/action/service/editer"
 	workload_service "github.com/yametech/yamecloud/pkg/action/service/workloads"
 )
 
@@ -32,7 +33,7 @@ type workloadServer struct {
 	*workload_service.StorageClass
 
 	*workload_service.Template
-	*workload_service.APIResources
+	*editer.APIResources
 }
 
 func (s *workloadServer) Name() string {
@@ -70,14 +71,14 @@ func NewWorkloadServer(serviceName string, server *api.Server) *workloadServer {
 		StorageClass: workload_service.NewStorageClass(server),
 
 		Template:     workload_service.NewTemplate(server),
-		APIResources: workload_service.NewAPIResources(server),
+		APIResources: editer.NewAPIResources(server),
 	}
 
 	group := workloadServer.Group(fmt.Sprintf("/%s", serviceName))
 
-	//stack
+	//accesscontrol
 	{
-		group.POST("/stack", workloadServer.Stack)
+		group.POST("/accesscontrol", workloadServer.Stack)
 	}
 	//template
 	{

@@ -66,6 +66,14 @@ func (g *Template) CreateService(namespace, name string, unstructuredExtend *ser
 	return item, isUpdate, nil
 }
 
+func (g *Template) CheckServiceExist(namespace, name string) bool {
+	srv, err := g.Interface.Get(namespace, k8s.Service, name)
+	if err != nil || srv == nil {
+		return false
+	}
+	return true
+}
+
 func (g *Template) LabelKV(namespace, name, k, v string) (*service.UnstructuredExtend, error) {
 	data := fmt.Sprintf(`{"metadata":{"labels":{"%s":"%s"}}}`, k, v)
 	item, err := g.Interface.Patch(namespace, k8s.Workloads, name, []byte(data))

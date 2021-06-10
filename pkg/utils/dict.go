@@ -1,6 +1,8 @@
 package utils
 
-import "strings"
+import (
+	"strings"
+)
 
 // Set "path":"a.b.c"
 // data = {"a":{"b":{"c":123}}}
@@ -30,6 +32,12 @@ func Get(data map[string]interface{}, path string) (value interface{}) {
 		switch data[head].(type) {
 		case map[string]interface{}:
 			return Get(data[head].(map[string]interface{}), remain)
+		case map[interface{}]interface{}:
+			_data := make(map[string]interface{})
+			for k, v := range data[head].(map[interface{}]interface{}) {
+				_data[k.(string)] = v
+			}
+			return Get(_data, remain)
 		}
 	}
 	return nil

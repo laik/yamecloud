@@ -301,12 +301,13 @@ func (s *workloadServer) DeployTemplate(g *gin.Context) {
 			return
 		}
 
-		_, _, err = s.Template.CreateService(tpParams.Data.Namespace, unstructuredData.GetName(), &service.UnstructuredExtend{Unstructured: unstructuredData})
-		if err != nil {
-			common.InternalServerError(g, err, fmt.Errorf("create service error: %v", err))
-			return
+		if !s.Template.CheckServiceExist(tpParams.Data.Namespace, unstructuredData.GetName()) {
+			_, _, err = s.Template.CreateService(tpParams.Data.Namespace, unstructuredData.GetName(), &service.UnstructuredExtend{Unstructured: unstructuredData})
+			if err != nil {
+				common.InternalServerError(g, err, fmt.Errorf("create service error: %v", err))
+				return
+			}
 		}
-
 	}
 
 	g.JSON(http.StatusOK, newUnstructuredObj)

@@ -19,7 +19,7 @@ spec:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: GlobalConfig is the Schema for the baseroles API
+        description: GlobalConfig is the Schema for the GlobalConfig API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -34,9 +34,9 @@ spec:
           metadata:
             type: object
           spec:
-            description: GlobalConfig defines the desired state of BaseRole
+            description: GlobalConfig defines the desired state of GlobalConfig
             properties:
-              tenant_id:
+              model:
                 type: string
             type: object
           status:

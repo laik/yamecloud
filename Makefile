@@ -1,6 +1,6 @@
 # the makefile describe
 REPO=yametech
-VERSION=0.2.0
+VERSION=0.2.1
 
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
@@ -51,13 +51,20 @@ push-image:
 	docker push ${REPO}/sdn:${VERSION}
 	docker push ${REPO}/workloads:${VERSION}
 	docker push ${REPO}/workloadplus:${VERSION}
+	docker push ${REPO}/editer:${VERSION}
+	docker push ${REPO}/accesscontrol:${VERSION}
 
 sdn:
 	docker build -t ${REPO}/sdn:${VERSION} -f images/Dockerfile.sdn .
 
 watcher:
-	ame${REPO}/watcher:${VERSION} -f images/Dockerfile.watcher .
+	docker build -t ${REPO}/watcher:${VERSION} -f images/Dockerfile.watcher .
 
+editer:
+	docker build -t ${REPO}/editer:${VERSION} -f images/Dockerfile.editer .
+
+accesscontrol:
+	docker build -t ${REPO}/accesscontrol:${VERSION} -f images/Dockerfile.accesscontrol .
 
 servicemesh:
 	docker build -t ${REPO}/servicemesh:${VERSION} -f images/Dockerfile.servicemesh .
@@ -83,17 +90,25 @@ workloads:
 workloadplus:
 	docker build -t ${REPO}/workloadplus:${VERSION} -f images/Dockerfile.workloadplus .
 
+
+# run server
 gateway_run:
 	go run cmd/gateway/*.go api --handler=http --address 0.0.0.0:8080
+
+sdn_run:
+	go run cmd/sdn/*.go
+
+editer_run:
+	go run cmd/editer/*.go
+
+accesscontrol_run:
+	go run cmd/accesscontrol/*.go
 
 base_run:
 	go run cmd/base/*.go
 
 service_run:
 	go run cmd/service/*.go
-
-servicemesh_run:
-	go run cmd/servicemesh/*.go
 
 tekton_run:
 	go run cmd/tekton/*.go
@@ -109,3 +124,7 @@ watcher_run:
 
 shell_run:
 	go run cmd/shell/*.go
+
+#
+#servicemesh_run:
+#	go run cmd/servicemesh/*.go
