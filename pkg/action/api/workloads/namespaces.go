@@ -177,6 +177,9 @@ func (s *workloadServer) AnnotateNamespaceAllowedNode(g *gin.Context) {
 
 	if len(coordinates) > 0 {
 		bs, _ := json.Marshal(distinctCoordinateListMap(coordinates))
+		if currentAnnotations == nil {
+			currentAnnotations = make(map[string]string)
+		}
 		currentAnnotations["nuwa.kubernetes.io/default_resource_limit"] = string(bs)
 	} else {
 		delete(currentAnnotations, "nuwa.kubernetes.io/default_resource_limit")
@@ -236,8 +239,10 @@ func (s *workloadServer) AnnotateNamespaceNetworkAttach(g *gin.Context) {
 	currentAnnotations := namespace.GetAnnotations()
 
 	if ad.Data.NetworkAttachment != "" {
+		if currentAnnotations == nil {
+			currentAnnotations = make(map[string]string)
+		}
 		currentAnnotations["k8s.v1.cni.cncf.io/namespaces"] = ad.Data.NetworkAttachment
-
 	} else {
 		delete(currentAnnotations, "k8s.v1.cni.cncf.io/namespaces")
 	}
@@ -278,6 +283,9 @@ func (s *workloadServer) AnnotateNamespaceAllowedStorageClass(g *gin.Context) {
 
 	if len(ad.Data.StorageClasses) > 0 {
 		bs, _ := json.Marshal(ad.Data.StorageClasses)
+		if currentAnnotations == nil {
+			currentAnnotations = make(map[string]string)
+		}
 		currentAnnotations["fuxi.kubernetes.io/default_storage_limit"] = string(bs)
 	} else {
 		delete(currentAnnotations, "fuxi.kubernetes.io/default_storage_limit")
