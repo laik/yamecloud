@@ -49,7 +49,7 @@ func NewTektonServer(serviceName string, server *api.Server) *tektonServer {
 		group.GET("/apis/tekton.dev/v1alpha1/namespaces/:namespace/pipelines", tektonServer.ListPipeline)
 		group.GET("/apis/tekton.dev/v1alpha1/namespaces/:namespace/pipelines/:name", tektonServer.GetPipeline)
 		group.POST("/apis/tekton.dev/v1alpha1/namespaces/:namespace/pipelines", tektonServer.ApplyPipeline)
-		group.PUT("/apis/tekton.dev/v1alpha1/namespaces/:namespace/pipelines/:name", tektonServer.ApplyPipeline)
+		group.PUT("/apis/tekton.dev/v1alpha1/namespaces/:namespace/pipelines/:name", tektonServer.UpdatePipeline)
 		group.POST("/apis/tekton.dev/v1alpha1/namespaces/:namespace/pipelines/:name/run", tektonServer.RunPipeline)
 		group.DELETE("/apis/tekton.dev/v1alpha1/namespaces/:namespace/pipelines/:name", tektonServer.DeletePipeline)
 	}

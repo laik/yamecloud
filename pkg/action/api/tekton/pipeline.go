@@ -71,6 +71,37 @@ func (s *tektonServer) ApplyPipeline(g *gin.Context) {
 	}
 }
 
+func (s *tektonServer) UpdatePipeline(g *gin.Context) {
+	namespace := g.Param("namespace")
+	name := g.Param("name")
+	if namespace == "" || name == "" {
+		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
+		return
+	}
+	raw, err := g.GetRawData()
+	if err != nil {
+		common.RequestParametersError(g, fmt.Errorf("get raw data error (%s)", err))
+		return
+	}
+
+	updateData := &unstructured.Unstructured{}
+	if err := json.Unmarshal(raw, updateData); err != nil {
+		common.RequestParametersError(g, fmt.Errorf("unmarshal from json data error (%s)", err))
+		return
+	}
+
+	newUnstructuredExtend, _, err := s.Pipeline.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: updateData})
+	if err != nil {
+		common.InternalServerError(g, err, err)
+		return
+	}
+	g.JSON(
+		http.StatusOK,
+		[]service.UnstructuredExtend{
+			*newUnstructuredExtend,
+		})
+}
+
 // Delete Pipeline
 func (s *tektonServer) DeletePipeline(g *gin.Context) {
 	namespace := g.Param("namespace")
