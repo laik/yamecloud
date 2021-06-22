@@ -21,6 +21,10 @@ const version = "latest"
 
 var subscribeList = k8s.GVRMaps.Subscribe(
 	k8s.ClusterRole,
+	k8s.ServiceAccount,
+	k8s.RoleBinding,
+	k8s.ClusterRoleBinding,
+	k8s.Role,
 )
 
 func main() {
