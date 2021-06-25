@@ -107,7 +107,7 @@ func (s *baseServer) ValidateDepartmentData(g *gin.Context, data *unstructured.U
 	deptNamespaces := utils.ToStringArray(deptSpecNamespaces)
 	if len(deptNamespaces) > 0 {
 
-		tenantObj, err := s.BaseTenant.Get("kube-system", tenantId)
+		tenantObj, err := s.BaseTenant.Get("", tenantId)
 		if err != nil {
 			return fmt.Errorf(tenantId + " do not exist")
 		}
@@ -131,7 +131,7 @@ func (s *baseServer) ValidateDepartmentData(g *gin.Context, data *unstructured.U
 	if specOwner != "" {
 		owner := specOwner.(string)
 		selector := fmt.Sprintf("tenant.yamecloud.io=%s", tenantId)
-		userObjList, err := s.BaseUser.List("kube-system", selector)
+		userObjList, err := s.BaseUser.List("", selector)
 		if err != nil {
 			return fmt.Errorf("get tenant user error (%s)", err)
 		}

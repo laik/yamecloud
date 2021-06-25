@@ -7,14 +7,14 @@ import (
 	"net/http"
 )
 
-func (s *workloadServer) GetPVC(g *gin.Context) {
+func (w *workloadServer) GetPVC(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-	item, err := s.PVC.Get(namespace, name)
+	item, err := w.PVC.Get(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -22,8 +22,8 @@ func (s *workloadServer) GetPVC(g *gin.Context) {
 	g.JSON(http.StatusOK, item)
 }
 
-func (s *workloadServer) ListPVC(g *gin.Context) {
-	list, err := s.PVC.List(g.Param("namespace"), "")
+func (w *workloadServer) ListPVC(g *gin.Context) {
+	list, err := w.PVC.List(g.Param("namespace"), "")
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
@@ -31,14 +31,14 @@ func (s *workloadServer) ListPVC(g *gin.Context) {
 	g.JSON(http.StatusOK, list)
 }
 
-func (s *workloadServer) DeletePVC(g *gin.Context) {
+func (w *workloadServer) DeletePVC(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-	err := s.PVC.Delete(namespace, name)
+	err := w.PVC.Delete(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return

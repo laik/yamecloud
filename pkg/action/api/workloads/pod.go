@@ -12,14 +12,14 @@ import (
 )
 
 // GetPod none
-func (s *workloadServer) GetPod(g *gin.Context) {
+func (w *workloadServer) GetPod(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-	item, err := s.Pod.Get(namespace, name)
+	item, err := w.Pod.Get(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -28,8 +28,8 @@ func (s *workloadServer) GetPod(g *gin.Context) {
 }
 
 // ListPod Subscribe objects
-func (s *workloadServer) ListPod(g *gin.Context) {
-	list, err := s.Pod.List(g.Param("namespace"), "")
+func (w *workloadServer) ListPod(g *gin.Context) {
+	list, err := w.Pod.List(g.Param("namespace"), "")
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
@@ -38,7 +38,7 @@ func (s *workloadServer) ListPod(g *gin.Context) {
 }
 
 // ApplyPod Update or Create Pod
-func (s *workloadServer) ApplyPod(g *gin.Context) {
+func (w *workloadServer) ApplyPod(g *gin.Context) {
 	namespace := g.Param("namespace")
 	raw, err := g.GetRawData()
 	if err != nil {
@@ -52,7 +52,7 @@ func (s *workloadServer) ApplyPod(g *gin.Context) {
 		return
 	}
 	name := _unstructured.GetName()
-	newUnstructuredExtend, isUpdate, err := s.Pod.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := w.Pod.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
@@ -70,14 +70,14 @@ func (s *workloadServer) ApplyPod(g *gin.Context) {
 }
 
 // DeletePod Delete object
-func (s *workloadServer) DeletePod(g *gin.Context) {
+func (w *workloadServer) DeletePod(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-	err := s.Pod.Delete(namespace, name)
+	err := w.Pod.Delete(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -92,7 +92,7 @@ type logRequest struct {
 	TailLines  int64     `form:"tailLines" json:"tailLines"`
 }
 
-func (s *workloadServer) LogsPod(g *gin.Context) {
+func (w *workloadServer) LogsPod(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 
@@ -103,7 +103,7 @@ func (s *workloadServer) LogsPod(g *gin.Context) {
 	}
 
 	buf := bytes.NewBufferString("")
-	err := s.Pod.Logs(
+	err := w.Pod.Logs(
 		namespace,
 		name,
 		lq.Container,

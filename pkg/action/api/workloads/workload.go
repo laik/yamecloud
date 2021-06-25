@@ -5,6 +5,10 @@ import (
 	"github.com/yametech/yamecloud/pkg/action/api"
 	"github.com/yametech/yamecloud/pkg/action/service/editer"
 	workload_service "github.com/yametech/yamecloud/pkg/action/service/workloads"
+	"github.com/yametech/yamecloud/pkg/helm"
+	"helm.sh/helm/v3/pkg/action"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 type workloadServer struct {
@@ -34,16 +38,23 @@ type workloadServer struct {
 
 	*workload_service.Template
 	*editer.APIResources
+	HelmAction helm.NewActionConfigWithSecretFunc
+
+	config    *rest.Config
+	clientset *kubernetes.Clientset
 }
 
-func (s *workloadServer) Name() string {
-	return s.name
+func (w *workloadServer) Name() string {
+	return w.name
 }
 
-func NewWorkloadServer(serviceName string, server *api.Server) *workloadServer {
+func NewWorkloadServer(serviceName string, server *api.Server, config *rest.Config, clientset *kubernetes.Clientset) *workloadServer {
 	workloadServer := &workloadServer{
-		name:       serviceName,
-		Server:     server,
+		name:      serviceName,
+		Server:    server,
+		config:    config,
+		clientset: clientset,
+
 		ConfigMap:  workload_service.NewConfigMap(server),
 		CronJob:    workload_service.NewCronJob(server),
 		DaemonSet:  workload_service.NewDaemonSet(server),
@@ -72,6 +83,14 @@ func NewWorkloadServer(serviceName string, server *api.Server) *workloadServer {
 
 		Template:     workload_service.NewTemplate(server),
 		APIResources: editer.NewAPIResources(server),
+
+		HelmAction: func(namespace string) *action.Configuration {
+			cfg, err := helm.NewActionConfigWithSecret(config, clientset, namespace)
+			if err != nil {
+				panic(err)
+			}
+			return cfg
+		},
 	}
 
 	group := workloadServer.Group(fmt.Sprintf("/%s", serviceName))
@@ -253,6 +272,29 @@ func NewWorkloadServer(serviceName string, server *api.Server) *workloadServer {
 		group.POST("/apis/storage.k8s.io/v1/storageclasses", workloadServer.ApplyStorageClass)
 		group.PUT("/apis/storage.k8s.io/v1/storageclasses/:name", workloadServer.UpdateStorageClass)
 		group.DELETE("/apis/storage.k8s.io/v1/storageclasses/:name", workloadServer.DeleteStorageClass)
+	}
+
+	// helm
+	{
+
+		group.GET("/v2/charts", workloadServer.ListCharts)
+		group.GET("/v2/charts/:repo/:chart", workloadServer.GetCharts)
+		group.GET("/v2/charts/:repo/:chart/values", workloadServer.GetChartValues)
+		//
+
+		group.POST("/v2/releases", workloadServer.InstallChart)
+
+		group.GET("/v2/releases", workloadServer.ListRelease)
+		group.GET("/v2/releases/:namespace", workloadServer.ReleasesByNamespace)
+		group.GET("/v2/releases/:namespace/:release", workloadServer.ReleaseByNamespace)
+
+		group.GET("/v2/releases/:namespace/:release/values", workloadServer.ReleaseValueByName)
+
+		group.DELETE("/v2/releases/:namespace/:release", workloadServer.DeleteRelease)
+		group.PUT("/v2/releases/:namespace/:release", workloadServer.UpgradeRelease)
+		group.PUT("/v2/releases/:namespace/:release/rollback", workloadServer.RollbackRelease)
+		group.GET("/v2/releases/:namespace/:release/history", workloadServer.HistoryRelease)
+
 	}
 
 	// CRD

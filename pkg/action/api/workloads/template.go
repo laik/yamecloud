@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-func (s *workloadServer) GetTemplate(g *gin.Context) {
+func (w *workloadServer) GetTemplate(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
@@ -22,7 +22,7 @@ func (s *workloadServer) GetTemplate(g *gin.Context) {
 		return
 	}
 
-	item, err := s.Template.Get("", name)
+	item, err := w.Template.Get("", name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -37,9 +37,9 @@ func (s *workloadServer) GetTemplate(g *gin.Context) {
 	g.JSON(http.StatusOK, item)
 }
 
-func (s *workloadServer) ListTemplate(g *gin.Context) {
+func (w *workloadServer) ListTemplate(g *gin.Context) {
 	namespace := g.Param("namespace")
-	list, err := s.Template.List(namespace, "")
+	list, err := w.Template.List(namespace, "")
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
@@ -47,7 +47,7 @@ func (s *workloadServer) ListTemplate(g *gin.Context) {
 	g.JSON(http.StatusOK, list)
 }
 
-func (s *workloadServer) CreateTemplate(g *gin.Context) {
+func (w *workloadServer) CreateTemplate(g *gin.Context) {
 	raw, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("get raw data error (%s)", err))
@@ -62,7 +62,7 @@ func (s *workloadServer) CreateTemplate(g *gin.Context) {
 	name := fmt.Sprintf("%s.%s", _unstructured.GetName(), namespace)
 	utils.Set(_unstructured.Object, "metadata.name", name)
 
-	_unstructuredExist, _ := s.Template.Get("", name)
+	_unstructuredExist, _ := w.Template.Get("", name)
 	if _unstructuredExist != nil {
 		if _unstructuredExist.GetName() != "" {
 			common.RequestParametersError(g, fmt.Errorf("object %s already exists", name))
@@ -70,7 +70,7 @@ func (s *workloadServer) CreateTemplate(g *gin.Context) {
 		}
 	}
 
-	newUnstructuredExtend, isUpdate, err := s.Template.Apply("", name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := w.Template.Apply("", name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
@@ -87,7 +87,7 @@ func (s *workloadServer) CreateTemplate(g *gin.Context) {
 	}
 }
 
-func (s *workloadServer) UpdateTemplate(g *gin.Context) {
+func (w *workloadServer) UpdateTemplate(g *gin.Context) {
 	name := g.Param("name")
 	if name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
@@ -105,7 +105,7 @@ func (s *workloadServer) UpdateTemplate(g *gin.Context) {
 		return
 	}
 
-	newUnstructuredExtend, _, err := s.Template.Apply("", name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, _, err := w.Template.Apply("", name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -117,7 +117,7 @@ func (s *workloadServer) UpdateTemplate(g *gin.Context) {
 		})
 }
 
-func (s *workloadServer) LabelTemplate(g *gin.Context) {
+func (w *workloadServer) LabelTemplate(g *gin.Context) {
 	name := g.Param("name")
 	if name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
@@ -138,7 +138,7 @@ func (s *workloadServer) LabelTemplate(g *gin.Context) {
 	result := make([]*service.UnstructuredExtend, 0)
 
 	for k, v := range updateNetWorkAttachmentData {
-		obj, err := s.Template.LabelKV("", name, k, v)
+		obj, err := w.Template.LabelKV("", name, k, v)
 		if err != nil {
 			common.InternalServerError(g, err, err)
 			return
@@ -148,13 +148,13 @@ func (s *workloadServer) LabelTemplate(g *gin.Context) {
 	g.JSON(http.StatusOK, result)
 }
 
-func (s *workloadServer) DeleteTemplate(g *gin.Context) {
+func (w *workloadServer) DeleteTemplate(g *gin.Context) {
 	name := g.Param("name")
 	if name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
 		return
 	}
-	err := s.Template.Delete("", name)
+	err := w.Template.Delete("", name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -174,13 +174,13 @@ type templateParameter struct {
 	} `json:"data"`
 }
 
-func (s *workloadServer) DeployTemplate(g *gin.Context) {
+func (w *workloadServer) DeployTemplate(g *gin.Context) {
 	tpParams := &templateParameter{}
 	if err := g.BindJSON(tpParams); err != nil {
 		common.RequestParametersError(g, fmt.Errorf("obtain parameters invalid, error: %s", err))
 		return
 	}
-	template, err := s.Template.Get("", tpParams.Data.TemplateName)
+	template, err := w.Template.Get("", tpParams.Data.TemplateName)
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("can not get template %s, error: %s", tpParams.Data.TemplateName, err))
 		return
@@ -210,7 +210,7 @@ func (s *workloadServer) DeployTemplate(g *gin.Context) {
 			return
 		}
 
-		namespaceUnstructuredExtend, err := s.Namespace.Get("", tpParams.Data.Namespace)
+		namespaceUnstructuredExtend, err := w.Namespace.Get("", tpParams.Data.Namespace)
 		if err != nil {
 			common.RequestParametersError(g, fmt.Errorf("can not get namespace %s, error: %s", tpParams.Data.Namespace, err))
 			return
@@ -244,7 +244,7 @@ func (s *workloadServer) DeployTemplate(g *gin.Context) {
 			return
 		}
 
-		newUnstructuredObj, _, err = s.Template.CreateStone(tpParams.Data.Namespace, unstructuredData.GetName(), &service.UnstructuredExtend{Unstructured: unstructuredData})
+		newUnstructuredObj, _, err = w.Template.CreateStone(tpParams.Data.Namespace, unstructuredData.GetName(), &service.UnstructuredExtend{Unstructured: unstructuredData})
 		if err != nil {
 			common.InternalServerError(g, err, fmt.Errorf("create stone error: %v", err))
 			return
@@ -255,7 +255,7 @@ func (s *workloadServer) DeployTemplate(g *gin.Context) {
 			return
 		}
 
-		namespaceUnstructuredExtend, err := s.Namespace.Get("", tpParams.Data.Namespace)
+		namespaceUnstructuredExtend, err := w.Namespace.Get("", tpParams.Data.Namespace)
 		if err != nil {
 			common.RequestParametersError(g, fmt.Errorf("can not get namespace %s, error: %s", tpParams.Data.Namespace, err))
 			return
@@ -289,7 +289,7 @@ func (s *workloadServer) DeployTemplate(g *gin.Context) {
 			return
 		}
 
-		newUnstructuredObj, _, err = s.Template.CreateDeployment(tpParams.Data.Namespace, unstructuredData.GetName(), &service.UnstructuredExtend{Unstructured: unstructuredData})
+		newUnstructuredObj, _, err = w.Template.CreateDeployment(tpParams.Data.Namespace, unstructuredData.GetName(), &service.UnstructuredExtend{Unstructured: unstructuredData})
 		if err != nil {
 			common.InternalServerError(g, err, fmt.Errorf("create deplyment error: %v", err))
 			return
@@ -301,8 +301,8 @@ func (s *workloadServer) DeployTemplate(g *gin.Context) {
 			return
 		}
 
-		if !s.Template.CheckServiceExist(tpParams.Data.Namespace, unstructuredData.GetName()) {
-			_, _, err = s.Template.CreateService(tpParams.Data.Namespace, unstructuredData.GetName(), &service.UnstructuredExtend{Unstructured: unstructuredData})
+		if !w.Template.CheckServiceExist(tpParams.Data.Namespace, unstructuredData.GetName()) {
+			_, _, err = w.Template.CreateService(tpParams.Data.Namespace, unstructuredData.GetName(), &service.UnstructuredExtend{Unstructured: unstructuredData})
 			if err != nil {
 				common.InternalServerError(g, err, fmt.Errorf("create service error: %v", err))
 				return

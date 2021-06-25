@@ -10,13 +10,13 @@ import (
 	"net/http"
 )
 
-func (s *workloadServer) GetNamespace(g *gin.Context) {
+func (w *workloadServer) GetNamespace(g *gin.Context) {
 	namespace := g.Param("namespace")
 	if namespace == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace name=%s", namespace))
 		return
 	}
-	item, err := s.Namespace.Get("", namespace)
+	item, err := w.Namespace.Get("", namespace)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -24,8 +24,8 @@ func (s *workloadServer) GetNamespace(g *gin.Context) {
 	g.JSON(http.StatusOK, item)
 }
 
-func (s *workloadServer) ListNamespace(g *gin.Context) {
-	list, err := s.Namespace.List("", "")
+func (w *workloadServer) ListNamespace(g *gin.Context) {
+	list, err := w.Namespace.List("", "")
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
@@ -33,7 +33,7 @@ func (s *workloadServer) ListNamespace(g *gin.Context) {
 	g.JSON(http.StatusOK, list)
 }
 
-func (s *workloadServer) ApplyNamespace(g *gin.Context) {
+func (w *workloadServer) ApplyNamespace(g *gin.Context) {
 	raw, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("get raw data error (%s)", err))
@@ -46,7 +46,7 @@ func (s *workloadServer) ApplyNamespace(g *gin.Context) {
 		return
 	}
 	name := _unstructured.GetName()
-	newUnstructuredExtend, isUpdate, err := s.Namespace.Apply("", name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := w.Namespace.Apply("", name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
@@ -63,7 +63,7 @@ func (s *workloadServer) ApplyNamespace(g *gin.Context) {
 	}
 }
 
-func (s *workloadServer) UpdateNamespace(g *gin.Context) {
+func (w *workloadServer) UpdateNamespace(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
@@ -82,7 +82,7 @@ func (s *workloadServer) UpdateNamespace(g *gin.Context) {
 		return
 	}
 
-	newUnstructuredExtend, _, err := s.Namespace.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: updateNetWorkAttachmentData})
+	newUnstructuredExtend, _, err := w.Namespace.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: updateNetWorkAttachmentData})
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -94,13 +94,13 @@ func (s *workloadServer) UpdateNamespace(g *gin.Context) {
 		})
 }
 
-func (s *workloadServer) DeleteNamespace(g *gin.Context) {
+func (w *workloadServer) DeleteNamespace(g *gin.Context) {
 	name := g.Param("namespaces")
 	if name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
 		return
 	}
-	err := s.Namespace.Delete("", name)
+	err := w.Namespace.Delete("", name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -118,7 +118,7 @@ type annotateData struct {
 	NetworkAttachment string   `json:"networkAttachment"`
 }
 
-func (s *workloadServer) AnnotateNamespaceAllowedNode(g *gin.Context) {
+func (w *workloadServer) AnnotateNamespaceAllowedNode(g *gin.Context) {
 	rawData, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain form data error: %s", err))
@@ -133,7 +133,7 @@ func (s *workloadServer) AnnotateNamespaceAllowedNode(g *gin.Context) {
 	}
 
 	// check namespace exist
-	namespace, err := s.Namespace.Get("", ad.Data.Namespace)
+	namespace, err := w.Namespace.Get("", ad.Data.Namespace)
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain form data (%s) check namespace error: %s", rawData, err))
 		return
@@ -143,7 +143,7 @@ func (s *workloadServer) AnnotateNamespaceAllowedNode(g *gin.Context) {
 
 	coordinates := make([]map[string]string, 0)
 	for _, nodeName := range ad.Data.Nodes {
-		node, err := s.Node.Get("", nodeName)
+		node, err := w.Node.Get("", nodeName)
 		if err != nil {
 			common.RequestParametersError(g, fmt.Errorf("node not found: %s", nodeName))
 			return
@@ -187,7 +187,7 @@ func (s *workloadServer) AnnotateNamespaceAllowedNode(g *gin.Context) {
 
 	namespace.SetAnnotations(currentAnnotations)
 
-	newUnstructuredExtend, _, err := s.Namespace.Apply("", namespace.GetName(), namespace)
+	newUnstructuredExtend, _, err := w.Namespace.Apply("", namespace.GetName(), namespace)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -215,7 +215,7 @@ func distinctCoordinateListMap(list []map[string]string) []map[string]string {
 	return result
 }
 
-func (s *workloadServer) AnnotateNamespaceNetworkAttach(g *gin.Context) {
+func (w *workloadServer) AnnotateNamespaceNetworkAttach(g *gin.Context) {
 	rawData, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain form data error: %s", err))
@@ -230,7 +230,7 @@ func (s *workloadServer) AnnotateNamespaceNetworkAttach(g *gin.Context) {
 	}
 
 	// check namespace exist
-	namespace, err := s.Namespace.Get("", ad.Data.Namespace)
+	namespace, err := w.Namespace.Get("", ad.Data.Namespace)
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain form data (%s) check namespace error: %s", rawData, err))
 		return
@@ -249,7 +249,7 @@ func (s *workloadServer) AnnotateNamespaceNetworkAttach(g *gin.Context) {
 
 	namespace.SetAnnotations(currentAnnotations)
 
-	newUnstructuredObj, _, err := s.Namespace.Apply("", ad.Data.Namespace, namespace)
+	newUnstructuredObj, _, err := w.Namespace.Apply("", ad.Data.Namespace, namespace)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -258,7 +258,7 @@ func (s *workloadServer) AnnotateNamespaceNetworkAttach(g *gin.Context) {
 	g.JSON(http.StatusOK, newUnstructuredObj)
 }
 
-func (s *workloadServer) AnnotateNamespaceAllowedStorageClass(g *gin.Context) {
+func (w *workloadServer) AnnotateNamespaceAllowedStorageClass(g *gin.Context) {
 	rawData, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain form data error: %s", err))
@@ -273,7 +273,7 @@ func (s *workloadServer) AnnotateNamespaceAllowedStorageClass(g *gin.Context) {
 	}
 
 	// check namespace exist
-	namespace, err := s.Namespace.Get("", ad.Data.Namespace)
+	namespace, err := w.Namespace.Get("", ad.Data.Namespace)
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain form data (%s) check namespace error: %s", rawData, err))
 		return
@@ -292,7 +292,7 @@ func (s *workloadServer) AnnotateNamespaceAllowedStorageClass(g *gin.Context) {
 	}
 	namespace.SetAnnotations(currentAnnotations)
 
-	newUnstructuredObj, _, err := s.Namespace.Apply("", ad.Data.Namespace, namespace)
+	newUnstructuredObj, _, err := w.Namespace.Apply("", ad.Data.Namespace, namespace)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return

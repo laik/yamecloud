@@ -60,7 +60,7 @@ func main() {
 
 	_datasource := datasource.NewInterface(config)
 	apiServer := api.NewServer(service.NewService(_datasource))
-	apiServer.SetExtends(workloads.NewWorkloadServer(serviceName, apiServer))
+	apiServer.SetExtends(workloads.NewWorkloadServer(serviceName, apiServer, config.Config, config.Clientset))
 
 	microService, err := install.WebServiceInstall(serviceName, version, _datasource, apiServer)
 	if err != nil {

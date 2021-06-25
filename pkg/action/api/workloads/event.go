@@ -8,14 +8,14 @@ import (
 	"strconv"
 )
 
-func (s *workloadServer) GetEvent(g *gin.Context) {
+func (w *workloadServer) GetEvent(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-	item, err := s.Event.Get(namespace, name)
+	item, err := w.Event.Get(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -23,7 +23,7 @@ func (s *workloadServer) GetEvent(g *gin.Context) {
 	g.JSON(http.StatusOK, item)
 }
 
-func (s *workloadServer) ListEvent(g *gin.Context) {
+func (w *workloadServer) ListEvent(g *gin.Context) {
 	limit := g.Param("limit")
 	namespace := g.Param("namespace")
 	flag := g.ClientIP()
@@ -37,7 +37,7 @@ func (s *workloadServer) ListEvent(g *gin.Context) {
 			return
 		}
 	}
-	list, err := s.Event.ListLimit(namespace, flag, 0, limitNum, "")
+	list, err := w.Event.ListLimit(namespace, flag, 0, limitNum, "")
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return

@@ -10,14 +10,14 @@ import (
 	"net/http"
 )
 
-func (s *workloadServer) GetDaemonSet(g *gin.Context) {
+func (w *workloadServer) GetDaemonSet(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-	item, err := s.DaemonSet.Get(namespace, name)
+	item, err := w.DaemonSet.Get(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -25,8 +25,8 @@ func (s *workloadServer) GetDaemonSet(g *gin.Context) {
 	g.JSON(http.StatusOK, item)
 }
 
-func (s *workloadServer) ListDaemonSet(g *gin.Context) {
-	list, err := s.DaemonSet.List(g.Param("namespace"), "")
+func (w *workloadServer) ListDaemonSet(g *gin.Context) {
+	list, err := w.DaemonSet.List(g.Param("namespace"), "")
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
@@ -34,7 +34,7 @@ func (s *workloadServer) ListDaemonSet(g *gin.Context) {
 	g.JSON(http.StatusOK, list)
 }
 
-func (s *workloadServer) ApplyDaemonSet(g *gin.Context) {
+func (w *workloadServer) ApplyDaemonSet(g *gin.Context) {
 	namespace := g.Param("namespace")
 	raw, err := g.GetRawData()
 	if err != nil {
@@ -48,7 +48,7 @@ func (s *workloadServer) ApplyDaemonSet(g *gin.Context) {
 		return
 	}
 	name := _unstructured.GetName()
-	newUnstructuredExtend, isUpdate, err := s.DaemonSet.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := w.DaemonSet.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
@@ -65,7 +65,7 @@ func (s *workloadServer) ApplyDaemonSet(g *gin.Context) {
 	}
 }
 
-func (s *workloadServer) UpdateDaemonSet(g *gin.Context) {
+func (w *workloadServer) UpdateDaemonSet(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
@@ -84,7 +84,7 @@ func (s *workloadServer) UpdateDaemonSet(g *gin.Context) {
 		return
 	}
 
-	newUnstructuredExtend, _, err := s.DaemonSet.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: updateNetWorkAttachmentData})
+	newUnstructuredExtend, _, err := w.DaemonSet.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: updateNetWorkAttachmentData})
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -96,14 +96,14 @@ func (s *workloadServer) UpdateDaemonSet(g *gin.Context) {
 		})
 }
 
-func (s *workloadServer) DeleteDaemonSet(g *gin.Context) {
+func (w *workloadServer) DeleteDaemonSet(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-	err := s.DaemonSet.Delete(namespace, name)
+	err := w.DaemonSet.Delete(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return

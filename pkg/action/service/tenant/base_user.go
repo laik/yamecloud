@@ -18,7 +18,7 @@ func NewBaseUser(svcInterface service.Interface) *BaseUser {
 }
 
 func (b *BaseUser) Get(namespace, name string) (*service.UnstructuredExtend, error) {
-	item, err := b.Interface.Get(namespace, k8s.BaseUser, name)
+	item, err := b.Interface.Get("", k8s.BaseUser, name)
 	if err != nil {
 		return nil, err
 	}
@@ -26,7 +26,7 @@ func (b *BaseUser) Get(namespace, name string) (*service.UnstructuredExtend, err
 }
 
 func (b *BaseUser) List(namespace string, selector string) (*service.UnstructuredListExtend, error) {
-	list, err := b.Interface.List(namespace, k8s.BaseUser, selector)
+	list, err := b.Interface.List("", k8s.BaseUser, selector)
 	if err != nil {
 		return nil, err
 	}

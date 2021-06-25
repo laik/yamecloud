@@ -13,8 +13,8 @@ import (
 )
 
 // ListCustomResourceDefinition List CustomResourceDefinition
-func (s *workloadServer) ListCustomResourceDefinition(g *gin.Context) {
-	list, err := s.CRD.List("", "")
+func (w *workloadServer) ListCustomResourceDefinition(g *gin.Context) {
+	list, err := w.CRD.List("", "")
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain or params parse error: %s", err))
 		return
@@ -22,8 +22,8 @@ func (s *workloadServer) ListCustomResourceDefinition(g *gin.Context) {
 	g.JSON(http.StatusOK, list)
 }
 
-func (s *workloadServer) ListCustomResourceRouter(gvrString []string) ([]string, error) {
-	list, err := s.CRD.List("", "")
+func (w *workloadServer) ListCustomResourceRouter(gvrString []string) ([]string, error) {
+	list, err := w.CRD.List("", "")
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func trimSpace(slice []string) []string {
 }
 
 // ListGeneralCustomResourceDefinition List General CustomResourceDefinition
-func (s *workloadServer) ListGeneralCustomResourceDefinition(g *gin.Context) {
+func (w *workloadServer) ListGeneralCustomResourceDefinition(g *gin.Context) {
 	u, err := url.Parse(g.Request.RequestURI)
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain or params parse url error: %s", err))
@@ -72,7 +72,7 @@ func (s *workloadServer) ListGeneralCustomResourceDefinition(g *gin.Context) {
 	group, version, resource := paths[2], paths[3], paths[4]
 
 	//w.generic.SetGroupVersionResource(groupVersionResource)
-	list, err := s.CRD.ListGVR("", schema.GroupVersionResource{Group: group, Version: version, Resource: resource}, "")
+	list, err := w.CRD.ListGVR("", schema.GroupVersionResource{Group: group, Version: version, Resource: resource}, "")
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return

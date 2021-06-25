@@ -10,13 +10,13 @@ import (
 	"net/http"
 )
 
-func (s *workloadServer) GetStorageClass(g *gin.Context) {
+func (w *workloadServer) GetStorageClass(g *gin.Context) {
 	name := g.Param("name")
 	if name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
 		return
 	}
-	item, err := s.StorageClass.Get("", name)
+	item, err := w.StorageClass.Get("", name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -24,8 +24,8 @@ func (s *workloadServer) GetStorageClass(g *gin.Context) {
 	g.JSON(http.StatusOK, item)
 }
 
-func (s *workloadServer) ListStorageClass(g *gin.Context) {
-	list, err := s.StorageClass.List("", "")
+func (w *workloadServer) ListStorageClass(g *gin.Context) {
+	list, err := w.StorageClass.List("", "")
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
@@ -33,13 +33,13 @@ func (s *workloadServer) ListStorageClass(g *gin.Context) {
 	g.JSON(http.StatusOK, list)
 }
 
-func (s *workloadServer) DeleteStorageClass(g *gin.Context) {
+func (w *workloadServer) DeleteStorageClass(g *gin.Context) {
 	name := g.Param("name")
 	if name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
 		return
 	}
-	err := s.StorageClass.Delete("", name)
+	err := w.StorageClass.Delete("", name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -47,7 +47,7 @@ func (s *workloadServer) DeleteStorageClass(g *gin.Context) {
 	g.JSON(http.StatusOK, nil)
 }
 
-func (s *workloadServer) ApplyStorageClass(g *gin.Context) {
+func (w *workloadServer) ApplyStorageClass(g *gin.Context) {
 	raw, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("get raw data error (%s)", err))
@@ -60,7 +60,7 @@ func (s *workloadServer) ApplyStorageClass(g *gin.Context) {
 		return
 	}
 	name := _unstructured.GetName()
-	newUnstructuredExtend, isUpdate, err := s.StorageClass.Apply("", name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := w.StorageClass.Apply("", name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
@@ -77,7 +77,7 @@ func (s *workloadServer) ApplyStorageClass(g *gin.Context) {
 	}
 }
 
-func (s *workloadServer) UpdateStorageClass(g *gin.Context) {
+func (w *workloadServer) UpdateStorageClass(g *gin.Context) {
 	name := g.Param("name")
 	if name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
@@ -95,7 +95,7 @@ func (s *workloadServer) UpdateStorageClass(g *gin.Context) {
 		return
 	}
 
-	newUnstructuredExtend, _, err := s.StorageClass.Apply("", name, &service.UnstructuredExtend{Unstructured: updateNetWorkAttachmentData})
+	newUnstructuredExtend, _, err := w.StorageClass.Apply("", name, &service.UnstructuredExtend{Unstructured: updateNetWorkAttachmentData})
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return

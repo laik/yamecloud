@@ -10,14 +10,14 @@ import (
 	"net/http"
 )
 
-func (s *workloadServer) GetResourceQuota(g *gin.Context) {
+func (w *workloadServer) GetResourceQuota(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-	item, err := s.ResourceQuota.Get(namespace, name)
+	item, err := w.ResourceQuota.Get(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -25,8 +25,8 @@ func (s *workloadServer) GetResourceQuota(g *gin.Context) {
 	g.JSON(http.StatusOK, item)
 }
 
-func (s *workloadServer) ListResourceQuota(g *gin.Context) {
-	list, err := s.ResourceQuota.List(g.Param("namespace"), "")
+func (w *workloadServer) ListResourceQuota(g *gin.Context) {
+	list, err := w.ResourceQuota.List(g.Param("namespace"), "")
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
@@ -34,7 +34,7 @@ func (s *workloadServer) ListResourceQuota(g *gin.Context) {
 	g.JSON(http.StatusOK, list)
 }
 
-func (s *workloadServer) ApplyResourceQuota(g *gin.Context) {
+func (w *workloadServer) ApplyResourceQuota(g *gin.Context) {
 	namespace := g.Param("namespace")
 	raw, err := g.GetRawData()
 	if err != nil {
@@ -48,7 +48,7 @@ func (s *workloadServer) ApplyResourceQuota(g *gin.Context) {
 		return
 	}
 	name := _unstructured.GetName()
-	newUnstructuredExtend, isUpdate, err := s.ResourceQuota.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := w.ResourceQuota.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
@@ -65,7 +65,7 @@ func (s *workloadServer) ApplyResourceQuota(g *gin.Context) {
 	}
 }
 
-func (s *workloadServer) UpdateResourceQuota(g *gin.Context) {
+func (w *workloadServer) UpdateResourceQuota(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
@@ -84,7 +84,7 @@ func (s *workloadServer) UpdateResourceQuota(g *gin.Context) {
 		return
 	}
 
-	newUnstructuredExtend, _, err := s.ResourceQuota.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: updateNetWorkAttachmentData})
+	newUnstructuredExtend, _, err := w.ResourceQuota.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: updateNetWorkAttachmentData})
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -96,14 +96,14 @@ func (s *workloadServer) UpdateResourceQuota(g *gin.Context) {
 		})
 }
 
-func (s *workloadServer) DeleteResourceQuota(g *gin.Context) {
+func (w *workloadServer) DeleteResourceQuota(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-	err := s.ResourceQuota.Delete(namespace, name)
+	err := w.ResourceQuota.Delete(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return

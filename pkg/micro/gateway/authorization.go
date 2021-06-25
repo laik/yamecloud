@@ -228,7 +228,7 @@ func (auth *Authorization) AllowNamespaces(username string, isAdmin, isTenantOwn
 		if specTenantId == "" {
 			return nil, fmt.Errorf("tenant do not exist")
 		}
-		tenantObj, err := auth.tenantServices.Get("kube-system", specTenantId.(string))
+		tenantObj, err := auth.tenantServices.Get("", specTenantId.(string))
 		if err != nil {
 			return nil, fmt.Errorf("query tenant error")
 		}

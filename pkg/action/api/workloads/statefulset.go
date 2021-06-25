@@ -10,14 +10,14 @@ import (
 	"net/http"
 )
 
-func (s *workloadServer) GetStatefulSet(g *gin.Context) {
+func (w *workloadServer) GetStatefulSet(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-	item, err := s.StatefulSet.Get(namespace, name)
+	item, err := w.StatefulSet.Get(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -25,8 +25,8 @@ func (s *workloadServer) GetStatefulSet(g *gin.Context) {
 	g.JSON(http.StatusOK, item)
 }
 
-func (s *workloadServer) ListStatefulSet(g *gin.Context) {
-	list, err := s.StatefulSet.List(g.Param("namespace"), "")
+func (w *workloadServer) ListStatefulSet(g *gin.Context) {
+	list, err := w.StatefulSet.List(g.Param("namespace"), "")
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
@@ -34,7 +34,7 @@ func (s *workloadServer) ListStatefulSet(g *gin.Context) {
 	g.JSON(http.StatusOK, list)
 }
 
-func (s *workloadServer) ApplyStatefulSet(g *gin.Context) {
+func (w *workloadServer) ApplyStatefulSet(g *gin.Context) {
 	namespace := g.Param("namespace")
 	raw, err := g.GetRawData()
 	if err != nil {
@@ -48,7 +48,7 @@ func (s *workloadServer) ApplyStatefulSet(g *gin.Context) {
 		return
 	}
 	name := _unstructured.GetName()
-	newUnstructuredExtend, isUpdate, err := s.StatefulSet.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := w.StatefulSet.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
@@ -65,7 +65,7 @@ func (s *workloadServer) ApplyStatefulSet(g *gin.Context) {
 	}
 }
 
-func (s *workloadServer) UpdateStatefulSet(g *gin.Context) {
+func (w *workloadServer) UpdateStatefulSet(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
@@ -84,7 +84,7 @@ func (s *workloadServer) UpdateStatefulSet(g *gin.Context) {
 		return
 	}
 
-	newUnstructuredExtend, _, err := s.StatefulSet.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: updateNetWorkAttachmentData})
+	newUnstructuredExtend, _, err := w.StatefulSet.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: updateNetWorkAttachmentData})
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -96,14 +96,14 @@ func (s *workloadServer) UpdateStatefulSet(g *gin.Context) {
 		})
 }
 
-func (s *workloadServer) DeleteStatefulSet(g *gin.Context) {
+func (w *workloadServer) DeleteStatefulSet(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-	err := s.StatefulSet.Delete(namespace, name)
+	err := w.StatefulSet.Delete(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return

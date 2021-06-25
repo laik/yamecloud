@@ -7,13 +7,13 @@ import (
 	"net/http"
 )
 
-func (s *workloadServer) GetPV(g *gin.Context) {
+func (w *workloadServer) GetPV(g *gin.Context) {
 	name := g.Param("name")
 	if name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
 		return
 	}
-	item, err := s.PV.Get("", name)
+	item, err := w.PV.Get("", name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -21,8 +21,8 @@ func (s *workloadServer) GetPV(g *gin.Context) {
 	g.JSON(http.StatusOK, item)
 }
 
-func (s *workloadServer) ListPV(g *gin.Context) {
-	list, err := s.PV.List("", "")
+func (w *workloadServer) ListPV(g *gin.Context) {
+	list, err := w.PV.List("", "")
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
@@ -30,13 +30,13 @@ func (s *workloadServer) ListPV(g *gin.Context) {
 	g.JSON(http.StatusOK, list)
 }
 
-func (s *workloadServer) DeletePV(g *gin.Context) {
+func (w *workloadServer) DeletePV(g *gin.Context) {
 	name := g.Param("name")
 	if name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
 		return
 	}
-	err := s.PV.Delete("", name)
+	err := w.PV.Delete("", name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return

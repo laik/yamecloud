@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func (s *workloadServer) Stack(g *gin.Context) {
+func (w *workloadServer) Stack(g *gin.Context) {
 	raw, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("get raw data error (%s)", err))
@@ -22,7 +22,7 @@ func (s *workloadServer) Stack(g *gin.Context) {
 		return
 	}
 
-	apiResources, err := s.APIResources.ListAPIResources()
+	apiResources, err := w.APIResources.ListAPIResources()
 	if err != nil {
 		common.InternalServerError(g, "", fmt.Errorf("list api resources error (%s)", err))
 		return
@@ -39,7 +39,7 @@ func (s *workloadServer) Stack(g *gin.Context) {
 	namespace := _unstructured.GetNamespace()
 	name := _unstructured.GetName()
 
-	newUnstructuredExtend, isUpdate, err := s.APIResources.ApplyGVR(namespace, name, gvr, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := w.APIResources.ApplyGVR(namespace, name, gvr, &service.UnstructuredExtend{Unstructured: _unstructured})
 
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))

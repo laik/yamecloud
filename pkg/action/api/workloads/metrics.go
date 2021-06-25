@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func (s *workloadServer) DefaultMetrics(g *gin.Context) {
+func (w *workloadServer) DefaultMetrics(g *gin.Context) {
 	body, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain or params parse error: %s", err))
@@ -20,7 +20,7 @@ func (s *workloadServer) DefaultMetrics(g *gin.Context) {
 	params["step"] = g.Query("step")
 	params["kubernetes_namespace"] = g.Query("kubernetes_namespace")
 
-	bufRaw, err := s.Metrics.ProxyToPrometheus(params, body)
+	bufRaw, err := w.Metrics.ProxyToPrometheus(params, body)
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
@@ -29,8 +29,8 @@ func (s *workloadServer) DefaultMetrics(g *gin.Context) {
 	g.JSON(http.StatusOK, bufRaw)
 }
 
-func (s *workloadServer) ListNodeMetrics(g *gin.Context) {
-	result, err := s.Metrics.NodeMetricsList()
+func (w *workloadServer) ListNodeMetrics(g *gin.Context) {
+	result, err := w.Metrics.NodeMetricsList()
 	if err != nil {
 		common.InternalServerError(g, err, fmt.Errorf("node metrics list error: %s", err))
 		return
@@ -38,10 +38,10 @@ func (s *workloadServer) ListNodeMetrics(g *gin.Context) {
 	g.JSON(http.StatusOK, result)
 }
 
-func (s *workloadServer) GetPodMetrics(g *gin.Context) {
+func (w *workloadServer) GetPodMetrics(g *gin.Context) {
 	namespace := g.Query("namespace")
 	name := g.Query("name")
-	result, err := s.Metrics.PodMetrics(namespace, name)
+	result, err := w.Metrics.PodMetrics(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, fmt.Errorf("get pod metrics error: %s,namespace&pod:  %s/%s ", name, namespace,
 			err))
@@ -50,9 +50,9 @@ func (s *workloadServer) GetPodMetrics(g *gin.Context) {
 	g.JSON(http.StatusOK, result)
 }
 
-func (s *workloadServer) ListPodMetrics(g *gin.Context) {
+func (w *workloadServer) ListPodMetrics(g *gin.Context) {
 	namespace := g.Query("namespace")
-	result, err := s.Metrics.PodMetricsList(namespace)
+	result, err := w.Metrics.PodMetricsList(namespace)
 	if err != nil {
 		common.InternalServerError(g, err, fmt.Errorf("list pod metrics error: %s,namespace:%s", err, namespace))
 		return

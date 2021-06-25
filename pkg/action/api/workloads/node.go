@@ -11,13 +11,13 @@ import (
 	"net/http"
 )
 
-func (s *workloadServer) GetNode(g *gin.Context) {
+func (w *workloadServer) GetNode(g *gin.Context) {
 	name := g.Param("name")
 	if name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
 		return
 	}
-	item, err := s.Node.Get("", name)
+	item, err := w.Node.Get("", name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -25,8 +25,8 @@ func (s *workloadServer) GetNode(g *gin.Context) {
 	g.JSON(http.StatusOK, item)
 }
 
-func (s *workloadServer) ListNode(g *gin.Context) {
-	list, err := s.Node.List("", "")
+func (w *workloadServer) ListNode(g *gin.Context) {
+	list, err := w.Node.List("", "")
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
@@ -34,7 +34,7 @@ func (s *workloadServer) ListNode(g *gin.Context) {
 	g.JSON(http.StatusOK, list)
 }
 
-func (s *workloadServer) ApplyNode(g *gin.Context) {
+func (w *workloadServer) ApplyNode(g *gin.Context) {
 	raw, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("get raw data error (%s)", err))
@@ -47,7 +47,7 @@ func (s *workloadServer) ApplyNode(g *gin.Context) {
 		return
 	}
 	name := _unstructured.GetName()
-	newUnstructuredExtend, isUpdate, err := s.Node.Apply("", name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := w.Node.Apply("", name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
@@ -64,7 +64,7 @@ func (s *workloadServer) ApplyNode(g *gin.Context) {
 	}
 }
 
-func (s *workloadServer) NodeGEO(g *gin.Context) {
+func (w *workloadServer) NodeGEO(g *gin.Context) {
 	name := g.Param("name")
 	if name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
@@ -77,7 +77,7 @@ func (s *workloadServer) NodeGEO(g *gin.Context) {
 		return
 	}
 
-	node, err := s.Node.Get("", name)
+	node, err := w.Node.Get("", name)
 	if err != nil {
 		common.InternalServerError(g, err, fmt.Errorf("get node error: %s", err))
 		return
@@ -96,7 +96,7 @@ func (s *workloadServer) NodeGEO(g *gin.Context) {
 
 	node.SetLabels(srcLabels)
 
-	newUnstructuredExtend, _, err := s.Node.Apply("", name, node)
+	newUnstructuredExtend, _, err := w.Node.Apply("", name, node)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -108,7 +108,7 @@ func (s *workloadServer) NodeGEO(g *gin.Context) {
 		})
 }
 
-func (s *workloadServer) UpdateNode(g *gin.Context) {
+func (w *workloadServer) UpdateNode(g *gin.Context) {
 	name := g.Param("name")
 	if name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
@@ -127,7 +127,7 @@ func (s *workloadServer) UpdateNode(g *gin.Context) {
 		return
 	}
 
-	newUnstructuredExtend, _, err := s.Node.Apply("", name, &service.UnstructuredExtend{Unstructured: updateNetWorkAttachmentData})
+	newUnstructuredExtend, _, err := w.Node.Apply("", name, &service.UnstructuredExtend{Unstructured: updateNetWorkAttachmentData})
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -139,14 +139,14 @@ func (s *workloadServer) UpdateNode(g *gin.Context) {
 		})
 }
 
-func (s *workloadServer) DeleteNode(g *gin.Context) {
+func (w *workloadServer) DeleteNode(g *gin.Context) {
 	namespace := g.Param("namespace")
 	name := g.Param("name")
 	if namespace == "" || name == "" {
 		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
 		return
 	}
-	err := s.Node.Delete(namespace, name)
+	err := w.Node.Delete(namespace, name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return

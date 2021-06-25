@@ -25,6 +25,7 @@ var subscribeList = k8s.GVRMaps.Subscribe(
 	k8s.RoleBinding,
 	k8s.ClusterRoleBinding,
 	k8s.Role,
+	k8s.PodSecurityPolicie,
 )
 
 func main() {

@@ -15,6 +15,7 @@ type accessControlServer struct {
 	*dac.RoleBinding
 	*dac.ClusterRoleBinding
 	*dac.Role
+	*dac.PSP
 }
 
 func (s *accessControlServer) Name() string {
@@ -31,6 +32,7 @@ func NewApiServer(serviceName string, server *api.Server) *accessControlServer {
 		RoleBinding:        dac.NewRoleBinding(server.Interface),
 		ClusterRoleBinding: dac.NewClusterRoleBinding(server.Interface),
 		Role:               dac.NewRole(server.Interface),
+		PSP:                dac.NewPSP(server.Interface),
 	}
 	group := apiServer.Group(fmt.Sprintf("/%s", serviceName))
 
@@ -66,6 +68,13 @@ func NewApiServer(serviceName string, server *api.Server) *accessControlServer {
 		group.GET("/api/v1/serviceaccounts", apiServer.ListServiceAccount)
 		group.GET("/api/v1/namespaces/:namespace/serviceaccounts/:name", apiServer.GetServiceAccount)
 		group.POST("/serviceaccount/patch/:method", apiServer.ApplyServiceAccount)
+	}
+
+	// #podsecuritypolicies
+	{
+		group.GET("/apis/policy/v1beta1/podsecuritypolicies", apiServer.ListPSP)
+		group.GET("/apis/policy/v1beta1/namespaces/:namespace/podsecuritypolicies/:name", apiServer.GetPSP)
+		group.POST("/apis/policy/v1beta1/namespaces/:namespace/podsecuritypolicies", apiServer.ApplyPSP)
 	}
 
 	return apiServer

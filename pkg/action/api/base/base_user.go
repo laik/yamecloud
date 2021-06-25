@@ -83,8 +83,6 @@ func (s *baseServer) ApplyBaseUser(g *gin.Context) {
 
 // Update  BaseUser
 func (s *baseServer) UpdateBaseUser(g *gin.Context) {
-	namespace := g.Param("namespace")
-
 	raw, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("get raw data error (%s)", err))
@@ -102,25 +100,11 @@ func (s *baseServer) UpdateBaseUser(g *gin.Context) {
 		common.RequestParametersError(g, err)
 		return
 	}
-
-	name := _unstructured.GetName()
-	dbUserObj, err := s.BaseUser.Get("kube-system", name)
-	if err != nil {
-		common.InternalServerError(g, name, fmt.Errorf("get user error (%s)", err))
-		return
-	}
-	specPassword, err := dbUserObj.Get("spec.password")
-	if err != nil {
-		common.InternalServerError(g, dbUserObj, fmt.Errorf("get spec.password error (%s)", err))
-		return
-	}
 	password := utils.Get(_unstructured.Object, "spec.password")
 
-	if specPassword.(string) != utils.Sha1(password.(string)) {
-		utils.Set(_unstructured.Object, "spec.password", utils.Sha1(password.(string)))
-	}
+	utils.Set(_unstructured.Object, "spec.password", utils.Sha1(password.(string)))
 
-	newUnstructuredExtend, _, err := s.BaseUser.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, _, err := s.BaseUser.Apply("", _unstructured.GetName(), &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
@@ -151,7 +135,7 @@ func (s *baseServer) DeleteBaseUser(g *gin.Context) {
 
 func (s *baseServer) ValidateBaseUserData(g *gin.Context, data *unstructured.Unstructured) error {
 	specTenantId := utils.Get(data.Object, "spec.tenant_id")
-	if specTenantId == "" {
+	if specTenantId == nil || specTenantId == "" {
 		return fmt.Errorf("spec.tenant_id is null")
 	}
 
