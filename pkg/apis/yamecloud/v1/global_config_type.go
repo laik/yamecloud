@@ -10,7 +10,8 @@ import (
 // GlobalConfig defines the desired state of GlobalConfig
 type GlobalConfigSpec struct {
 	// +optional
-	Model string `json:"model, omitempty"`
+	Model     string            `json:"model,omitempty"`
+	HelmRepos map[string]string `json:"helmRepos,omitempty"`
 }
 
 // GlobalConfigStatus defines the observed state of BaseRole

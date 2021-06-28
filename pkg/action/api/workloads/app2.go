@@ -53,14 +53,14 @@ type Release struct {
 	AppVersion string        `json:"appVersion"`
 }
 
-var repos = map[string]string{
-	//"stabel": "https://charts.helm.sh/stable",
+var Repos = map[string]string{
+	//"stabel":  "https://charts.helm.sh/stable",
 	//"jenkins": "https://charts.jenkins.io/",
 	//"github": "https://burdenbear.github.io/kube-charts-mirror/",
 	//"aliyun": "https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts/",
 	//"presslabs":          "https://presslabs.github.io/charts",
 	//"banzaicloud-stable": "https://kubernetes-charts.banzaicloud.com",
-	"ingress": "https://kubernetes.github.io/ingress-nginx",
+	//"ingress": "https://kubernetes.github.io/ingress-nginx",
 	//"fantastic-charts":   "https://fantastic-charts.storage.googleapis.com",
 }
 
@@ -125,8 +125,21 @@ func (d Details) SearchByChart(chartName string) (Details, error) {
 	return nil, fmt.Errorf("not found chart %s ", chartName)
 }
 
-func listRepoDetails(repoName string) (Details, error) {
-	repoURL, exist := repos[repoName]
+func listRepoDetails(repoName string, w *workloadServer) (Details, error) {
+	helmRepos, err := w.GetHelmRepos()
+	if err != nil {
+		fmt.Printf("load global config helmRepos error: %s", err)
+	}
+
+	for k, v := range helmRepos {
+		Repos[k] = v
+	}
+
+	if repoName == "" {
+		return nil, nil
+	}
+
+	repoURL, exist := Repos[repoName]
 	if !exist {
 		return nil, fmt.Errorf("repo %s not found", repoName)
 	}
@@ -138,12 +151,14 @@ func listRepoDetails(repoName string) (Details, error) {
 
 	_, contentResult, err := helm.GetRepo("", "", repoURL, "")
 	if err != nil {
-		return nil, err
+		fmt.Printf("%s\n", err)
+		return nil, nil
 	}
 
 	index, err := helm.ParseRepoIndex(contentResult)
 	if err != nil {
-		return nil, err
+		fmt.Printf("%s\n", err)
+		return nil, nil
 	}
 
 	details := make(Details, 0)
@@ -172,12 +187,12 @@ func listRepoDetails(repoName string) (Details, error) {
 	return details, nil
 }
 
-func getRepoDetails(repoName, chartName string) (Details, error) {
+func getRepoDetails(repoName, chartName string, w *workloadServer) (Details, error) {
 	var details Details
 
 	detailsInterface, found := repository.Get(repoName)
 	if !found {
-		_details, err := listRepoDetails(repoName)
+		_details, err := listRepoDetails(repoName, w)
 		if err != nil {
 			return nil, err
 		}

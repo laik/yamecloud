@@ -36,6 +36,10 @@ spec:
           spec:
             description: GlobalConfig defines the desired state of GlobalConfig
             properties:
+              helmRepos:
+                additionalProperties:
+                  type: string
+                type: object
               model:
                 type: string
             type: object

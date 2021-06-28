@@ -44,10 +44,10 @@ const (
 	Workloads ResourceType = "workloads"
 
 	// form render
-	FormRender ResourceType = "formrenders"
-	Page       ResourceType = "pages"
-	Form       ResourceType = "forms"
-	Field      ResourceType = "fields"
+	//FormRender ResourceType = "formrenders"
+	//Page       ResourceType = "pages"
+	//Form       ResourceType = "forms"
+	//Field      ResourceType = "fields"
 
 	// tenant for PaaS
 	BaseDepartment ResourceType = "basedepartments"
@@ -80,6 +80,8 @@ const (
 	Sidecar         ResourceType = "sidecars"
 	VirtualService  ResourceType = "virtualservices"
 	WorkloadEntry   ResourceType = "workloadentries"
+
+	GlobalConfig ResourceType = "globalconfigs"
 )
 
 type Op = string
@@ -191,4 +193,6 @@ var GVRMaps IGVRMaps = &groupVersionCollection{
 	Sidecar:         {Group: "networking.istio.io", Version: "v1beta1", Resource: "sidecars"},
 	VirtualService:  {Group: "networking.istio.io", Version: "v1beta1", Resource: "virtualservices"},
 	WorkloadEntry:   {Group: "networking.istio.io", Version: "v1beta1", Resource: "workloadentries"},
+
+	GlobalConfig: {Group: "yamecloud.io", Version: "v1", Resource: "globalconfigs"},
 }

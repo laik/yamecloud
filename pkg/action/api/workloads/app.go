@@ -22,10 +22,13 @@ import (
 	"strings"
 )
 
-func (*workloadServer) ListCharts(g *gin.Context) {
+func (w *workloadServer) ListCharts(g *gin.Context) {
 	result := make(map[string]map[string]Detail)
-	for repoName, _ := range repos {
-		details, err := listRepoDetails(repoName)
+
+	_, _ = listRepoDetails("", w)
+
+	for repoName, _ := range Repos {
+		details, err := listRepoDetails(repoName, w)
 		if err != nil {
 			common.InternalServerError(g, err, err)
 			return
@@ -40,7 +43,7 @@ func (*workloadServer) ListCharts(g *gin.Context) {
 	g.JSON(http.StatusOK, result)
 }
 
-func (*workloadServer) GetCharts(g *gin.Context) {
+func (w *workloadServer) GetCharts(g *gin.Context) {
 	repoName := g.Param("repo")
 	chartName := g.Param("chart")
 	version := g.Query("version")
@@ -50,7 +53,7 @@ func (*workloadServer) GetCharts(g *gin.Context) {
 		return
 	}
 
-	details, err := getRepoDetails(repoName, chartName)
+	details, err := getRepoDetails(repoName, chartName, w)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -79,7 +82,7 @@ func (*workloadServer) GetCharts(g *gin.Context) {
 	g.JSON(http.StatusOK, _chart)
 }
 
-func (*workloadServer) GetChartValues(g *gin.Context) {
+func (w *workloadServer) GetChartValues(g *gin.Context) {
 	repoName := g.Param("repo")
 	chartName := g.Param("chart")
 	version := g.Query("version")
@@ -89,7 +92,7 @@ func (*workloadServer) GetChartValues(g *gin.Context) {
 		return
 	}
 
-	details, err := getRepoDetails(repoName, chartName)
+	details, err := getRepoDetails(repoName, chartName, w)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -132,13 +135,18 @@ func (w *workloadServer) InstallChart(g *gin.Context) {
 		return
 	}
 
+	if len(installChart.Name) == 0 {
+		common.RequestParametersError(g, fmt.Errorf("name is required"))
+		return
+	}
+
 	repoNameAndChartName := strings.Split(installChart.Chart, "/")
 	if len(repoNameAndChartName) < 2 {
 		common.RequestParametersError(g, fmt.Errorf("install chart name or repo name not match"))
 		return
 	}
 
-	details, err := getRepoDetails(repoNameAndChartName[0], repoNameAndChartName[1])
+	details, err := getRepoDetails(repoNameAndChartName[0], repoNameAndChartName[1], w)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -405,7 +413,7 @@ func (w *workloadServer) UpgradeRelease(g *gin.Context) {
 		return
 	}
 
-	details, err := getRepoDetails(repoNameAndChartName[0], repoNameAndChartName[1])
+	details, err := getRepoDetails(repoNameAndChartName[0], repoNameAndChartName[1], w)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
@@ -526,7 +534,7 @@ func getHistory(client *action.History, name string) (releaseHistory, error) {
 func getReleaseHistory(rls []*release.Release) (history releaseHistory) {
 	for i := len(rls) - 1; i >= 0; i-- {
 		r := rls[i]
-		c := formatChartname(r.Chart)
+		c := formatChartName(r.Chart)
 		s := r.Info.Status.String()
 		v := r.Version
 		d := r.Info.Description
@@ -549,7 +557,7 @@ func getReleaseHistory(rls []*release.Release) (history releaseHistory) {
 	return history
 }
 
-func formatChartname(c *chart.Chart) string {
+func formatChartName(c *chart.Chart) string {
 	if c == nil || c.Metadata == nil {
 		// This is an edge case that has happened in prod, though we don't
 		// know how: https://github.com/helm/helm/issues/1347

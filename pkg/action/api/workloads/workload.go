@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/yametech/yamecloud/pkg/action/api"
 	"github.com/yametech/yamecloud/pkg/action/service/editer"
+	"github.com/yametech/yamecloud/pkg/action/service/globalconfig"
 	workload_service "github.com/yametech/yamecloud/pkg/action/service/workloads"
 	"github.com/yametech/yamecloud/pkg/helm"
 	"helm.sh/helm/v3/pkg/action"
@@ -42,6 +43,8 @@ type workloadServer struct {
 
 	config    *rest.Config
 	clientset *kubernetes.Clientset
+
+	*globalconfig.GlobalConfig
 }
 
 func (w *workloadServer) Name() string {
@@ -91,10 +94,10 @@ func NewWorkloadServer(serviceName string, server *api.Server, config *rest.Conf
 			}
 			return cfg
 		},
+		GlobalConfig: globalconfig.NewGlobalConfig(server),
 	}
 
 	group := workloadServer.Group(fmt.Sprintf("/%s", serviceName))
-
 	//accesscontrol
 	{
 		group.POST("/accesscontrol", workloadServer.Stack)

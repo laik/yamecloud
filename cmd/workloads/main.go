@@ -50,6 +50,8 @@ var subscribeList = k8s.GVRMaps.Subscribe(
 
 	//
 	k8s.Service,
+
+	k8s.GlobalConfig,
 )
 
 func main() {
