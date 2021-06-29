@@ -14,6 +14,7 @@ require (
 	github.com/kubeapps/kubeapps v1.11.3
 	github.com/micro/go-micro/v2 v2.9.1
 	github.com/micro/micro/v2 v2.9.3
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/srwiley/oksvg v0.0.0-20210519022825-9fc0c575d5fe
@@ -26,6 +27,7 @@ require (
 	k8s.io/cli-runtime v0.21.2
 	k8s.io/client-go v0.21.2
 	k8s.io/helm v2.17.0+incompatible
+	k8s.io/kubectl v0.21.0
 	sigs.k8s.io/yaml v1.2.0
 )
 
