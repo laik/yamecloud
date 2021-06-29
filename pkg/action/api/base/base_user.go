@@ -32,7 +32,7 @@ func (s *baseServer) ListBaseUser(g *gin.Context) {
 		common.InternalServerError(g, "", err)
 		return
 	}
-	list, err := s.BaseUser.List(g.Param("namespace"), selector)
+	list, err := s.BaseUser.List("", selector)
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
@@ -119,13 +119,12 @@ func (s *baseServer) UpdateBaseUser(g *gin.Context) {
 
 // Delete BaseUser
 func (s *baseServer) DeleteBaseUser(g *gin.Context) {
-	namespace := g.Param("namespace")
 	name := g.Param("name")
-	if namespace == "" || name == "" {
-		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
+	if name == "" {
+		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", "", name))
 		return
 	}
-	err := s.BaseUser.Delete(namespace, name)
+	err := s.BaseUser.Delete("", name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return

@@ -32,7 +32,7 @@ func (s *baseServer) ListBaseRole(g *gin.Context) {
 		common.InternalServerError(g, "", err)
 		return
 	}
-	list, err := s.BaseRole.List(g.Param("namespace"), selector)
+	list, err := s.BaseRole.List("", selector)
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return

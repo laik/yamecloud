@@ -32,7 +32,7 @@ func (s *baseServer) ListBaseDepartment(g *gin.Context) {
 		common.InternalServerError(g, "", err)
 		return
 	}
-	list, err := s.BaseDepartment.List(g.Param("namespace"), selector)
+	list, err := s.BaseDepartment.List("", selector)
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
@@ -79,13 +79,12 @@ func (s *baseServer) ApplyBaseDepartment(g *gin.Context) {
 
 // Delete BaseDepartment
 func (s *baseServer) DeleteBaseDepartment(g *gin.Context) {
-	namespace := g.Param("namespace")
 	name := g.Param("name")
-	if namespace == "" || name == "" {
-		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
+	if name == "" {
+		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
 		return
 	}
-	err := s.BaseDepartment.Delete(namespace, name)
+	err := s.BaseDepartment.Delete("", name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return

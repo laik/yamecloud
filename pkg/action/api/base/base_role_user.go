@@ -26,7 +26,7 @@ func (s *baseServer) GetBaseRoleUser(g *gin.Context) {
 
 // Subscribe BaseRoleUser
 func (s *baseServer) ListBaseRoleUser(g *gin.Context) {
-	list, err := s.BaseRoleUser.List(g.Param("namespace"), "")
+	list, err := s.BaseRoleUser.List("", "")
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
@@ -36,8 +36,6 @@ func (s *baseServer) ListBaseRoleUser(g *gin.Context) {
 
 // Update or Create BaseRoleUser
 func (s *baseServer) ApplyBaseRoleUser(g *gin.Context) {
-	namespace := g.Param("namespace")
-
 	raw, err := g.GetRawData()
 	if err != nil {
 		common.RequestParametersError(g, fmt.Errorf("get raw data error (%s)", err))
@@ -50,7 +48,7 @@ func (s *baseServer) ApplyBaseRoleUser(g *gin.Context) {
 		return
 	}
 	name := _unstructured.GetName()
-	newUnstructuredExtend, isUpdate, err := s.BaseRoleUser.Apply(namespace, name, &service.UnstructuredExtend{Unstructured: _unstructured})
+	newUnstructuredExtend, isUpdate, err := s.BaseRoleUser.Apply("", name, &service.UnstructuredExtend{Unstructured: _unstructured})
 	if err != nil {
 		common.InternalServerError(g, newUnstructuredExtend, fmt.Errorf("apply object error (%s)", err))
 		return
@@ -69,13 +67,12 @@ func (s *baseServer) ApplyBaseRoleUser(g *gin.Context) {
 
 // Delete BaseRoleUser
 func (s *baseServer) DeleteBaseRoleUser(g *gin.Context) {
-	namespace := g.Param("namespace")
 	name := g.Param("name")
-	if namespace == "" || name == "" {
-		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
+	if name == "" {
+		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
 		return
 	}
-	err := s.BaseRoleUser.Delete(namespace, name)
+	err := s.BaseRoleUser.Delete("", name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return

@@ -25,14 +25,13 @@ func (s *baseServer) GetBaseTenant(g *gin.Context) {
 	g.JSON(http.StatusOK, item)
 }
 
-// Subscribe BaseTenant
 func (s *baseServer) ListBaseTenant(g *gin.Context) {
 	selector, err := s.generateSelector(g)
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
 	}
-	list, err := s.BaseTenant.List(g.Param("namespace"), selector)
+	list, err := s.BaseTenant.List("", selector)
 	if err != nil {
 		common.InternalServerError(g, "", err)
 		return
@@ -78,13 +77,12 @@ func (s *baseServer) ApplyBaseTenant(g *gin.Context) {
 
 // DeleteBaseTenant none
 func (s *baseServer) DeleteBaseTenant(g *gin.Context) {
-	namespace := g.Param("namespace")
 	name := g.Param("name")
-	if namespace == "" || name == "" {
-		common.RequestParametersError(g, fmt.Errorf("params not obtain namespace=%s name=%s", namespace, name))
+	if name == "" {
+		common.RequestParametersError(g, fmt.Errorf("params not obtain name=%s", name))
 		return
 	}
-	err := s.BaseTenant.Delete(namespace, name)
+	err := s.BaseTenant.Delete("", name)
 	if err != nil {
 		common.InternalServerError(g, err, err)
 		return
